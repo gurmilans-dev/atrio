@@ -529,21 +529,6 @@ kbd {
 .search input::placeholder {
   color: var(--text-muted);
 }
-.search select {
-  border: 0;
-  outline: 0;
-  color: var(--text-secondary);
-  background: transparent;
-  font: 12px var(--mono);
-  padding: 8px 1px;
-}
-.search select:focus-visible {
-  outline: 2px solid var(--accent);
-}
-.search select option {
-  color: var(--text);
-  background: var(--drawer);
-}
 .search-hint {
   flex: none;
   padding: 4px 9px;
@@ -651,6 +636,12 @@ kbd {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+.result-label.mono {
+  font: 12.5px var(--mono);
+}
+.result-icon.swatch-icon {
+  background: var(--sample);
+}
 .result-detail {
   flex: none;
   color: var(--text-muted);
@@ -740,9 +731,9 @@ kbd {
   transform: translateY(-2px);
 }
 
-/* Spotlight: borders light up around the cursor. js/effects.js adds the .glow-ring / .glow-fill
-   children and sets --mx/--my on them: being leaves, only they restyle when the mouse moves
-   (custom properties inherit, so setting them on a panel would restyle its whole content). */
+/* Spotlight: borders light up around the cursor. js/effects.js adds the .glow-ring child and sets
+   --mx/--my on it: being a leaf, only it restyles when the mouse moves (custom properties
+   inherit, so setting them on the element would restyle its whole content). */
 .glow {
   position: relative;
   isolation: isolate;
@@ -768,22 +759,7 @@ kbd {
   transition: opacity 0.3s;
   pointer-events: none;
 }
-.glow-fill {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  background: radial-gradient(
-    320px circle at var(--mx, -999px) var(--my, -999px),
-    color-mix(in srgb, var(--accent) 9%, transparent),
-    transparent 65%
-  );
-  opacity: 0;
-  transition: opacity 0.3s;
-  pointer-events: none;
-}
-.glow.lit > .glow-ring,
-.glow.lit > .glow-fill {
+.glow.lit > .glow-ring {
   opacity: 1;
 }
 .link-icon {
@@ -1394,7 +1370,8 @@ kbd {
 .field label span {
   color: var(--text-muted);
 }
-.field input {
+.field input,
+.field select {
   height: 38px;
   padding: 0 10px;
   border: 1px solid var(--line);
@@ -1403,7 +1380,14 @@ kbd {
   color: var(--text);
   font-size: 12px;
 }
-.field input:focus-visible {
+.field select option {
+  background: var(--drawer);
+}
+.field + .field {
+  margin-top: 14px;
+}
+.field input:focus-visible,
+.field select:focus-visible {
   outline-offset: 0;
 }
 .toggle {
@@ -1651,7 +1635,6 @@ kbd {
     padding-left: 13px;
   }
   .search-key,
-  .search select,
   .search-tips {
     display: none;
   }
@@ -1710,7 +1693,6 @@ kbd {
   }
   .shortcut,
   .glow-ring,
-  .glow-fill,
   .settings-fab,
   .apps-button,
   .apps-panel,

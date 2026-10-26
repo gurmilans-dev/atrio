@@ -32,16 +32,22 @@ no tracking.
   pages work, `Shift + Enter` always searches.
 - **Command palette.** While you type, matching links, Google apps and commands appear under the box. `>` (or
   `Ctrl + Shift + P`) lists every command; `+ some text` adds a task without leaving the search.
+- **Developer tools in the search box**, all local; `Enter` copies the result:
+  - calculator: `= sqrt(144) * 2^10`, `0xff + 0b11`, or just `1024*3`, with hex and binary for integers;
+  - timestamps both ways: `ts`, `ts 1730000000`, `ts 2026-10-26 14:00`;
+  - `uuid` (or `uuid 5`), `pw` / `pw 32` for random passwords;
+  - `b64` / `b64d` and `url` / `urld` to encode and decode text;
+  - colors: `#7aa2f7`, `rgb(…)` or `hsl(…)` converted to the other formats, with a swatch.
 - **Focus timer.** 25/5 or 50/10 sessions, a system notification when a session ends (even with no tab open), the
   countdown in the tab title, a 20-week heatmap and your current streak.
 - **Tasks and notes.** Undo for deletions; a plain-text scratchpad that saves while you type.
 - **Google apps launcher.** 24 apps with editable favorites (drag, or `Ctrl + ←/→`), and a switch for people signed in
   to several Google accounts.
 - **Make it yours.** Four themes, one of which takes its accent color from your wallpaper; your own wallpaper
-  (downscaled to WebP on your machine); dim, blur and parallax; borders that light up near the cursor.
+  (downscaled to WebP on your machine); dim and blur; link borders that light up near the cursor; optional parallax.
 - **Keyboard everywhere** and **backups** to a JSON file, wallpaper included.
 
-| Command palette        | Google apps         | Mocha theme and notes |
+| Developer tools        | Google apps         | Mocha theme and notes |
 | ---------------------- | ------------------- | --------------------- |
 | ![](docs/palette.webp) | ![](docs/apps.webp) | ![](docs/mocha.webp)  |
 
@@ -95,8 +101,12 @@ navigates when you search or open a link.
   `storage` event, so tabs never overwrite each other with stale data. A corrupted save is backed up, not discarded.
 - **A timer that survives throttling.** Sessions store an absolute end time; ticks align to the displayed second while
   visible and drop to once a minute when hidden. The service worker only wakes up for the end-of-session alarm.
-- **Cheap effects.** Spotlight and parallax run only while the mouse moves, at most once per frame, using transforms;
-  all of them switch off with `prefers-reduced-motion`.
+- **Cheap effects.** Nothing runs while the page is still: measured at about 0.03% of one CPU core. Spotlight and
+  parallax run only while the mouse moves; the spotlight restyles one small layer per element (custom properties
+  inherit, so setting them on a panel would restyle all its content), and all effects switch off with
+  `prefers-reduced-motion`.
+- **A calculator without `eval`.** The palette's math goes through a small recursive-descent parser: `eval` would be
+  unsafe and is blocked by the extension's content security policy anyway.
 - **Pure logic, tested.** Search resolution, state validation, timer, stats, color extraction and ranking are pure
   modules covered by `node --test`; a CDP-driven suite checks the real page in headless Chrome.
 

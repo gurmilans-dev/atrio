@@ -1,8 +1,10 @@
-// Search box + command palette. Typing shows matching links, Google apps and commands under
-// the box; ">" lists only commands, "+ text" adds a task. Enter runs the highlighted row.
+// Search box + command palette. Typing shows developer tools, matching links, Google apps and
+// commands under the box; ">" lists only commands, "+ text" adds a task. Enter runs the
+// highlighted row (for tools: copies the result).
 import { appIcon } from './apps.js';
 import { getCommands } from './commands.js';
 import { BANGS, ENGINES } from './config.js';
+import { TOOL_NAMES, runTools } from './devtools.js';
 import { $, announce, el } from './dom.js';
 import { fuzzyScore } from './fuzzy.js';
 import { GOOGLE_APPS, appURL } from './google-apps.js';
@@ -18,6 +20,8 @@ const ICON_PATHS = {
   url: 'M7 17 17 7M9 7h8v8',
   command: 'm10 7 5 5-5 5',
   task: 'M12 6v12M6 12h12',
+  copy: 'M9 9h10v10H9zM15 9V5H5v10h4',
+  error: 'M12 7v6m0 4h.01',
 };
 let items = [];
 let active = 0;
@@ -73,6 +77,34 @@ function rank(list, toText, query, max, subsequence) {
     .map(({ item }) => item);
 }
 
+async function copy(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    announce(`Copiato: ${text.length > 48 ? `${text.slice(0, 48)}…` : text}`);
+  } catch {
+    announce('Impossibile copiare negli appunti.');
+  }
+}
+
+// Tool rows stay open after Enter, so another format can be copied right away.
+function toolItem(result) {
+  const icon = result.color
+    ? el('span', 'result-icon swatch-icon')
+    : kindIcon(result.error ? 'error' : 'copy');
+  if (result.color) icon.style.setProperty('--sample', result.color);
+  return {
+    kind: 'tool',
+    tool: result.tool,
+    first: result.first,
+    mono: !result.error,
+    keepOpen: true,
+    label: result.value,
+    detail: result.error ? TOOL_NAMES[result.tool] : `${result.detail} · Invio copia`,
+    icon,
+    run: () => (result.error ? announce(result.value) : copy(result.value)),
+  };
+}
+
 const commandText = (command) => `${command.label} ${command.keywords ?? ''}`;
 const commandItem = (command) => ({
   kind: 'command',
@@ -119,7 +151,13 @@ function buildItems(value) {
   }
 
   const state = getState();
-  const list = [primaryItem(resolveInput(text, state.engine))];
+  const tools = runTools(text).map(toolItem);
+  // Explicit tool keywords ("= 2^10", "uuid") go above the web search, guesses below it.
+  const list = [
+    ...tools.filter((tool) => tool.first),
+    primaryItem(resolveInput(text, state.engine)),
+    ...tools.filter((tool) => !tool.first),
+  ];
   if (text.length >= 2) {
     const links = rank(state.links, (link) => `${link.name} ${hostOf(link.url)}`, text, 5, true);
     for (const link of links) {
@@ -176,7 +214,10 @@ function render() {
       row.dataset.index = String(index);
       row.setAttribute('role', 'option');
       const text = el('span', 'result-text');
-      text.append(el('span', 'result-label', item.label), el('span', 'result-detail', item.detail));
+      text.append(
+        el('span', item.mono ? 'result-label mono' : 'result-label', item.label),
+        el('span', 'result-detail', item.detail),
+      );
       row.append(item.icon ?? kindIcon(item.kind), text);
       if (item.key) row.append(el('kbd', 'result-key', item.key));
       return row;
@@ -203,6 +244,10 @@ function close() {
 function execute(index) {
   const item = items[index];
   if (!item) return;
+  if (item.keepOpen) {
+    item.run();
+    return;
+  }
   input().value = '';
   items = [];
   close();
@@ -210,13 +255,14 @@ function execute(index) {
   item.run();
 }
 
-// Shows where Enter will go: a prefix target, a site, or a chrome:// page.
+// Shows where Enter will go: a tool, a prefix target, a site, or a chrome:// page.
 function renderHint() {
   const { engine } = getState();
   const value = input().value.trim();
   let text = '';
   if (value.startsWith('>')) text = '› comandi';
   else if (value.startsWith('+')) text = '+ attività';
+  else if (value && items[0]?.kind === 'tool') text = `⧉ ${TOOL_NAMES[items[0].tool]}`;
   else if (value) {
     const result = resolveInput(value, engine);
     if (result?.kind === 'url') text = result.label ? `↗ ${result.label}` : '↗ apri sito';
@@ -237,8 +283,9 @@ function renderTips() {
     code.title = target.label;
     tips.append(' ', code);
   }
-  tips.append(' · ', el('code', '', '>'), ' comandi · ', el('code', '', '+'), ' attività · ');
-  tips.append(el('kbd', '', 'Shift'), '+', el('kbd', '', 'Invio'), ' cerca sempre');
+  tips.append(' · ', el('code', '', '>'), ' comandi · ', el('code', '', '+'), ' attività · Strumenti:');
+  for (const tool of ['=', 'ts', 'uuid', 'b64', 'url', 'pw', '#hex']) tips.append(' ', el('code', '', tool));
+  tips.append(' · ', el('kbd', '', 'Shift'), '+', el('kbd', '', 'Invio'), ' cerca sempre');
 }
 
 export function initSearch() {

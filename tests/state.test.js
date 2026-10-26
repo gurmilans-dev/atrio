@@ -84,7 +84,9 @@ describe('normalizeState', () => {
     assert.equal(state.notes.length, 10000);
     assert.equal(state.panelTab, 'tasks');
     assert.equal(normalizeState({ panelTab: 'notes' }).panelTab, 'notes');
-    assert.equal(normalizeState({}).parallax, true);
+    assert.equal(normalizeState({}).parallax, false);
+    assert.equal(normalizeState({ schema: 3, parallax: true }).parallax, false);
+    assert.equal(normalizeState({ schema: 4, parallax: true }).parallax, true);
   });
 
   test('auto accent must be a hex color with a key', () => {

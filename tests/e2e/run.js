@@ -43,7 +43,7 @@ try {
     })`);
     assert.deepEqual(
       { ...info, clock: info.clock !== '--:--' },
-      { links: 6, engines: 3, tips: 12, clock: true, saved: true },
+      { links: 6, engines: 3, tips: 19, clock: true, saved: true },
     );
     assert.ok((await a.eval(pageScroll)) <= 0, 'the page scrolls at 1440×900');
   });
@@ -482,8 +482,10 @@ try {
     assert.match(text, /^(Buongiorno|Buon pomeriggio|Buonasera|Buonanotte), Alex\.$/);
   });
 
-  await check('spotlight borders and parallax follow the mouse', async () => {
+  await check('spotlight borders and parallax (opt-in) follow the mouse', async () => {
     await a.eval(clearSearch);
+    const parallaxDefault = await a.eval(`${STATE}.parallax`);
+    await a.eval(settings(`document.getElementById('parallax-toggle').click()`)); // turn it on
     const { x, y } = await a.eval(
       `(() => { const r = document.querySelector('#links .shortcut').getBoundingClientRect(); return { x: r.x + 30, y: r.y + 20 }; })()`,
     );
@@ -494,12 +496,80 @@ try {
       return { lit: c.classList.contains('lit'), mx: c.querySelector('.glow-ring').style.getPropertyValue('--mx'), far: document.querySelector('.tasks-panel').classList.contains('lit') };
     })()`);
     const transform = await a.eval(`document.querySelector('.wallpaper').style.transform`);
-    await a.eval(settings(`document.getElementById('parallax-toggle').click()`));
+    await a.eval(settings(`document.getElementById('parallax-toggle').click()`)); // back off
     const off = await a.eval(`document.querySelector('.wallpaper').style.transform`);
-    await a.eval(settings(`document.getElementById('parallax-toggle').click()`));
+    assert.equal(parallaxDefault, false);
     assert.deepEqual(card, { lit: true, mx: '35px', far: false });
     assert.ok(transform.startsWith('translate3d('), transform);
     assert.equal(off, '');
+  });
+
+  await check('developer tools in the palette: results, hint, Enter copies', async () => {
+    await a.eval(
+      `window.__copied = []; navigator.clipboard.writeText = async (text) => { window.__copied.push(text); }`,
+    );
+    const rowsFor = async (text) => {
+      await a.eval(clearSearch);
+      await blur(); // closing the settings gives focus back to the last field used (the task input)
+      await a.press('/');
+      await a.type(text);
+      return a.eval(`({
+        rows: ${labels('#search-results .result-label')},
+        hint: document.getElementById('search-hint').textContent,
+        swatch: Boolean(document.querySelector('#search-results .swatch-icon')),
+      })`);
+    };
+    const calc = await rowsFor('= 2^10');
+    await a.press('Enter');
+    const afterEnter = await a.eval(`({
+      copied: window.__copied.at(-1),
+      open: !document.getElementById('search-results').hidden,
+      toast: document.getElementById('toast').textContent,
+    })`);
+    const color = await rowsFor('#7aa2f7');
+    const uuid = await rowsFor('uuid');
+    const auto = await rowsFor('1024*3');
+    const search = await rowsFor('react hooks');
+    await a.press('Escape');
+    await a.eval(clearSearch);
+    assert.deepEqual(calc, {
+      rows: ['1024', '0x400', '0b10000000000', '= 2^10'],
+      hint: '⧉ Calcolatrice',
+      swatch: false,
+    });
+    assert.deepEqual(afterEnter, { copied: '1024', open: true, toast: 'Copiato: 1024' });
+    assert.deepEqual(color.rows.slice(0, 2), ['#7aa2f7', 'rgb(122, 162, 247)']);
+    assert.ok(color.swatch);
+    assert.match(uuid.rows[0], /^[0-9a-f-]{36}$/);
+    assert.equal(auto.rows[0], '3072');
+    assert.equal(search.hint, '');
+  });
+
+  await check('search engine lives in the settings', async () => {
+    const inSettings = await a.eval(`Boolean(document.querySelector('#settings #search-engine'))`);
+    await a.eval(
+      settings(
+        `const s = document.getElementById('search-engine'); s.value = 'ddg'; s.dispatchEvent(new Event('change'))`,
+      ),
+    );
+    await blur();
+    await a.press('/');
+    await a.type('git'); // also matches the GitHub link, so the list opens
+    const detail = await a.eval(
+      `document.querySelector('#search-results .result-detail')?.textContent ?? null`,
+    );
+    await a.press('Escape');
+    await a.eval(clearSearch);
+    const engine = await a.eval(`${STATE}.engine`);
+    await a.eval(
+      settings(
+        `const s = document.getElementById('search-engine'); s.value = 'google'; s.dispatchEvent(new Event('change'))`,
+      ),
+    );
+    assert.deepEqual(
+      { inSettings, engine, detail },
+      { inSettings: true, engine: 'ddg', detail: 'Cerca su DuckDuckGo' },
+    );
   });
 
   const apps = `(() => {
@@ -601,6 +671,7 @@ try {
   });
 
   await check('reduced motion turns off parallax, spotlight and lift', async () => {
+    await a.eval(settings(`document.getElementById('parallax-toggle').click()`)); // parallax on
     await a.reducedMotion(true);
     await a.goto();
     const { x, y } = await a.eval(
@@ -614,6 +685,7 @@ try {
       lift: getComputedStyle(document.querySelector('#links .shortcut')).transform,
     })`);
     await a.reducedMotion(false);
+    await a.eval(settings(`document.getElementById('parallax-toggle').click()`)); // back off
     assert.deepEqual(r, { transform: '', lit: 0, lift: 'none' });
   });
 

@@ -6,7 +6,7 @@ import { getState, subscribe } from './store.js';
 
 const PARALLAX_PX = 10; // style.css oversizes the wallpaper by more than this
 const PARALLAX_EVERY_MS = 100;
-const REACH_PX = 160; // how far from an element its border starts to glow
+const REACH_PX = 100; // how far from an element its border starts to glow (fewer lit at once = less repaint)
 const RECTS_TTL_MS = 500; // cached positions are refreshed at least this often
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 let pointer = null;
@@ -19,20 +19,16 @@ let parallaxTimer = 0;
 const wallpaper = () => document.querySelector('.wallpaper');
 const parallaxOn = () => getState().parallax && !reducedMotion.matches;
 
-// The light lives on childless layers: updating them restyles one node, not the whole panel.
-function lightLayers(node) {
-  let layers = [...node.children].filter((child) => child.matches('.glow-ring, .glow-fill'));
-  if (!layers.length) {
-    const kinds = node.classList.contains('shortcut') ? ['glow-ring', 'glow-fill'] : ['glow-ring'];
-    layers = kinds.map((kind) => {
-      const layer = document.createElement('span');
-      layer.className = kind;
-      layer.setAttribute('aria-hidden', 'true');
-      node.append(layer);
-      return layer;
-    });
+// The light lives on a childless ring: updating it restyles one node, not the whole element.
+function lightRing(node) {
+  let ring = [...node.children].find((child) => child.classList.contains('glow-ring'));
+  if (!ring) {
+    ring = document.createElement('span');
+    ring.className = 'glow-ring';
+    ring.setAttribute('aria-hidden', 'true');
+    node.append(ring);
   }
-  return layers;
+  return ring;
 }
 
 // Reading layout every frame would force a style/layout pass each time: positions only change
@@ -42,7 +38,7 @@ function glowTargets(now) {
     targets = [...document.querySelectorAll('.glow')].map((node) => ({
       node,
       rect: node.getBoundingClientRect(),
-      layers: lightLayers(node),
+      ring: lightRing(node),
     }));
     targetsAt = now;
   }
@@ -53,7 +49,7 @@ function paintSpotlight() {
   frame = 0;
   if (!pointer) return;
   const { x, y } = pointer;
-  for (const { node, rect, layers } of glowTargets(Date.now())) {
+  for (const { node, rect, ring } of glowTargets(Date.now())) {
     const near =
       x > rect.left - REACH_PX &&
       x < rect.right + REACH_PX &&
@@ -61,10 +57,8 @@ function paintSpotlight() {
       y < rect.bottom + REACH_PX;
     node.classList.toggle('lit', near);
     if (!near) continue;
-    for (const layer of layers) {
-      layer.style.setProperty('--mx', `${Math.round(x - rect.left)}px`);
-      layer.style.setProperty('--my', `${Math.round(y - rect.top)}px`);
-    }
+    ring.style.setProperty('--mx', `${Math.round(x - rect.left)}px`);
+    ring.style.setProperty('--my', `${Math.round(y - rect.top)}px`);
   }
 }
 

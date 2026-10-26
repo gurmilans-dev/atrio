@@ -4,7 +4,7 @@
 // Keys keep the project's former name (Workspace) so existing data still loads.
 export const STORAGE_KEY = 'workspace.newtab.v2';
 export const LEGACY_STORAGE_KEY = 'devstart.v1';
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 // "auto" takes its accent from the wallpaper (js/color.js); its swatch is computed.
 export const AUTO_THEME = 'auto';

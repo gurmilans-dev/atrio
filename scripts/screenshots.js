@@ -62,7 +62,8 @@ try {
 
   await shot('home.webp');
 
-  await page.press('>');
+  await page.press('/');
+  await page.type('= 0xff * 4 + 2^10');
   await shot('palette.webp');
   await page.press('Escape');
   await page.eval(`(() => {

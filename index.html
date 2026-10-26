@@ -44,7 +44,6 @@
               aria-keyshortcuts="/ Control+K Control+Shift+P"
             />
             <span class="search-hint" id="search-hint" hidden></span>
-            <select id="search-engine" aria-label="Motore di ricerca" title="Motore di ricerca"></select>
             <kbd class="search-key" id="search-key" aria-hidden="true">/</kbd>
             <button class="go" type="submit" aria-label="Vai" title="Vai (Invio)">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6" /></svg>
@@ -70,7 +69,7 @@
         </section>
 
         <aside class="side" aria-label="Strumenti">
-          <section class="panel focus-panel glow" id="focus-panel" aria-labelledby="focus-title">
+          <section class="panel focus-panel" id="focus-panel" aria-labelledby="focus-title">
             <div class="panel-head">
               <h2 id="focus-title">Focus</h2>
               <span class="panel-muted" id="focus-count">0 oggi</span>
@@ -108,7 +107,7 @@
             </div>
           </section>
 
-          <section class="panel tasks-panel glow" aria-label="Attività e note">
+          <section class="panel tasks-panel" aria-label="Attività e note">
             <div class="panel-head">
               <div class="panel-tabs" id="panel-tabs" role="tablist" aria-label="Attività e note">
                 <button
@@ -276,6 +275,12 @@
               <label for="name-input">Il tuo nome <span>(per il saluto, facoltativo)</span></label>
               <input id="name-input" type="text" autocomplete="given-name" placeholder="Es. Alex" />
             </div>
+            <div class="field">
+              <label for="search-engine"
+                >Motore di ricerca <span>(i prefissi come gh o yt restano attivi)</span></label
+              >
+              <select id="search-engine"></select>
+            </div>
             <label class="toggle"
               ><input type="checkbox" id="apps-toggle" /> Mostra il pulsante delle app Google</label
             >
@@ -373,6 +378,15 @@
               <div>
                 <dt><kbd>Shift</kbd>+<kbd>Invio</kbd></dt>
                 <dd>Cerca sempre, anche se sembra un URL</dd>
+              </div>
+              <div>
+                <dt><code>= 2^10</code> <code>ts</code> <code>uuid</code></dt>
+                <dd>
+                  Strumenti nella ricerca: calcoli, timestamp, UUID, <code>b64</code>/<code>b64d</code>,
+                  <code>url</code>/<code>urld</code>, <code>pw</code>, colori (<code>#7aa2f7</code>).
+                  <kbd>Invio</kbd>
+                  copia il risultato.
+                </dd>
               </div>
               <div>
                 <dt><kbd>1</kbd>–<kbd>9</kbd></dt>
