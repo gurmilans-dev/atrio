@@ -740,13 +740,14 @@ kbd {
   transform: translateY(-2px);
 }
 
-/* Spotlight: borders light up around the cursor (coordinates from js/effects.js). */
+/* Spotlight: borders light up around the cursor. js/effects.js adds the .glow-ring / .glow-fill
+   children and sets --mx/--my on them: being leaves, only they restyle when the mouse moves
+   (custom properties inherit, so setting them on a panel would restyle its whole content). */
 .glow {
   position: relative;
   isolation: isolate;
 }
-.glow::before {
-  content: '';
+.glow-ring {
   position: absolute;
   inset: -1px;
   padding: 1px;
@@ -767,8 +768,7 @@ kbd {
   transition: opacity 0.3s;
   pointer-events: none;
 }
-.shortcut.glow::after {
-  content: '';
+.glow-fill {
   position: absolute;
   inset: 0;
   z-index: -1;
@@ -782,8 +782,8 @@ kbd {
   transition: opacity 0.3s;
   pointer-events: none;
 }
-.glow.lit::before,
-.glow.lit::after {
+.glow.lit > .glow-ring,
+.glow.lit > .glow-fill {
   opacity: 1;
 }
 .link-icon {
@@ -1709,8 +1709,8 @@ kbd {
     transform: none;
   }
   .shortcut,
-  .glow::before,
-  .glow::after,
+  .glow-ring,
+  .glow-fill,
   .settings-fab,
   .apps-button,
   .apps-panel,

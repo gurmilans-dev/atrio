@@ -491,7 +491,7 @@ try {
     await a.move(x + 5, y + 2);
     const card = await a.eval(`(() => {
       const c = document.querySelector('#links .shortcut');
-      return { lit: c.classList.contains('lit'), mx: c.style.getPropertyValue('--mx'), far: document.querySelector('.tasks-panel').classList.contains('lit') };
+      return { lit: c.classList.contains('lit'), mx: c.querySelector('.glow-ring').style.getPropertyValue('--mx'), far: document.querySelector('.tasks-panel').classList.contains('lit') };
     })()`);
     const transform = await a.eval(`document.querySelector('.wallpaper').style.transform`);
     await a.eval(settings(`document.getElementById('parallax-toggle').click()`));
