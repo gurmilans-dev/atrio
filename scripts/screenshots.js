@@ -31,10 +31,10 @@ function demoState() {
   const history = { ...demoHistory(), [today]: 3 };
   return {
     tasks: [
-      { id: 'demo-1', text: 'Rivedere la PR #128', done: false },
-      { id: 'demo-2', text: 'Preparare la demo di venerdì', done: true },
+      { id: 'demo-1', text: 'Review PR #128', done: false },
+      { id: 'demo-2', text: 'Prepare Friday’s demo', done: true },
     ],
-    notes: 'npm run dev -- --port 5173\ngit rebase origin/main\n\nTODO: provare l’endpoint /v2/users',
+    notes: 'npm run dev -- --port 5173\ngit rebase origin/main\n\nTODO: try the /v2/users endpoint',
     stats: { total: Object.values(history).reduce((sum, n) => sum + n, 0), today: 3, day: today, history },
     timer: {
       mode: 'focus',
@@ -46,7 +46,8 @@ function demoState() {
   };
 }
 
-const browser = await launch(ROOT, { width: 1536, height: 960 });
+// The browser language is English, so the page's automatic language is too.
+const browser = await launch(ROOT, { width: 1536, height: 960, lang: 'en-US' });
 try {
   const page = await browser.openPage();
   const shot = async (name) => {

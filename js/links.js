@@ -1,6 +1,7 @@
 // Quick links: the grid on the page and the management list in settings.
 import { LIMITS } from './config.js';
 import { $, announce, button, el } from './dom.js';
+import { t } from './i18n.js';
 import { faviconURL } from './platform.js';
 import { resolveLinkURL } from './search.js';
 import { getState, subscribe, update } from './store.js';
@@ -69,15 +70,15 @@ function renderManagement(state) {
     const name = el('span', 'settings-link-name', link.name);
     name.append(el('small', '', hostOf(link.url)));
     const actions = el('div', 'row-actions');
-    const up = button('icon-action', '↑', `Sposta su: ${link.name}`);
+    const up = button('icon-action', '↑', t('links.moveUp', { name: link.name }));
     up.dataset.action = 'up';
     up.disabled = index === 0;
-    const down = button('icon-action', '↓', `Sposta giù: ${link.name}`);
+    const down = button('icon-action', '↓', t('links.moveDown', { name: link.name }));
     down.dataset.action = 'down';
     down.disabled = index === last;
-    const edit = button('text-action', 'Modifica', `Modifica: ${link.name}`);
+    const edit = button('text-action', t('links.edit'), t('links.editOne', { name: link.name }));
     edit.dataset.action = 'edit';
-    const remove = button('text-action danger', 'Rimuovi', `Rimuovi: ${link.name}`);
+    const remove = button('text-action danger', t('links.remove'), t('links.removeOne', { name: link.name }));
     remove.dataset.action = 'remove';
     actions.append(up, down, edit, remove);
     row.append(name, actions);
@@ -99,7 +100,7 @@ function render(state) {
 function resetForm() {
   editingId = null;
   $('link-form').reset();
-  $('link-submit').textContent = 'Aggiungi collegamento';
+  $('link-submit').textContent = t('links.add');
   $('link-cancel').hidden = true;
 }
 
@@ -110,7 +111,7 @@ function startEditing(id) {
   $('link-name').value = link.name;
   $('link-url').value = link.url;
   $('link-symbol').value = link.symbol ?? '';
-  $('link-submit').textContent = 'Salva modifiche';
+  $('link-submit').textContent = t('links.save');
   $('link-cancel').hidden = false;
   render(getState());
   $('link-name').focus();
@@ -145,8 +146,8 @@ function removeLink(id) {
   });
   if (next) focusRow(next.id, 'remove');
   else $('link-name').focus();
-  announce(`“${link.name}” rimosso.`, {
-    label: 'Annulla',
+  announce(t('links.removed', { name: link.name }), {
+    label: t('common.undo'),
     run: () =>
       update((state) => {
         if (state.links.some((item) => item.id === id) || state.links.length >= LIMITS.links) return;
@@ -165,7 +166,7 @@ function submitForm(event) {
     return;
   }
   if (!url) {
-    announce('URL non valido: usa un indirizzo http o https.');
+    announce(t('links.invalidUrl'));
     $('link-url').focus();
     return;
   }
@@ -183,12 +184,12 @@ function submitForm(event) {
     resetForm();
     render(getState());
     focusRow(id, 'edit');
-    announce('Collegamento aggiornato.');
+    announce(t('links.updated'));
     return;
   }
 
   if (getState().links.length >= LIMITS.links) {
-    announce(`Massimo ${LIMITS.links} collegamenti.`);
+    announce(t('links.max', { n: LIMITS.links }));
     return;
   }
   const link = { id: crypto.randomUUID(), name, url };
@@ -198,7 +199,7 @@ function submitForm(event) {
   });
   $('link-form').reset();
   $('link-name').focus();
-  announce('Collegamento aggiunto.');
+  announce(t('links.added'));
 }
 
 /** Opens the link at position `index` (0-based); used by the 1–9 shortcuts. */
@@ -217,6 +218,7 @@ export function initLinks() {
     else if (action === 'remove') removeLink(id);
     else moveLink(id, action === 'up' ? -1 : 1);
   });
+  resetForm();
   $('link-form').addEventListener('submit', submitForm);
   $('link-cancel').addEventListener('click', () => {
     const id = editingId;

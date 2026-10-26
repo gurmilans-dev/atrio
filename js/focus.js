@@ -1,6 +1,7 @@
 // Focus timer panel. Ticks only while running: once per displayed second when visible,
 // once per minute when hidden (just to keep the tab title current).
 import { $, announce, el } from './dom.js';
+import { dateFormat, t } from './i18n.js';
 import { ensureTimerAlarm, syncTimerAlarm } from './platform.js';
 import { dayKey, heatLevel, heatmap, sessionsToday, streak } from './stats.js';
 import { getState, subscribe, update } from './store.js';
@@ -18,14 +19,11 @@ import {
   startTimer,
 } from './timer.js';
 
-const MODE_LABEL = { focus: 'Focus', break: 'Pausa' };
-const DEFAULT_TITLE = 'Nuova scheda';
-const cellDate = new Intl.DateTimeFormat('it-IT', { weekday: 'short', day: 'numeric', month: 'short' });
+const MODE_LABEL = { focus: 'timer.modeFocus', break: 'timer.modeBreak' };
+const cellDate = dateFormat({ weekday: 'short', day: 'numeric', month: 'short' });
 let tickTimeout;
 let pendingMessage = null;
 let heatmapKey = '';
-
-const plural = (count, one, many) => `${count} ${count === 1 ? one : many}`;
 
 // GitHub-style grid of the last weeks; rebuilt only when the history or the day changes.
 function renderHeatmap(stats, now) {
@@ -39,15 +37,16 @@ function renderHeatmap(stats, now) {
     ...cells.map((cell) => {
       if (!cell) return el('span', 'cell empty');
       const node = el('span', `cell l${heatLevel(cell.count)}${cell.today ? ' today' : ''}`);
-      node.title = `${plural(cell.count, 'sessione', 'sessioni')} · ${cellDate.format(cell.date)}`;
+      node.title = `${t('heatmap.sessions', { n: cell.count })} · ${cellDate.format(cell.date)}`;
       return node;
     }),
   );
+  const dayCount = t('heatmap.days', { n: days });
   $('heatmap').setAttribute(
     'aria-label',
-    `${plural(recent, 'sessione', 'sessioni')} nelle ultime settimane, serie di ${plural(days, 'giorno', 'giorni')}`,
+    t('heatmap.label', { sessions: t('heatmap.sessions', { n: recent }), days: dayCount }),
   );
-  $('streak').textContent = days ? `serie: ${plural(days, 'giorno', 'giorni')}` : 'nessuna serie attiva';
+  $('streak').textContent = days ? t('heatmap.streak', { days: dayCount }) : t('heatmap.noStreak');
 }
 
 // A short glow on the panel when a session ends while the page is visible.
@@ -65,14 +64,12 @@ function render(state) {
   const fresh = !timer.running && seconds === timer.total;
 
   $('timer').textContent = formatClock(seconds);
-  $('timer-state').textContent = timer.running
-    ? 'In corso'
-    : seconds === 0
-      ? 'Completato'
-      : fresh
-        ? 'Pronto'
-        : 'In pausa';
-  $('timer-toggle').textContent = timer.running ? 'Pausa' : fresh || seconds === 0 ? 'Avvia' : 'Riprendi';
+  $('timer-state').textContent = t(
+    timer.running ? 'timer.running' : seconds === 0 ? 'timer.done' : fresh ? 'timer.ready' : 'timer.paused',
+  );
+  $('timer-toggle').textContent = t(
+    timer.running ? 'timer.pause' : fresh || seconds === 0 ? 'timer.start' : 'timer.resume',
+  );
   for (const mode of ['focus', 'break']) {
     const node = $(`${mode}-mode`);
     node.classList.toggle('active', timer.mode === mode);
@@ -82,18 +79,18 @@ function render(state) {
   const preset = presetById(state.preset);
   $('preset-caption').textContent = `${preset.focus} / ${preset.break}`;
   const total = state.stats.total;
-  $('focus-count').textContent = `${sessionsToday(state.stats, now)} oggi`;
-  $('focus-count').title = `In totale: ${total} ${total === 1 ? 'sessione' : 'sessioni'}`;
+  $('focus-count').textContent = t('focus.today', { n: sessionsToday(state.stats, now) });
+  $('focus-count').title = t('focus.total', { n: total });
 
   const progress = progressOf(timer, now);
   $('progress').setAttribute('aria-valuenow', String(Math.round(progress * 100)));
   $('progress-fill').style.transform = `scaleX(${progress})`;
   renderHeatmap(state.stats, now);
 
-  if (!timer.running) document.title = DEFAULT_TITLE;
+  if (!timer.running) document.title = t('page.title');
   else {
-    const left = document.hidden ? `${Math.ceil(seconds / 60)} min` : formatClock(seconds);
-    document.title = `${left} · ${MODE_LABEL[timer.mode]}`;
+    const left = document.hidden ? t('timer.minutes', { n: Math.ceil(seconds / 60) }) : formatClock(seconds);
+    document.title = `${left} · ${t(MODE_LABEL[timer.mode])}`;
   }
 }
 
@@ -114,9 +111,7 @@ function finish() {
     state.stats = result.stats;
     state.timer = result.timer;
   });
-  const message = finishedFocus
-    ? 'Sessione completata. La pausa è pronta.'
-    : 'Pausa finita. Pronto per il focus.';
+  const message = t(finishedFocus ? 'timer.focusDone' : 'timer.breakDone');
   if (document.hidden) pendingMessage = message;
   else {
     announce(message);
@@ -175,7 +170,7 @@ export function applyPreset(presetId) {
     state.preset = presetId;
     if (untouched) state.timer = readyTimer(state.timer.mode, presetId);
   });
-  if (!untouched) announce('Il nuovo preset vale dalla prossima sessione.');
+  if (!untouched) announce(t('timer.presetLater'));
 }
 
 export function initFocus() {

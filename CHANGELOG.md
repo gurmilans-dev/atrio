@@ -4,6 +4,9 @@
 
 ### Added
 
+- **English interface** alongside Italian. It follows the browser language, or can be set in Settings → General.
+  Dates, numbers, Google app names and the end-of-session notification follow the chosen language. Palette commands
+  and apps can be found by typing in either language.
 - **Developer tools in the search box**, local, `Enter` copies the result: calculator (`= …` or plain arithmetic,
   with hex/binary), timestamps both ways (`ts`), `uuid`, passwords (`pw`), Base64 (`b64` / `b64d`), URL encoding
   (`url` / `urld`), color conversion (`#hex`, `rgb()`, `hsl()`).
@@ -12,9 +15,9 @@
 
 - A search prefix typed alone opens its site: `yt` → YouTube, `gh` → GitHub, `npm` → npmjs.com. Previously it was
   searched as text. `Shift + Enter` still searches.
-- **Mouse effects are one optional switch**, off by default (Impostazioni → Generale): spotlight borders, the lift of
+- **Mouse effects are one optional switch**, off by default (Settings → General): spotlight borders, the lift of
   the hovered link and the wallpaper parallax. Existing setups start with it off.
-- The search-engine menu moved from the search bar to **Impostazioni → Generale**.
+- The search-engine menu moved from the search bar to **Settings → General**.
 - The spotlight lights only the quick links and the search box, without the inner glow, and from a shorter distance.
 
 ### Performance

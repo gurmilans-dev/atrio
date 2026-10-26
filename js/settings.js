@@ -9,6 +9,7 @@ import {
   wallpaperSrc,
 } from './config.js';
 import { $, $$, announce, button, el } from './dom.js';
+import { LANGUAGES, numberFormat, t, themeName, wallpaperName } from './i18n.js';
 import { appVersion } from './platform.js';
 import { loadCustomWallpaper, previewBlur, previewShade } from './appearance.js';
 import { applyPreset, syncAlarm } from './focus.js';
@@ -26,7 +27,8 @@ import {
 } from './wallpaper.js';
 
 const dialog = () => $('settings');
-const formatMB = (bytes) => `${(bytes / 1024 / 1024).toFixed(1).replace('.', ',')} MB`;
+const formatMB = (bytes) =>
+  `${numberFormat({ minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(bytes / 1024 / 1024)} MB`;
 let hasCustomImage = false;
 
 // Wallpaper sliders: state key -> live preview and label (#<key>-range, #<key>-number).
@@ -57,13 +59,13 @@ function pickButton(className, dataKey, value) {
 }
 
 function buildPicks() {
-  const wallpapers = Object.entries(WALLPAPERS).map(([id, label]) => {
+  const wallpapers = WALLPAPERS.map((id) => {
     const node = pickButton('wallpaper-pick', 'wallpaper', id);
     const image = el('img');
     image.src = wallpaperSrc(id);
     image.alt = '';
     image.loading = 'lazy';
-    node.append(image, el('span', 'pick-label', label));
+    node.append(image, el('span', 'pick-label', wallpaperName(id)));
     return node;
   });
   const custom = pickButton('wallpaper-pick custom-pick', 'wallpaper', CUSTOM_WALLPAPER);
@@ -73,7 +75,7 @@ function buildPicks() {
   thumb.hidden = true;
   const placeholder = el('span', 'pick-placeholder', '+');
   placeholder.id = 'custom-placeholder';
-  custom.append(thumb, placeholder, el('span', 'pick-label', 'Personale'));
+  custom.append(thumb, placeholder, el('span', 'pick-label', wallpaperName(CUSTOM_WALLPAPER)));
   $('wallpaper-picks').replaceChildren(...wallpapers, custom);
 
   $('theme-picks').replaceChildren(
@@ -83,7 +85,7 @@ function buildPicks() {
       // The automatic theme shows the color extracted from the current wallpaper (see render).
       if (theme.swatch) swatch.style.setProperty('--sample', theme.swatch);
       else swatch.id = 'auto-swatch';
-      node.append(swatch, theme.label);
+      node.append(swatch, themeName(id));
       return node;
     }),
   );
@@ -91,8 +93,16 @@ function buildPicks() {
   $('preset-picks').replaceChildren(
     ...PRESETS.map((preset) => {
       const node = pickButton('preset-pick', 'preset', String(preset.id));
-      node.textContent = `${preset.focus} / ${preset.break} min`;
+      node.textContent = t('preset.label', { focus: preset.focus, pause: preset.break });
       return node;
+    }),
+  );
+
+  $('language-select').replaceChildren(
+    ...LANGUAGES.map((id) => {
+      const option = el('option', '', t(`language.${id}`));
+      option.value = id;
+      return option;
     }),
   );
 }
@@ -115,6 +125,7 @@ function render(state) {
   $('notify-toggle').checked = state.notify;
   $('mouse-effects-toggle').checked = state.mouseEffects;
   $('apps-toggle').checked = state.apps.visible;
+  $('language-select').value = state.lang;
   if (document.activeElement !== $('name-input')) $('name-input').value = state.name;
   const swatch = $('auto-swatch');
   if (state.autoAccent) swatch.style.setProperty('--sample', state.autoAccent.color);
@@ -135,14 +146,14 @@ function refreshCustomPick() {
 
 async function uploadWallpaper(file) {
   if (!IMAGE_TYPES.includes(file.type)) {
-    announce('Formato non supportato: usa JPG, PNG, WEBP o AVIF.');
+    announce(t('wallpaper.unsupported'));
     return;
   }
   if (file.size > LIMITS.uploadBytes) {
-    announce(`Immagine troppo grande: massimo ${formatMB(LIMITS.uploadBytes)}.`);
+    announce(t('wallpaper.tooBig', { size: formatMB(LIMITS.uploadBytes) }));
     return;
   }
-  announce('Ottimizzo l’immagine…');
+  announce(t('wallpaper.optimizing'));
   try {
     const blob = await prepareWallpaper(file);
     await putImage(blob);
@@ -151,9 +162,9 @@ async function uploadWallpaper(file) {
       state.wallpaperRev = Date.now();
     });
     refreshCustomPick();
-    announce(`Sfondo aggiornato (${formatMB(blob.size)}).`);
+    announce(t('wallpaper.updated', { size: formatMB(blob.size) }));
   } catch {
-    announce('Non riesco a leggere o salvare questa immagine.');
+    announce(t('wallpaper.failed'));
   }
 }
 
@@ -161,7 +172,7 @@ async function removeWallpaper() {
   try {
     await deleteImage();
   } catch {
-    announce('Non riesco a rimuovere l’immagine.');
+    announce(t('wallpaper.removeFailed'));
     return;
   }
   update((state) => {
@@ -169,7 +180,7 @@ async function removeWallpaper() {
     if (state.wallpaper === CUSTOM_WALLPAPER) state.wallpaper = 'workstation';
   });
   refreshCustomPick();
-  announce('Immagine personale rimossa.');
+  announce(t('wallpaper.removed'));
 }
 
 async function exportData() {
@@ -185,32 +196,32 @@ async function exportData() {
   link.download = `atrio-backup-${dayKey(new Date())}.json`;
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
-  announce('Backup esportato.');
+  announce(t('backup.exported'));
 }
 
 export function exportBackup() {
-  exportData().catch(() => announce('Esportazione non riuscita.'));
+  exportData().catch(() => announce(t('backup.exportFailed')));
 }
 
 async function importData(file) {
   if (file.size > LIMITS.importBytes) {
-    announce('File troppo grande per essere un backup.');
+    announce(t('backup.tooBig'));
     return;
   }
   let payload;
   try {
     payload = JSON.parse(await file.text());
   } catch {
-    announce('Il file non è un JSON valido.');
+    announce(t('backup.invalidJson'));
     return;
   }
   // Accepts Atrio backups, those made when the project was called Workspace, and raw state.
   const raw = ['atrio', 'workspace'].includes(payload?.app) ? payload.state : payload;
   if (typeof raw !== 'object' || raw === null || !('links' in raw || 'tasks' in raw)) {
-    announce('Questo file non sembra un backup di Atrio.');
+    announce(t('backup.notAtrio'));
     return;
   }
-  if (!confirm('Importare il backup? Sostituirà impostazioni, collegamenti e attività attuali.')) return;
+  if (!confirm(t('backup.confirmImport'))) return;
 
   const next = normalizeState(raw);
   next.timer = readyTimer('focus', next.preset);
@@ -229,18 +240,18 @@ async function importData(file) {
   replaceState(next);
   syncAlarm();
   refreshCustomPick();
-  announce(imageFailed ? 'Backup importato, ma non lo sfondo personale.' : 'Backup importato.');
+  announce(t(imageFailed ? 'backup.importedNoImage' : 'backup.imported'));
 }
 
 async function resetAll() {
-  if (!confirm('Ripristinare impostazioni, collegamenti, attività e sfondo personale?')) return;
+  if (!confirm(t('reset.confirm'))) return;
   await deleteImage().catch(() => {});
   const next = createDefaultState();
   next.wallpaperRev = Date.now();
   replaceState(next);
   syncAlarm();
   closeSettings();
-  announce('Impostazioni ripristinate.');
+  announce(t('reset.done'));
 }
 
 function pickFile(inputId, handler) {
@@ -323,6 +334,13 @@ export function initSettings() {
     update((state) => {
       state.mouseEffects = event.target.checked;
     });
+  });
+  // Every text is set once at startup: a new language reloads the page (other tabs do it too).
+  $('language-select').addEventListener('change', (event) => {
+    update((state) => {
+      state.lang = event.target.value;
+    });
+    window.location.reload();
   });
   $('apps-toggle').addEventListener('change', (event) => {
     update((state) => {

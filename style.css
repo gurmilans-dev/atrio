@@ -186,6 +186,17 @@ kbd {
   min-height: 100vh;
   padding: 0 clamp(24px, 4.4vw, 84px) 40px;
 }
+/* Hidden until js/main.js has put the texts in the right language; shown anyway after a moment
+   if a script fails, so the page can never stay blank. */
+:root:not([data-ready]) .page {
+  visibility: hidden;
+  animation: reveal-page 0s 0.6s forwards;
+}
+@keyframes reveal-page {
+  to {
+    visibility: visible;
+  }
+}
 /* Small corner buttons, discreet until hovered: settings bottom-right, Google apps top-right. */
 .settings-fab,
 .apps-button {

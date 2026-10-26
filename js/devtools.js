@@ -3,16 +3,10 @@
 // Each result row is { tool, value, detail, first, color?, error? }: Enter copies `value`;
 // `first` puts the rows above the web search (an explicit tool keyword or an obvious match).
 import { hslToHex, rgbToHsl } from './color.js';
+import { dateFormat, relativeFormat, t } from './i18n.js';
 
-export const TOOL_NAMES = {
-  calc: 'Calcolatrice',
-  ts: 'Timestamp',
-  uuid: 'UUID',
-  b64: 'Base64',
-  url: 'URL',
-  color: 'Colore',
-  pw: 'Password',
-};
+/** calc, ts, uuid, b64, url, color, pw */
+export const toolName = (tool) => t(`tool.${tool}`);
 
 const row = (tool, value, detail, extra = {}) => ({
   tool,
@@ -21,7 +15,7 @@ const row = (tool, value, detail, extra = {}) => ({
   first: true,
   ...extra,
 });
-const errorRow = (tool, message) => row(tool, message, TOOL_NAMES[tool], { error: true });
+const errorRow = (tool, message) => row(tool, message, toolName(tool), { error: true });
 
 // ---------- Calculator: a small recursive-descent parser (eval is unsafe and blocked by the CSP) ----------
 
@@ -134,12 +128,12 @@ const formatNumber = (value) =>
 function calculator(expression, explicit) {
   const value = evaluate(expression);
   if (value === null) {
-    return explicit && expression.trim() ? [errorRow('calc', 'Espressione non valida')] : [];
+    return explicit && expression.trim() ? [errorRow('calc', t('tool.badExpression'))] : [];
   }
-  const rows = [row('calc', formatNumber(value), 'Calcolatrice')];
+  const rows = [row('calc', formatNumber(value), toolName('calc'))];
   if (explicit && Number.isInteger(value) && value >= 0 && value <= 2 ** 32) {
-    rows.push(row('calc', `0x${value.toString(16)}`, 'Esadecimale'));
-    rows.push(row('calc', `0b${value.toString(2)}`, 'Binario'));
+    rows.push(row('calc', `0x${value.toString(16)}`, t('tool.hex')));
+    rows.push(row('calc', `0b${value.toString(2)}`, t('tool.bin')));
   }
   return rows;
 }
@@ -151,8 +145,6 @@ const looksLikeMath = (text) =>
 
 // ---------- Timestamps ----------
 
-const dateFormat = new Intl.DateTimeFormat('it-IT', { dateStyle: 'full', timeStyle: 'medium' });
-const relativeFormat = new Intl.RelativeTimeFormat('it', { numeric: 'auto' });
 const UNITS = [
   ['year', 31536000],
   ['month', 2592000],
@@ -166,23 +158,25 @@ const UNITS = [
 function relative(ms, now) {
   const seconds = (ms - now) / 1000;
   const [unit, size] = UNITS.find(([, unitSize]) => Math.abs(seconds) >= unitSize) ?? UNITS.at(-1);
-  return relativeFormat.format(Math.round(seconds / size), unit);
+  return relativeFormat().format(Math.round(seconds / size), unit);
 }
 
 function describeTime(ms, now, first) {
   return [
-    row('ts', dateFormat.format(ms), 'Data locale', { first }),
-    row('ts', new Date(ms).toISOString(), 'ISO 8601 (UTC)', { first }),
-    row('ts', relative(ms, now), 'Relativo', { first }),
+    row('ts', dateFormat({ dateStyle: 'full', timeStyle: 'medium' }).format(ms), t('tool.localDate'), {
+      first,
+    }),
+    row('ts', new Date(ms).toISOString(), t('tool.iso'), { first }),
+    row('ts', relative(ms, now), t('tool.relative'), { first }),
   ];
 }
 
 function timestamp(argument, now) {
   if (!argument) {
     return [
-      row('ts', Math.floor(now / 1000), 'Unix, secondi'),
-      row('ts', now, 'Unix, millisecondi'),
-      row('ts', new Date(now).toISOString(), 'ISO 8601 (UTC)'),
+      row('ts', Math.floor(now / 1000), t('tool.unixSeconds')),
+      row('ts', now, t('tool.unixMs')),
+      row('ts', new Date(now).toISOString(), t('tool.iso')),
     ];
   }
   if (/^\d{1,13}$/.test(argument)) {
@@ -191,11 +185,11 @@ function timestamp(argument, now) {
     return describeTime(ms, now, true);
   }
   const parsed = Date.parse(argument) || Date.parse(argument.replace(' ', 'T'));
-  if (!parsed) return [errorRow('ts', 'Data non riconosciuta')];
+  if (!parsed) return [errorRow('ts', t('tool.badDate'))];
   return [
-    row('ts', Math.floor(parsed / 1000), 'Unix, secondi'),
-    row('ts', parsed, 'Unix, millisecondi'),
-    row('ts', new Date(parsed).toISOString(), 'ISO 8601 (UTC)'),
+    row('ts', Math.floor(parsed / 1000), t('tool.unixSeconds')),
+    row('ts', parsed, t('tool.unixMs')),
+    row('ts', new Date(parsed).toISOString(), t('tool.iso')),
   ];
 }
 
@@ -300,33 +294,31 @@ export function runTools(raw, now = Date.now()) {
       return timestamp(argument, now);
     case 'uuid': {
       const count = clamp(Number(argument || 1), 1, 10, 1);
-      return Array.from({ length: count }, () => row('uuid', crypto.randomUUID(), 'UUID v4'));
+      return Array.from({ length: count }, () => row('uuid', crypto.randomUUID(), t('tool.uuidV4')));
     }
     case 'pw': {
       const length = clamp(Number(argument || 20), 8, 128, 20);
       return [
-        row('pw', password(length, LETTERS_AND_DIGITS + SYMBOLS), `Password, ${length} caratteri`),
-        row('pw', password(length, LETTERS_AND_DIGITS), 'Solo lettere e numeri'),
+        row('pw', password(length, LETTERS_AND_DIGITS + SYMBOLS), t('tool.password', { n: length })),
+        row('pw', password(length, LETTERS_AND_DIGITS), t('tool.alnum')),
       ];
     }
     case 'b64':
-      return argument ? [row('b64', encodeBase64(argument), 'Base64, codificato')] : [];
+      return argument ? [row('b64', encodeBase64(argument), t('tool.b64Encoded'))] : [];
     case 'b64d': {
       if (!argument) return [];
       const decoded = decodeBase64(argument);
       return [
-        decoded === null ? errorRow('b64', 'Base64 non valido') : row('b64', decoded, 'Base64, decodificato'),
+        decoded === null ? errorRow('b64', t('tool.b64Invalid')) : row('b64', decoded, t('tool.b64Decoded')),
       ];
     }
     case 'url':
-      return argument ? [row('url', encodeURIComponent(argument), 'URL, codificato')] : [];
+      return argument ? [row('url', encodeURIComponent(argument), t('tool.urlEncoded'))] : [];
     case 'urld': {
       if (!argument) return [];
       const decoded = decodeURL(argument);
       return [
-        decoded === null
-          ? errorRow('url', 'Codifica URL non valida')
-          : row('url', decoded, 'URL, decodificato'),
+        decoded === null ? errorRow('url', t('tool.urlInvalid')) : row('url', decoded, t('tool.urlDecoded')),
       ];
     }
     default:

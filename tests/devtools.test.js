@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
-import { describe, test } from 'node:test';
+import { afterEach, describe, test } from 'node:test';
 import { decodeBase64, encodeBase64, evaluate, password, runTools } from '../js/devtools.js';
+import { setLanguage } from '../js/i18n.js';
+
+// Labels and dates follow the interface language: pin it, whatever the machine's locale.
+setLanguage('en');
+afterEach(() => setLanguage('en'));
 
 const NOW = Date.UTC(2026, 9, 26, 12, 0, 0);
 const values = (text) => runTools(text, NOW).map((result) => result.value);
@@ -66,8 +71,18 @@ describe('timestamps', () => {
     const [local, iso, relative] = values('ts 1730000000');
     assert.equal(iso, new Date(1730000000 * 1000).toISOString());
     assert.match(local, /2024/);
-    assert.match(relative, /fa$/);
+    assert.match(relative, /ago$/);
     assert.equal(values('ts 1730000000000')[1], iso);
+  });
+
+  test('dates and labels follow the interface language', () => {
+    setLanguage('it');
+    const [local, , relative] = runTools('ts 1730000000', NOW);
+    assert.match(local.value, /2024/);
+    assert.match(local.value, /ottobre/);
+    assert.match(relative.value, /fa$/);
+    assert.equal(local.detail, 'Data locale');
+    assert.equal(runTools('= 2 +', NOW)[0].value, 'Espressione non valida');
   });
 
   test('dates are converted to timestamps', () => {

@@ -25,19 +25,21 @@ const person = (fill) => [
   ['path', { d: 'M6.8 17.4c1-2.6 3-3.9 5.2-3.9s4.2 1.3 5.2 3.9z', fill }],
 ];
 
+// `name` is the English product name; `names` holds the Italian one where Google translates it.
+// Keywords are in both languages, so the palette finds apps either way.
 export const GOOGLE_APPS = [
   {
     id: 'account',
     name: 'Account',
     url: 'https://myaccount.google.com/',
-    keywords: 'profilo sicurezza password',
+    keywords: 'profilo sicurezza password profile security',
     icon: [['circle', { cx: 12, cy: 12, r: 10, fill: '#8ab4f8' }], ...person('#174ea6')],
   },
   {
     id: 'gmail',
     name: 'Gmail',
     url: 'https://mail.google.com/mail/',
-    keywords: 'mail posta email',
+    keywords: 'mail posta email inbox',
     icon: [
       ['path', { d: 'M2 7.6v9.9A1.5 1.5 0 0 0 3.5 19h3v-8z', fill: '#4285f4' }],
       ['path', { d: 'M17.5 19h3a1.5 1.5 0 0 0 1.5-1.5V7.6L17.5 11z', fill: '#34a853' }],
@@ -50,7 +52,7 @@ export const GOOGLE_APPS = [
     id: 'drive',
     name: 'Drive',
     url: 'https://drive.google.com/drive/',
-    keywords: 'file cartelle archivio',
+    keywords: 'file cartelle archivio files folders storage',
     icon: [
       ['path', { d: 'M8.6 3.5h6.8l6.4 11.2H8.9z', fill: '#fbbc04' }],
       ['path', { d: 'M8.6 3.5 12 9.4 5.6 20.5l-3.4-5.8z', fill: '#0f9d58' }],
@@ -61,7 +63,7 @@ export const GOOGLE_APPS = [
     id: 'classroom',
     name: 'Classroom',
     url: 'https://classroom.google.com/',
-    keywords: 'scuola corsi compiti università',
+    keywords: 'scuola corsi compiti università school courses homework',
     icon: [
       ['rect', { x: 2, y: 4, width: 20, height: 16, rx: 2.2, fill: '#fbbc04' }],
       ['rect', { x: 3.8, y: 5.8, width: 16.4, height: 12.4, rx: 1, fill: '#0f9d58' }],
@@ -75,14 +77,14 @@ export const GOOGLE_APPS = [
     id: 'docs',
     name: 'Docs',
     url: 'https://docs.google.com/document/',
-    keywords: 'documenti documento word testo',
+    keywords: 'documenti documento word testo documents text',
     icon: [...page('#4285f4', '#a1c2fa'), bar(11), bar(14), bar(17, 5)],
   },
   {
     id: 'gemini',
     name: 'Gemini',
     url: 'https://gemini.google.com/app',
-    keywords: 'ai intelligenza artificiale assistente',
+    keywords: 'ai intelligenza artificiale assistente assistant',
     icon: [
       gradient([
         [0, '#4f8ff7'],
@@ -102,7 +104,7 @@ export const GOOGLE_APPS = [
     id: 'sheets',
     name: 'Sheets',
     url: 'https://docs.google.com/spreadsheets/',
-    keywords: 'fogli di calcolo excel tabelle',
+    keywords: 'fogli di calcolo excel tabelle spreadsheets tables',
     icon: [
       ...page('#0f9d58', '#87ceac'),
       [
@@ -116,7 +118,7 @@ export const GOOGLE_APPS = [
     id: 'slides',
     name: 'Slides',
     url: 'https://docs.google.com/presentation/',
-    keywords: 'presentazioni powerpoint diapositive',
+    keywords: 'presentazioni powerpoint diapositive presentations',
     icon: [
       ...page('#f4b400', '#fadb8c'),
       [
@@ -129,7 +131,7 @@ export const GOOGLE_APPS = [
     id: 'calendar',
     name: 'Calendar',
     url: 'https://calendar.google.com/calendar/',
-    keywords: 'calendario eventi agenda',
+    keywords: 'calendario eventi agenda events schedule',
     icon: [
       ['rect', { x: 3, y: 3, width: 18, height: 18, rx: 3, fill: W }],
       ['path', { d: 'M3 6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v2H3z', fill: '#4285f4' }],
@@ -152,7 +154,7 @@ export const GOOGLE_APPS = [
     id: 'chat',
     name: 'Chat',
     url: 'https://chat.google.com/',
-    keywords: 'messaggi conversazioni',
+    keywords: 'messaggi conversazioni messages',
     icon: [
       [
         'path',
@@ -177,7 +179,7 @@ export const GOOGLE_APPS = [
     id: 'meet',
     name: 'Meet',
     url: 'https://meet.google.com/',
-    keywords: 'videochiamata riunione call',
+    keywords: 'videochiamata riunione call video meeting',
     icon: [
       [
         'path',
@@ -194,7 +196,7 @@ export const GOOGLE_APPS = [
     id: 'vids',
     name: 'Vids',
     url: 'https://vids.google.com/',
-    keywords: 'video montaggio',
+    keywords: 'video montaggio editing',
     icon: [
       gradient([
         [0, '#4c8bf5'],
@@ -208,7 +210,7 @@ export const GOOGLE_APPS = [
     id: 'tasks',
     name: 'Tasks',
     url: 'https://tasks.google.com/',
-    keywords: 'promemoria to-do',
+    keywords: 'promemoria to-do reminders todo',
     icon: [
       ['circle', { cx: 12, cy: 12, r: 10, fill: '#1a73e8' }],
       [
@@ -227,16 +229,17 @@ export const GOOGLE_APPS = [
   },
   {
     id: 'contacts',
-    name: 'Contatti',
+    name: 'Contacts',
+    names: { it: 'Contatti' },
     url: 'https://contacts.google.com/',
-    keywords: 'contacts rubrica persone',
+    keywords: 'contatti rubrica persone people address book',
     icon: [['circle', { cx: 12, cy: 12, r: 10, fill: '#1a73e8' }], ...person(W)],
   },
   {
     id: 'maps',
     name: 'Maps',
     url: 'https://www.google.com/maps',
-    keywords: 'mappe navigatore indicazioni',
+    keywords: 'mappe navigatore indicazioni directions navigation',
     icon: [
       ['path', { d: 'M12 2a7 7 0 0 0-7 7c0 5.3 7 13 7 13s7-7.7 7-13a7 7 0 0 0-7-7z', fill: '#ea4335' }],
       ['circle', { cx: 12, cy: 9, r: 2.6, fill: '#a50e0e' }],
@@ -254,9 +257,10 @@ export const GOOGLE_APPS = [
   },
   {
     id: 'photos',
-    name: 'Foto',
+    name: 'Photos',
+    names: { it: 'Foto' },
     url: 'https://photos.google.com/',
-    keywords: 'photos immagini album',
+    keywords: 'foto immagini album pictures images',
     icon: [
       ['path', { d: 'M12 12H3.5a4.25 4.25 0 0 1 8.5 0z', fill: '#ea4335' }],
       ['path', { d: 'M12 12V3.5a4.25 4.25 0 0 1 0 8.5z', fill: '#fbbc04' }],
@@ -268,7 +272,7 @@ export const GOOGLE_APPS = [
     id: 'keep',
     name: 'Keep',
     url: 'https://keep.google.com/',
-    keywords: 'note appunti promemoria',
+    keywords: 'note appunti promemoria notes',
     icon: [
       [
         'path',
@@ -284,9 +288,10 @@ export const GOOGLE_APPS = [
   },
   {
     id: 'translate',
-    name: 'Traduttore',
+    name: 'Translate',
+    names: { it: 'Traduttore' },
     url: 'https://translate.google.com/',
-    keywords: 'translate traduci lingue',
+    keywords: 'traduttore traduci lingue translator languages',
     icon: [
       ['rect', { x: 2.5, y: 2.5, width: 19, height: 19, rx: 4, fill: '#4285f4' }],
       [
@@ -304,9 +309,10 @@ export const GOOGLE_APPS = [
   },
   {
     id: 'forms',
-    name: 'Moduli',
+    name: 'Forms',
+    names: { it: 'Moduli' },
     url: 'https://docs.google.com/forms/',
-    keywords: 'forms sondaggi questionari quiz',
+    keywords: 'moduli sondaggi questionari quiz surveys',
     icon: [
       ...page('#7248b9', '#c1abe6'),
       ['circle', { cx: 9, cy: 12, r: 1, fill: W }],
@@ -319,7 +325,7 @@ export const GOOGLE_APPS = [
     id: 'notebooklm',
     name: 'NotebookLM',
     url: 'https://notebooklm.google.com/',
-    keywords: 'ai fonti ricerca studio',
+    keywords: 'ai fonti ricerca studio sources research study',
     icon: [
       ['circle', { cx: 12, cy: 12, r: 10, fill: '#e8eaed' }],
       [
@@ -390,6 +396,8 @@ export const DEFAULT_APP_FAVORITES = [
   'slides',
   'calendar',
 ];
+
+export const appName = (app, language = 'en') => app.names?.[language] ?? app.name;
 
 // With several Google accounts signed in, authuser=N opens the app in the N-th one (0 = default).
 export function appURL(app, account = 0) {

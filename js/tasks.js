@@ -1,5 +1,6 @@
 import { LIMITS } from './config.js';
 import { $, announce, button, el } from './dom.js';
+import { t } from './i18n.js';
 import { showPanelTab } from './notes.js';
 import { getState, subscribe, update } from './store.js';
 
@@ -24,7 +25,7 @@ function render(state) {
     checkbox.checked = task.done;
     checkbox.dataset.action = 'toggle';
     label.append(checkbox, el('span', 'task-label', task.text));
-    const remove = button('task-delete', '×', `Elimina: ${task.text}`);
+    const remove = button('task-delete', '×', t('tasks.delete', { text: task.text }));
     remove.dataset.action = 'delete';
     row.append(label, remove);
     return row;
@@ -55,7 +56,7 @@ function removeTasks(predicate, message) {
     state.tasks = state.tasks.filter((task) => !ids.has(task.id));
   });
   announce(message(removed.length), {
-    label: 'Annulla',
+    label: t('common.undo'),
     run: () =>
       update((state) => {
         for (const { task, index } of removed) {
@@ -76,7 +77,7 @@ export function addTask(raw) {
   const text = String(raw).trim().slice(0, LIMITS.taskText);
   if (!text) return false;
   if (getState().tasks.length >= LIMITS.tasks) {
-    announce(`Massimo ${LIMITS.tasks} attività: rimuovi quelle completate.`);
+    announce(t('tasks.max', { n: LIMITS.tasks }));
     return false;
   }
   update((state) => {
@@ -111,7 +112,7 @@ export function initTasks() {
     const siblingId = sibling?.dataset.id;
     removeTasks(
       (task) => task.id === row.dataset.id,
-      () => 'Attività eliminata.',
+      () => t('tasks.deleted'),
     );
     const next =
       siblingId && $('task-list').querySelector(`[data-id="${CSS.escape(siblingId)}"] .task-delete`);
@@ -121,7 +122,7 @@ export function initTasks() {
   $('clear-done').addEventListener('click', () => {
     removeTasks(
       (task) => task.done,
-      (count) => (count === 1 ? '1 attività completata rimossa.' : `${count} attività completate rimosse.`),
+      (count) => t('tasks.cleared', { n: count }),
     );
   });
 

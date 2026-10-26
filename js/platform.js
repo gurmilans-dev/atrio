@@ -15,7 +15,10 @@ export function faviconURL(pageUrl, size = 32) {
   return url.href;
 }
 
-const alarmName = (mode) => `timer:${mode}`;
+import { getLanguage } from './i18n.js';
+
+// The service worker cannot read the page's storage: the alarm name carries the language.
+const alarmName = (mode) => `timer:${mode}:${getLanguage()}`;
 
 // The service worker (background.js) shows a notification when the alarm fires.
 export async function syncTimerAlarm(timer, enabled) {

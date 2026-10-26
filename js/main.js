@@ -6,13 +6,14 @@ import { STORAGE_KEY } from './config.js';
 import { announce } from './dom.js';
 import { initEffects } from './effects.js';
 import { initFocus } from './focus.js';
+import { getLanguage, resolveLanguage, t, translatePage } from './i18n.js';
 import { initLinks } from './links.js';
 import { initNotes } from './notes.js';
 import { initSearch } from './search-ui.js';
 import { initSettings } from './settings.js';
 import { initShortcuts } from './shortcuts.js';
 import { readLegacyState, removeLegacyState } from './state.js';
-import { initStore, reloadFromStorage, update } from './store.js';
+import { getState, initStore, reloadFromStorage, update } from './store.js';
 import { initTasks } from './tasks.js';
 import { dataURLToBlob, getImage, prepareWallpaper, putImage } from './wallpaper.js';
 
@@ -35,25 +36,33 @@ async function migrateLegacy() {
   }
 }
 
-initStore({
-  onSaveError: () => announce('Impossibile salvare: spazio di archiviazione pieno o bloccato.'),
-});
-initAppearance();
-initClock();
-initSearch();
-initLinks();
-initTasks();
-initNotes();
-initFocus();
-initApps();
-initSettings();
-initShortcuts();
-initEffects();
+// The page stays hidden (style.css) until the static texts are in the right language.
+try {
+  translatePage();
+  initStore({
+    onSaveError: () => announce(t('toast.saveFailed')),
+  });
+  initAppearance();
+  initClock();
+  initSearch();
+  initLinks();
+  initTasks();
+  initNotes();
+  initFocus();
+  initApps();
+  initSettings();
+  initShortcuts();
+  initEffects();
+} finally {
+  document.documentElement.dataset.ready = '';
+}
 
 // Several new tabs are often open at once: when one saves, the others reload
-// instead of overwriting its changes with their stale copy.
+// instead of overwriting its changes with their stale copy. A new language needs a reload.
 window.addEventListener('storage', (event) => {
-  if (event.key === STORAGE_KEY || event.key === null) reloadFromStorage();
+  if (event.key !== STORAGE_KEY && event.key !== null) return;
+  reloadFromStorage();
+  if (resolveLanguage(getState().lang) !== getLanguage()) window.location.reload();
 });
 window.addEventListener('pageshow', (event) => {
   if (event.persisted) reloadFromStorage();

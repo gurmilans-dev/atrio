@@ -4,10 +4,11 @@
 import { appIcon } from './apps.js';
 import { getCommands } from './commands.js';
 import { BANGS, ENGINES } from './config.js';
-import { TOOL_NAMES, runTools } from './devtools.js';
+import { runTools, toolName } from './devtools.js';
 import { $, announce, el } from './dom.js';
 import { fuzzyScore } from './fuzzy.js';
-import { GOOGLE_APPS, appURL } from './google-apps.js';
+import { GOOGLE_APPS, appName, appURL } from './google-apps.js';
+import { getLanguage, t } from './i18n.js';
 import { hostOf, linkIcon } from './links.js';
 import { openBrowserPage } from './platform.js';
 import { resolveInput } from './search.js';
@@ -60,7 +61,7 @@ async function navigate(result) {
     return;
   }
   const opened = await openBrowserPage(result.url).catch(() => false);
-  if (!opened) announce('Le pagine chrome:// si aprono solo dall’estensione installata.');
+  if (!opened) announce(t('toast.chromeOnly'));
 }
 
 function go(force) {
@@ -80,9 +81,9 @@ function rank(list, toText, query, max, subsequence) {
 async function copy(text) {
   try {
     await navigator.clipboard.writeText(text);
-    announce(`Copiato: ${text.length > 48 ? `${text.slice(0, 48)}…` : text}`);
+    announce(t('toast.copied', { text: text.length > 48 ? `${text.slice(0, 48)}…` : text }));
   } catch {
-    announce('Impossibile copiare negli appunti.');
+    announce(t('toast.copyFailed'));
   }
 }
 
@@ -99,7 +100,7 @@ function toolItem(result) {
     mono: !result.error,
     keepOpen: true,
     label: result.value,
-    detail: result.error ? TOOL_NAMES[result.tool] : `${result.detail} · Invio copia`,
+    detail: result.error ? toolName(result.tool) : `${result.detail} · ${t('result.copyHint')}`,
     icon,
     run: () => (result.error ? announce(result.value) : copy(result.value)),
   };
@@ -109,7 +110,7 @@ const commandText = (command) => `${command.label} ${command.keywords ?? ''}`;
 const commandItem = (command) => ({
   kind: 'command',
   label: command.label,
-  detail: 'Comando',
+  detail: t('result.command'),
   key: command.key,
   run: command.run,
 });
@@ -119,14 +120,14 @@ function primaryItem(result) {
     return {
       kind: 'search',
       label: result.query,
-      detail: `Cerca su ${result.label}`,
+      detail: t('result.searchOn', { target: result.label }),
       run: () => navigate(result),
     };
   }
   return {
     kind: 'url',
     label: result.label ?? result.url.replace(/^https?:\/\//, '').replace(/\/$/, ''),
-    detail: result.kind === 'browser' ? 'Pagina di Chrome' : 'Apri sito',
+    detail: t(result.kind === 'browser' ? 'result.chromePage' : 'result.openSite'),
     run: () => navigate(result),
   };
 }
@@ -142,9 +143,9 @@ function buildItems(value) {
       {
         kind: 'task',
         label: task,
-        detail: 'Aggiungi attività',
+        detail: t('result.addTask'),
         run: () => {
-          if (addTask(task)) announce('Attività aggiunta.');
+          if (addTask(task)) announce(t('toast.taskAdded'));
         },
       },
     ];
@@ -170,11 +171,18 @@ function buildItems(value) {
       });
     }
     if (state.apps.visible) {
-      const apps = rank(GOOGLE_APPS, (app) => `${app.name} ${app.keywords}`, text, 3, false);
+      const language = getLanguage();
+      const apps = rank(
+        GOOGLE_APPS,
+        (app) => `${appName(app, language)} ${app.name} ${app.keywords}`,
+        text,
+        3,
+        false,
+      );
       for (const app of apps) {
         list.push({
           kind: 'link',
-          label: app.name,
+          label: appName(app, language),
           detail: 'Google',
           icon: appIcon(app),
           run: () => window.location.assign(appURL(app, state.apps.account)),
@@ -260,13 +268,13 @@ function renderHint() {
   const { engine } = getState();
   const value = input().value.trim();
   let text = '';
-  if (value.startsWith('>')) text = '› comandi';
-  else if (value.startsWith('+')) text = '+ attività';
-  else if (value && items[0]?.kind === 'tool') text = `⧉ ${TOOL_NAMES[items[0].tool]}`;
+  if (value.startsWith('>')) text = t('hint.commands');
+  else if (value.startsWith('+')) text = t('hint.task');
+  else if (value && items[0]?.kind === 'tool') text = `⧉ ${toolName(items[0].tool)}`;
   else if (value) {
     const result = resolveInput(value, engine);
-    if (result?.kind === 'url') text = result.label ? `↗ ${result.label}` : '↗ apri sito';
-    else if (result?.kind === 'browser') text = '↗ pagina Chrome';
+    if (result?.kind === 'url') text = result.label ? `↗ ${result.label}` : t('hint.openSite');
+    else if (result?.kind === 'browser') text = t('hint.chromePage');
     else if (result?.kind === 'search' && result.label !== ENGINES[engine].label) text = `→ ${result.label}`;
   }
   const hint = $('search-hint');
@@ -277,15 +285,28 @@ function renderHint() {
 
 function renderTips() {
   const tips = $('search-tips');
-  tips.append('Prefissi:');
+  tips.append(t('tips.prefixes'));
   for (const [key, target] of Object.entries(BANGS)) {
     const code = el('code', '', key);
     code.title = target.label;
     tips.append(' ', code);
   }
-  tips.append(' · ', el('code', '', '>'), ' comandi · ', el('code', '', '+'), ' attività · Strumenti:');
+  tips.append(
+    ' · ',
+    el('code', '', '>'),
+    ` ${t('tips.commands')} · `,
+    el('code', '', '+'),
+    ` ${t('tips.tasks')}`,
+  );
+  tips.append(` · ${t('tips.tools')}`);
   for (const tool of ['=', 'ts', 'uuid', 'b64', 'url', 'pw', '#hex']) tips.append(' ', el('code', '', tool));
-  tips.append(' · ', el('kbd', '', 'Shift'), '+', el('kbd', '', 'Invio'), ' cerca sempre');
+  tips.append(
+    ' · ',
+    el('kbd', '', 'Shift'),
+    '+',
+    el('kbd', '', t('key.enter')),
+    ` ${t('tips.alwaysSearch')}`,
+  );
 }
 
 export function initSearch() {
@@ -322,7 +343,7 @@ export function initSearch() {
   $('search-form').addEventListener('submit', (event) => {
     event.preventDefault();
     if (open) execute(active);
-    else if (box.value.trim().startsWith('>')) announce('Nessun comando trovato.');
+    else if (box.value.trim().startsWith('>')) announce(t('toast.noCommand'));
     else go(false);
   });
 

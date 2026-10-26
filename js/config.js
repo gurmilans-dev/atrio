@@ -6,23 +6,22 @@ export const STORAGE_KEY = 'workspace.newtab.v2';
 export const LEGACY_STORAGE_KEY = 'devstart.v1';
 export const SCHEMA_VERSION = 5;
 
-// "auto" takes its accent from the wallpaper (js/color.js); its swatch is computed.
+// "auto" takes its accent from the wallpaper (js/color.js); its swatch is computed and its
+// name translated (themeName in js/i18n.js).
 export const AUTO_THEME = 'auto';
 export const THEMES = {
   tokyo: { label: 'Tokyo Night', swatch: '#7aa2f7' },
   mocha: { label: 'Mocha', swatch: '#cba6f7' },
   matrix: { label: 'Terminal', swatch: '#69dbb0' },
-  [AUTO_THEME]: { label: 'Dallo sfondo', swatch: null },
+  [AUTO_THEME]: { label: null, swatch: null },
 };
 
 // Focus heatmap size; the daily history keeps exactly this many days.
 export const HEATMAP_WEEKS = 20;
 
 // Built-in wallpapers live at assets/<id>.webp; "custom" is the uploaded image.
-export const WALLPAPERS = {
-  workstation: 'Postazione',
-  city: 'Città',
-};
+// Names are translated: wallpaper.<id> in js/i18n.js.
+export const WALLPAPERS = ['workstation', 'city'];
 export const CUSTOM_WALLPAPER = 'custom';
 export const wallpaperSrc = (id) => `assets/${id}.webp`;
 

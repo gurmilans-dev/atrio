@@ -699,6 +699,51 @@ try {
     assert.deepEqual(r, { transform: '', lit: 0, lift: 'none' });
   });
 
+  await check('language: English from settings, every text translated, back to Italian', async () => {
+    const before = await a.eval(`document.documentElement.lang`);
+    await a.eval(
+      settings(
+        `const s = document.getElementById('language-select'); s.value = 'en'; s.dispatchEvent(new Event('change'))`,
+      ),
+    );
+    await sleep(800); // the page reloads
+    const read = () =>
+      a.eval(`({
+        lang: document.documentElement.lang,
+        placeholder: document.getElementById('search-input').placeholder,
+        greeting: document.getElementById('greeting').textContent,
+        timer: document.getElementById('timer-toggle').textContent,
+        account: document.querySelector('.account-pick').textContent,
+        missing: [...document.querySelectorAll('[data-i18n]')].filter((n) => n.textContent === n.dataset.i18n).length,
+        visible: getComputedStyle(document.querySelector('.page')).visibility,
+      })`);
+    const english = await read();
+    await a.eval(
+      settings(
+        `const s = document.getElementById('language-select'); s.value = 'auto'; s.dispatchEvent(new Event('change'))`,
+      ),
+    );
+    await sleep(800);
+    const auto = await read();
+    assert.equal(before, 'it');
+    assert.deepEqual(
+      { ...english, greeting: /^Good /.test(english.greeting) },
+      {
+        lang: 'en',
+        placeholder: 'Search or type a URL',
+        greeting: true,
+        timer: 'Start',
+        account: '1st',
+        missing: 0,
+        visible: 'visible',
+      },
+    );
+    assert.deepEqual(
+      { lang: auto.lang, placeholder: auto.placeholder, account: auto.account, missing: auto.missing },
+      { lang: 'it', placeholder: 'Cerca o inserisci un URL', account: '1°', missing: 0 },
+    );
+  });
+
   await check('narrow window (420 px): no horizontal scroll', async () => {
     await a.resize(420, 860);
     await sleep(300);

@@ -7,7 +7,7 @@
     if (!saved || typeof saved !== 'object') return;
     const root = document.documentElement;
     if (/^[a-z]+$/.test(saved.theme)) root.dataset.theme = saved.theme;
-    // "Dallo sfondo" theme: the accent extracted earlier from the wallpaper.
+    // Automatic theme: the accent extracted earlier from the wallpaper.
     const accent = saved.autoAccent?.color;
     if (saved.theme === 'auto' && /^#[0-9a-f]{6}$/i.test(accent)) root.style.setProperty('--accent', accent);
     if (saved.apps?.visible === false) root.setAttribute('data-apps-off', '');

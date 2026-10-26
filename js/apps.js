@@ -2,7 +2,8 @@
 // by the grid button in the top-right corner or with G. Favorites are editable: in edit
 // mode a tile toggles its favorite state, favorites reorder by drag or Ctrl + ← / →.
 import { $, button, el } from './dom.js';
-import { GOOGLE_APPS, appURL } from './google-apps.js';
+import { GOOGLE_APPS, appName, appURL } from './google-apps.js';
+import { getLanguage, ordinal, t } from './i18n.js';
 import { getState, subscribe, update } from './store.js';
 
 const ACCOUNTS = 4;
@@ -37,23 +38,20 @@ export function appIcon(app) {
 }
 
 function tile(app, account, favorite) {
+  const name = appName(app, getLanguage());
   if (!editing) {
     const link = el('a', 'app');
     link.href = appURL(app, account);
     link.rel = 'noreferrer';
     link.dataset.id = app.id;
-    link.append(appIcon(app), el('span', 'app-name', app.name));
+    link.append(appIcon(app), el('span', 'app-name', name));
     return link;
   }
-  const node = button(
-    'app',
-    undefined,
-    favorite ? `Togli ${app.name} dai preferiti` : `Aggiungi ${app.name} ai preferiti`,
-  );
+  const node = button('app', undefined, t(favorite ? 'apps.removeOne' : 'apps.add', { name }));
   node.dataset.id = app.id;
   node.setAttribute('aria-pressed', String(favorite));
   node.draggable = favorite;
-  node.append(appIcon(app), el('span', 'app-name', app.name), el('span', 'app-badge', favorite ? '−' : '+'));
+  node.append(appIcon(app), el('span', 'app-name', name), el('span', 'app-badge', favorite ? '−' : '+'));
   return node;
 }
 
@@ -75,7 +73,7 @@ function render(state, force = false) {
   $('apps-favorites-empty').hidden = favorites.length > 0;
   panel().classList.toggle('editing', editing);
   $('apps-edit').setAttribute('aria-pressed', String(editing));
-  $('apps-edit').title = editing ? 'Fine' : 'Modifica i preferiti';
+  $('apps-edit').title = t(editing ? 'apps.done' : 'apps.editFavorites');
   for (const pick of $('account-picks').children) {
     pick.setAttribute('aria-pressed', String(Number(pick.dataset.account) === apps.account));
   }
@@ -143,7 +141,11 @@ function initDrag() {
 export function initApps() {
   $('account-picks').replaceChildren(
     ...Array.from({ length: ACCOUNTS }, (_, index) => {
-      const pick = button('account-pick', `${index + 1}°`, `Apri le app con il ${index + 1}° account Google`);
+      const pick = button(
+        'account-pick',
+        ordinal(index + 1),
+        t('apps.useAccount', { ordinal: ordinal(index + 1) }),
+      );
       pick.dataset.account = String(index);
       return pick;
     }),

@@ -22,7 +22,8 @@ dev URLs, a command palette, quick links, a focus timer with a GitHub-style acti
 Google apps launcher. It is plain HTML, CSS and JavaScript modules: no framework, no build step, no network requests,
 no tracking.
 
-> The interface is in Italian.
+> The interface is in English and Italian. It follows the browser language; you can also pick one in
+> **Settings → General**.
 
 ## Features
 
@@ -64,7 +65,7 @@ Chrome 117 or later. Edge works too.
 <summary>Keep the same extension ID when moving the folder</summary>
 
 Chrome derives the ID of an unpacked extension from its folder path, and the ID owns the saved data. To pin it:
-export a backup (**Impostazioni → Dati → Esporta backup**), run `npm run apply-key`, remove and load the extension
+export a backup (**Settings → Data → Export backup**), run `npm run apply-key`, remove and load the extension
 again, then import the backup. From then on the ID no longer depends on where the folder lives.
 
 </details>
@@ -107,6 +108,10 @@ navigates when you search or open a link.
   about what the browser itself needs (~4% of a core in headless Chrome, versus ~17% with the effects on). When on,
   the spotlight restyles one small layer per element (custom properties inherit, so setting them on a panel would
   restyle all its content), and everything switches off with `prefers-reduced-motion`.
+- **Two languages without a framework.** Every text lives in `js/i18n.js`. The static ones are marked in the HTML
+  with `data-i18n` attributes, and the page stays hidden for the moment it takes to fill them in. Dates, numbers and
+  ordinals use `Intl` in the chosen language, and the end-of-session notification follows it too. A test checks that
+  both languages have the same keys and placeholders.
 - **A calculator without `eval`.** The palette's math goes through a small recursive-descent parser: `eval` would be
   unsafe and is blocked by the extension's content security policy anyway.
 - **Pure logic, tested.** Search resolution, state validation, timer, stats, color extraction and ranking are pure
@@ -137,10 +142,12 @@ js/boot.js           blocking script applied before the first paint
 js/main.js           entry point, cross-tab sync
 js/config.js         themes, engines, prefixes, presets, limits
 js/state.js          schema, validation, migrations
+js/i18n.js           interface texts in English and Italian, formatters
 js/search.js         text → URL, search or prefix
 js/timer.js, js/stats.js, js/color.js, js/fuzzy.js   pure logic
 js/google-apps.js    launcher catalog and icons
 js/*.js              UI modules (links, tasks, notes, focus, apps, settings, effects…)
+_locales/            extension description for the Chrome Web Store and chrome://extensions
 tests/               unit tests; tests/e2e/ browser checks
 scripts/             icons, screenshots, extension key
 ```

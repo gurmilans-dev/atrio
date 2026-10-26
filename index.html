@@ -4,19 +4,20 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="dark" />
-    <title>Nuova scheda</title>
+    <title>Atrio</title>
     <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="style.css" />
     <script src="js/boot.js"></script>
     <script type="module" src="js/main.js"></script>
   </head>
   <body>
+    <!-- Visible texts are translated by js/i18n.js: data-i18n (text), data-i18n-<attribute>. -->
     <div class="wallpaper" aria-hidden="true"></div>
     <div class="shade" aria-hidden="true"></div>
 
     <div class="page">
       <main class="layout">
-        <section class="primary" aria-label="Ricerca e collegamenti">
+        <section class="primary" data-i18n-aria-label="page.searchAndLinks">
           <div class="clock-area">
             <p class="greeting" id="greeting">&nbsp;</p>
             <div class="clock" id="clock">--:--</div>
@@ -31,7 +32,7 @@
             <input
               id="search-input"
               type="text"
-              placeholder="Cerca o inserisci un URL"
+              data-i18n-placeholder="search.placeholder"
               spellcheck="false"
               autocomplete="off"
               enterkeyhint="go"
@@ -39,55 +40,79 @@
               aria-expanded="false"
               aria-controls="search-results"
               aria-autocomplete="list"
-              aria-label="Cerca sul web, inserisci un URL o un comando"
+              data-i18n-aria-label="search.label"
               aria-describedby="search-tips"
               aria-keyshortcuts="/ Control+K Control+Shift+P"
             />
             <span class="search-hint" id="search-hint" hidden></span>
             <kbd class="search-key" id="search-key" aria-hidden="true">/</kbd>
-            <button class="go" type="submit" aria-label="Vai" title="Vai (Invio)">
+            <button
+              class="go"
+              type="submit"
+              data-i18n-aria-label="search.go"
+              data-i18n-title="search.goTitle"
+            >
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6" /></svg>
             </button>
             <ul
               class="search-results"
               id="search-results"
               role="listbox"
-              aria-label="Suggerimenti"
+              data-i18n-aria-label="search.suggestions"
               hidden
             ></ul>
           </form>
           <p class="search-tips" id="search-tips"></p>
 
           <div class="block-header links-header">
-            <h1>Collegamenti <span class="small-index" id="link-count">00</span></h1>
+            <h1>
+              <span data-i18n="links.title">Collegamenti</span>
+              <span class="small-index" id="link-count">00</span>
+            </h1>
             <button class="subtle-action" id="edit-links" type="button">
-              Modifica <span aria-hidden="true">↗</span>
+              <span data-i18n="links.edit">Modifica</span> <span aria-hidden="true">↗</span>
             </button>
           </div>
-          <nav id="links" class="links-grid" aria-label="Collegamenti rapidi"></nav>
-          <p class="empty-note" id="links-empty" hidden>Nessun collegamento: aggiungine uno da “Modifica”.</p>
+          <nav id="links" class="links-grid" data-i18n-aria-label="links.quick"></nav>
+          <p class="empty-note" id="links-empty" data-i18n="links.empty" hidden></p>
         </section>
 
-        <aside class="side" aria-label="Strumenti">
+        <aside class="side" data-i18n-aria-label="page.tools">
           <section class="panel focus-panel" id="focus-panel" aria-labelledby="focus-title">
             <div class="panel-head">
-              <h2 id="focus-title">Focus</h2>
-              <span class="panel-muted" id="focus-count">0 oggi</span>
+              <h2 id="focus-title" data-i18n="focus.title">Focus</h2>
+              <span class="panel-muted" id="focus-count"></span>
             </div>
-            <div class="focus-switch" role="group" aria-label="Tipo di sessione">
-              <button id="focus-mode" type="button" class="switch active" aria-pressed="true">Lavoro</button>
-              <button id="break-mode" type="button" class="switch" aria-pressed="false">Pausa</button>
+            <div class="focus-switch" role="group" data-i18n-aria-label="focus.kind">
+              <button
+                id="focus-mode"
+                type="button"
+                class="switch active"
+                aria-pressed="true"
+                data-i18n="focus.work"
+              >
+                Lavoro
+              </button>
+              <button
+                id="break-mode"
+                type="button"
+                class="switch"
+                aria-pressed="false"
+                data-i18n="focus.break"
+              >
+                Pausa
+              </button>
               <span id="preset-caption" class="preset-caption">25 / 5</span>
             </div>
             <div class="timer-row">
               <div class="timer" id="timer">25:00</div>
-              <div class="timer-state" id="timer-state">Pronto</div>
+              <div class="timer-state" id="timer-state"></div>
             </div>
             <div
               class="progress"
               id="progress"
               role="progressbar"
-              aria-label="Avanzamento sessione"
+              data-i18n-aria-label="focus.progress"
               aria-valuemin="0"
               aria-valuemax="100"
               aria-valuenow="0"
@@ -95,21 +120,23 @@
               <span id="progress-fill"></span>
             </div>
             <div class="timer-buttons">
-              <button type="button" class="main-button" id="timer-toggle" aria-keyshortcuts="P">Avvia</button>
-              <button type="button" class="outline-button" id="timer-reset">Azzera</button>
+              <button type="button" class="main-button" id="timer-toggle" aria-keyshortcuts="P"></button>
+              <button type="button" class="outline-button" id="timer-reset" data-i18n="timer.reset">
+                Azzera
+              </button>
             </div>
             <div class="activity">
               <div class="activity-head">
-                <span class="panel-muted">Ultime 20 settimane</span>
+                <span class="panel-muted" data-i18n="heatmap.range">Ultime 20 settimane</span>
                 <span class="panel-muted streak" id="streak"></span>
               </div>
               <div class="heatmap" id="heatmap" role="img"></div>
             </div>
           </section>
 
-          <section class="panel tasks-panel" aria-label="Attività e note">
+          <section class="panel tasks-panel" data-i18n-aria-label="tasks.panel">
             <div class="panel-head">
-              <div class="panel-tabs" id="panel-tabs" role="tablist" aria-label="Attività e note">
+              <div class="panel-tabs" id="panel-tabs" role="tablist" data-i18n-aria-label="tasks.panel">
                 <button
                   type="button"
                   role="tab"
@@ -118,6 +145,7 @@
                   data-tab="tasks"
                   aria-selected="true"
                   aria-controls="tasks-pane"
+                  data-i18n="tasks.tab"
                 >
                   Attività
                 </button>
@@ -131,14 +159,15 @@
                   aria-controls="notes-pane"
                   tabindex="-1"
                   aria-keyshortcuts="N"
+                  data-i18n="notes.tab"
                 >
                   Note
                 </button>
               </div>
               <span class="panel-muted" id="tasks-count"><span id="task-counter">0 / 0</span></span>
               <span class="panel-muted" id="notes-count" hidden
-                ><span id="notes-length"></span> · <span id="notes-status">salvate</span></span
-              >
+                ><span id="notes-length"></span> · <span id="notes-status" data-i18n="notes.saved"></span
+              ></span>
             </div>
             <div id="tasks-pane" role="tabpanel" aria-labelledby="tab-tasks">
               <form id="task-form" class="add-task" autocomplete="off">
@@ -146,17 +175,22 @@
                   id="task-input"
                   type="text"
                   maxlength="120"
-                  placeholder="Nuova attività…"
-                  aria-label="Nuova attività"
+                  data-i18n-placeholder="tasks.placeholder"
+                  data-i18n-aria-label="tasks.new"
                   aria-keyshortcuts="T"
                   required
                 />
-                <button type="submit" aria-label="Aggiungi attività" title="Aggiungi attività">+</button>
+                <button type="submit" data-i18n-aria-label="tasks.add" data-i18n-title="tasks.add">+</button>
               </form>
               <ul id="task-list" class="task-list"></ul>
-              <p class="empty-note" id="empty-tasks">Nessuna attività in sospeso.</p>
+              <p class="empty-note" id="empty-tasks" data-i18n="tasks.empty"></p>
               <div class="task-bottom">
-                <button type="button" id="clear-done" class="subtle-action">Rimuovi completate</button>
+                <button
+                  type="button"
+                  id="clear-done"
+                  class="subtle-action"
+                  data-i18n="tasks.clearDone"
+                ></button>
               </div>
             </div>
             <div id="notes-pane" role="tabpanel" aria-labelledby="tab-notes" hidden>
@@ -164,8 +198,8 @@
                 id="notes-input"
                 class="notes"
                 spellcheck="false"
-                placeholder="Appunti, snippet, comandi da ricordare…"
-                aria-label="Note"
+                data-i18n-placeholder="notes.placeholder"
+                data-i18n-aria-label="notes.tab"
               ></textarea>
             </div>
           </section>
@@ -177,8 +211,8 @@
       type="button"
       class="settings-fab"
       id="open-settings"
-      aria-label="Impostazioni"
-      title="Impostazioni (S)"
+      data-i18n-aria-label="settings.title"
+      data-i18n-title="settings.buttonTitle"
       aria-keyshortcuts="S"
     >
       <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -194,8 +228,8 @@
       class="apps-button"
       id="apps-button"
       popovertarget="apps-panel"
-      aria-label="App Google"
-      title="App Google (G)"
+      data-i18n-aria-label="apps.title"
+      data-i18n-title="apps.buttonTitle"
       aria-keyshortcuts="G"
     >
       <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -210,43 +244,35 @@
         <circle cx="19" cy="19" r="2" />
       </svg>
     </button>
-    <div id="apps-panel" class="apps-panel" popover role="dialog" aria-label="App Google">
+    <div id="apps-panel" class="apps-panel" popover role="dialog" data-i18n-aria-label="apps.title">
       <div class="apps-favorites-box">
         <div class="apps-head">
-          <h2>Preferiti</h2>
+          <h2 data-i18n="apps.favorites">Preferiti</h2>
           <button
             type="button"
             class="apps-edit"
             id="apps-edit"
             aria-pressed="false"
-            aria-label="Modifica i preferiti"
+            data-i18n-aria-label="apps.editFavorites"
           >
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z" />
               <path d="m13.5 6.5 4 4" />
             </svg>
-            <span class="done">Fine</span>
+            <span class="done" data-i18n="apps.done">Fine</span>
           </button>
         </div>
         <div class="apps-grid" id="apps-favorites"></div>
-        <p class="apps-hint" id="apps-favorites-empty" hidden>
-          Nessun preferito: premi la matita e scegli le app.
-        </p>
-        <p class="apps-hint edit-only">
-          Tocca un'app per aggiungerla o toglierla. Trascina i preferiti (o
-          <kbd>Ctrl</kbd>+<kbd>←</kbd>/<kbd>→</kbd>) per riordinarli.
-        </p>
+        <p class="apps-hint" id="apps-favorites-empty" data-i18n="apps.emptyFavorites" hidden></p>
+        <p class="apps-hint edit-only" data-i18n="apps.editHint"></p>
       </div>
       <div class="apps-grid" id="apps-others"></div>
       <div class="apps-foot">
         <div class="apps-foot-row">
-          <span id="account-label">Apri con l'account</span>
+          <span id="account-label" data-i18n="apps.openWith"></span>
           <div class="account-picks" id="account-picks" role="group" aria-labelledby="account-label"></div>
         </div>
-        <p class="apps-foot-help">
-          Solo se hai più account Google collegati: 1° è il primo dell'elenco account di Google, 2° il
-          secondo…
-        </p>
+        <p class="apps-foot-help" data-i18n="apps.accountHelp"></p>
       </div>
     </div>
 
@@ -254,14 +280,14 @@
       <div class="drawer-inner">
         <header class="drawer-top">
           <div>
-            <span class="eyebrow">Preferenze</span>
-            <h2 id="settings-title">Impostazioni</h2>
+            <span class="eyebrow" data-i18n="settings.eyebrow">Preferenze</span>
+            <h2 id="settings-title" data-i18n="settings.title">Impostazioni</h2>
           </div>
           <button
             type="button"
             class="close-button"
             id="close-settings"
-            aria-label="Chiudi impostazioni"
+            data-i18n-aria-label="settings.close"
             autofocus
           >
             ×
@@ -270,34 +296,56 @@
 
         <div class="drawer-content">
           <section class="settings-section" aria-labelledby="general-title">
-            <h3 id="general-title">Generale</h3>
+            <h3 id="general-title" data-i18n="settings.general">Generale</h3>
             <div class="field">
-              <label for="name-input">Il tuo nome <span>(per il saluto, facoltativo)</span></label>
-              <input id="name-input" type="text" autocomplete="given-name" placeholder="Es. Alex" />
+              <label for="language-select" data-i18n="settings.language">Lingua · Language</label>
+              <select id="language-select"></select>
+            </div>
+            <div class="field">
+              <label for="name-input"
+                ><span data-i18n="settings.name"></span> <span data-i18n="settings.nameHint"></span
+              ></label>
+              <input
+                id="name-input"
+                type="text"
+                autocomplete="given-name"
+                data-i18n-placeholder="settings.namePlaceholder"
+              />
             </div>
             <div class="field">
               <label for="search-engine"
-                >Motore di ricerca <span>(i prefissi come gh o yt restano attivi)</span></label
-              >
+                ><span data-i18n="settings.engine"></span> <span data-i18n="settings.engineHint"></span
+              ></label>
               <select id="search-engine"></select>
             </div>
             <label class="toggle"
-              ><input type="checkbox" id="apps-toggle" /> Mostra il pulsante delle app Google</label
-            >
+              ><input type="checkbox" id="apps-toggle" /> <span data-i18n="settings.showApps"></span
+            ></label>
             <label class="toggle"
-              ><input type="checkbox" id="mouse-effects-toggle" /> Effetti del mouse: bordi luminosi e
-              profondità dello sfondo</label
-            >
+              ><input type="checkbox" id="mouse-effects-toggle" />
+              <span data-i18n="settings.mouseEffects"></span
+            ></label>
           </section>
 
           <section class="settings-section" aria-labelledby="wallpaper-title">
-            <h3 id="wallpaper-title">Sfondo</h3>
-            <div class="wallpaper-picks" id="wallpaper-picks" role="group" aria-label="Sfondo"></div>
+            <h3 id="wallpaper-title" data-i18n="settings.wallpaper">Sfondo</h3>
+            <div
+              class="wallpaper-picks"
+              id="wallpaper-picks"
+              role="group"
+              data-i18n-aria-label="settings.wallpaper"
+            ></div>
             <div class="upload-row">
               <button type="button" class="upload-button" id="upload-wallpaper">
-                Carica immagine <span>JPG · PNG · WEBP · AVIF</span>
+                <span data-i18n="settings.upload"></span> <span>JPG · PNG · WEBP · AVIF</span>
               </button>
-              <button type="button" class="subtle-action danger" id="remove-wallpaper" hidden>Rimuovi</button>
+              <button
+                type="button"
+                class="subtle-action danger"
+                id="remove-wallpaper"
+                data-i18n="settings.remove"
+                hidden
+              ></button>
             </div>
             <input
               type="file"
@@ -306,142 +354,175 @@
               hidden
             />
             <div class="range-heading">
-              <label for="shade-range">Oscuramento</label>
+              <label for="shade-range" data-i18n="settings.dim"></label>
               <output id="shade-number" for="shade-range">25%</output>
             </div>
             <input id="shade-range" class="range" type="range" min="0" max="75" value="25" />
             <div class="range-heading">
-              <label for="blur-range">Sfocatura</label>
+              <label for="blur-range" data-i18n="settings.blur"></label>
               <output id="blur-number" for="blur-range">0 px</output>
             </div>
             <input id="blur-range" class="range" type="range" min="0" max="24" value="0" />
           </section>
 
           <section class="settings-section" aria-labelledby="theme-title">
-            <h3 id="theme-title">Colori</h3>
-            <div class="theme-picks" id="theme-picks" role="group" aria-label="Tema"></div>
+            <h3 id="theme-title" data-i18n="settings.colors">Colori</h3>
+            <div
+              class="theme-picks"
+              id="theme-picks"
+              role="group"
+              data-i18n-aria-label="settings.theme"
+            ></div>
           </section>
 
           <section class="settings-section" aria-labelledby="timer-title">
-            <h3 id="timer-title">Timer</h3>
-            <div class="preset-picks" id="preset-picks" role="group" aria-label="Durata delle sessioni"></div>
+            <h3 id="timer-title" data-i18n="settings.timer">Timer</h3>
+            <div
+              class="preset-picks"
+              id="preset-picks"
+              role="group"
+              data-i18n-aria-label="settings.durations"
+            ></div>
             <label class="toggle"
-              ><input type="checkbox" id="notify-toggle" /> Notifica a fine sessione</label
-            >
+              ><input type="checkbox" id="notify-toggle" /> <span data-i18n="settings.notify"></span
+            ></label>
           </section>
 
           <section class="settings-section" id="links-section" aria-labelledby="links-title">
-            <h3 id="links-title">Collegamenti</h3>
+            <h3 id="links-title" data-i18n="links.title">Collegamenti</h3>
             <div id="settings-links" class="settings-links"></div>
             <label class="toggle"
-              ><input type="checkbox" id="favicon-toggle" /> Mostra le icone dei siti</label
-            >
+              ><input type="checkbox" id="favicon-toggle" /> <span data-i18n="links.showIcons"></span
+            ></label>
             <form id="link-form" class="link-form" autocomplete="off">
-              <label for="link-name">Nome</label>
-              <input id="link-name" type="text" maxlength="30" placeholder="Es. Vercel" required />
-              <label for="link-url">URL</label>
+              <label for="link-name" data-i18n="links.name"></label>
+              <input
+                id="link-name"
+                type="text"
+                maxlength="30"
+                data-i18n-placeholder="links.namePlaceholder"
+                required
+              />
+              <label for="link-url" data-i18n="links.url"></label>
               <input
                 id="link-url"
                 type="text"
                 inputmode="url"
                 spellcheck="false"
-                placeholder="vercel.com/dashboard o http://localhost:3000"
+                data-i18n-placeholder="links.urlPlaceholder"
                 required
               />
-              <label for="link-symbol">Sigla <span>(facoltativa, max 3 caratteri)</span></label>
-              <input id="link-symbol" type="text" maxlength="3" placeholder="Es. VC" />
+              <label for="link-symbol"
+                ><span data-i18n="links.symbol"></span> <span data-i18n="links.symbolHint"></span
+              ></label>
+              <input
+                id="link-symbol"
+                type="text"
+                maxlength="3"
+                data-i18n-placeholder="links.symbolPlaceholder"
+              />
               <div class="link-form-actions">
-                <button type="submit" class="main-button" id="link-submit">Aggiungi collegamento</button>
-                <button type="button" class="outline-button" id="link-cancel" hidden>Annulla</button>
+                <button type="submit" class="main-button" id="link-submit"></button>
+                <button
+                  type="button"
+                  class="outline-button"
+                  id="link-cancel"
+                  data-i18n="common.cancel"
+                  hidden
+                ></button>
               </div>
             </form>
           </section>
 
           <section class="settings-section" id="shortcuts-section" aria-labelledby="shortcuts-title">
-            <h3 id="shortcuts-title">Scorciatoie</h3>
+            <h3 id="shortcuts-title" data-i18n="settings.shortcuts">Scorciatoie</h3>
             <dl class="shortcut-list">
               <div>
-                <dt><kbd>/</kbd> o <kbd>Ctrl</kbd>+<kbd>K</kbd></dt>
-                <dd>Cerca</dd>
+                <dt><kbd>/</kbd> <span data-i18n="common.or"></span> <kbd>Ctrl</kbd>+<kbd>K</kbd></dt>
+                <dd data-i18n="shortcuts.search"></dd>
               </div>
               <div>
-                <dt><kbd>&gt;</kbd> o <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd></dt>
-                <dd>Palette dei comandi</dd>
+                <dt>
+                  <kbd>&gt;</kbd> <span data-i18n="common.or"></span> <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd
+                    >P</kbd
+                  >
+                </dt>
+                <dd data-i18n="shortcuts.palette"></dd>
               </div>
               <div>
-                <dt><kbd>+</kbd> testo</dt>
-                <dd>Nella ricerca: aggiunge un'attività</dd>
+                <dt><kbd>+</kbd> <span data-i18n="common.text"></span></dt>
+                <dd data-i18n="shortcuts.addTask"></dd>
               </div>
               <div>
-                <dt><kbd>↑</kbd> <kbd>↓</kbd> <kbd>Invio</kbd></dt>
-                <dd>Scegli tra i suggerimenti della ricerca</dd>
+                <dt><kbd>↑</kbd> <kbd>↓</kbd> <kbd data-i18n="key.enter"></kbd></dt>
+                <dd data-i18n="shortcuts.pick"></dd>
               </div>
               <div>
-                <dt><kbd>Shift</kbd>+<kbd>Invio</kbd></dt>
-                <dd>Cerca sempre, anche se sembra un URL</dd>
+                <dt><kbd>Shift</kbd>+<kbd data-i18n="key.enter"></kbd></dt>
+                <dd data-i18n="shortcuts.alwaysSearch"></dd>
               </div>
               <div>
-                <dt><code>= 2^10</code> <code>ts</code> <code>uuid</code></dt>
-                <dd>
-                  Strumenti nella ricerca: calcoli, timestamp, UUID, <code>b64</code>/<code>b64d</code>,
-                  <code>url</code>/<code>urld</code>, <code>pw</code>, colori (<code>#7aa2f7</code>).
-                  <kbd>Invio</kbd>
-                  copia il risultato.
-                </dd>
+                <dt>
+                  <code>=</code> <code>ts</code> <code>uuid</code> <code>b64</code> <code>url</code>
+                  <code>pw</code>
+                </dt>
+                <dd data-i18n="shortcuts.tools"></dd>
               </div>
               <div>
                 <dt><kbd>1</kbd>–<kbd>9</kbd></dt>
-                <dd>Apri il collegamento</dd>
+                <dd data-i18n="shortcuts.openLink"></dd>
               </div>
               <div>
                 <dt><kbd>T</kbd></dt>
-                <dd>Nuova attività</dd>
+                <dd data-i18n="shortcuts.newTask"></dd>
               </div>
               <div>
                 <dt><kbd>G</kbd></dt>
-                <dd>App Google</dd>
+                <dd data-i18n="shortcuts.apps"></dd>
               </div>
               <div>
                 <dt><kbd>N</kbd></dt>
-                <dd>Note</dd>
+                <dd data-i18n="shortcuts.notes"></dd>
               </div>
               <div>
                 <dt><kbd>P</kbd></dt>
-                <dd>Avvia o metti in pausa il timer</dd>
+                <dd data-i18n="shortcuts.timer"></dd>
               </div>
               <div>
                 <dt><kbd>S</kbd></dt>
-                <dd>Impostazioni</dd>
+                <dd data-i18n="shortcuts.settings"></dd>
               </div>
               <div>
                 <dt><kbd>?</kbd></dt>
-                <dd>Questo elenco</dd>
+                <dd data-i18n="shortcuts.list"></dd>
               </div>
               <div>
                 <dt><kbd>Esc</kbd></dt>
-                <dd>Chiudi il pannello o esci dal campo</dd>
+                <dd data-i18n="shortcuts.escape"></dd>
               </div>
             </dl>
-            <p class="settings-note">
-              Quando apri una nuova scheda, Chrome mette il cursore nella barra degli indirizzi: fai clic
-              sulla pagina per usare le scorciatoie.
-            </p>
+            <p class="settings-note" data-i18n="settings.focusNote"></p>
           </section>
 
           <section class="settings-section" aria-labelledby="data-title">
-            <h3 id="data-title">Dati</h3>
-            <p class="settings-note">
-              Il backup contiene collegamenti, attività, preferenze e sfondo personale. Tutto resta sul tuo
-              computer.
-            </p>
+            <h3 id="data-title" data-i18n="settings.data">Dati</h3>
+            <p class="settings-note" data-i18n="settings.dataNote"></p>
             <div class="data-actions">
-              <button type="button" class="outline-button" id="export-data">Esporta backup</button>
-              <button type="button" class="outline-button" id="import-data">Importa backup</button>
+              <button
+                type="button"
+                class="outline-button"
+                id="export-data"
+                data-i18n="settings.export"
+              ></button>
+              <button
+                type="button"
+                class="outline-button"
+                id="import-data"
+                data-i18n="settings.import"
+              ></button>
             </div>
             <input type="file" id="import-file" accept="application/json,.json" hidden />
-            <button type="button" class="danger-button" id="reset-data">
-              Ripristina impostazioni e dati
-            </button>
+            <button type="button" class="danger-button" id="reset-data" data-i18n="settings.reset"></button>
             <p class="version" id="app-version"></p>
           </section>
         </div>

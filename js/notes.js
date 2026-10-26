@@ -1,6 +1,7 @@
 // Second tab of the tasks panel: a plain-text scratchpad, saved while you type.
 import { LIMITS } from './config.js';
 import { $ } from './dom.js';
+import { numberFormat, t } from './i18n.js';
 import { getState, subscribe, update } from './store.js';
 
 const TABS = ['tasks', 'notes'];
@@ -18,7 +19,7 @@ function save() {
       state.notes = value;
     });
   }
-  setStatus('salvate');
+  setStatus(t('notes.saved'));
 }
 
 export function showPanelTab(tab) {
@@ -46,15 +47,15 @@ function render(state) {
   // Never overwrite what is being typed: another tab may have saved meanwhile.
   const area = $('notes-input');
   if (document.activeElement !== area && area.value !== state.notes) area.value = state.notes;
-  const length = state.notes.length;
-  $('notes-length').textContent = `${length} / ${LIMITS.notes}`;
+  const count = numberFormat();
+  $('notes-length').textContent = `${count.format(state.notes.length)} / ${count.format(LIMITS.notes)}`;
 }
 
 export function initNotes() {
   const area = $('notes-input');
   area.maxLength = LIMITS.notes;
   area.addEventListener('input', () => {
-    setStatus('salvataggio…');
+    setStatus(t('notes.saving'));
     clearTimeout(saveTimeout);
     saveTimeout = setTimeout(save, 400);
   });

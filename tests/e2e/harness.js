@@ -220,7 +220,8 @@ async function openPage(cdp, url, { width, height }) {
 }
 
 /** Starts the static server and headless Chrome; call close() when done. */
-export async function launch(root, { width = 1440, height = 900 } = {}) {
+/** `lang` is the browser language, which the page's "auto" language follows. */
+export async function launch(root, { width = 1440, height = 900, lang = 'it-IT' } = {}) {
   const server = await serve(root);
   const profile = await mkdtemp(path.join(tmpdir(), 'atrio-e2e-'));
   const chrome = spawn(
@@ -230,6 +231,8 @@ export async function launch(root, { width = 1440, height = 900 } = {}) {
       '--remote-debugging-port=0',
       `--user-data-dir=${profile}`,
       `--window-size=${width},${height}`,
+      `--lang=${lang}`,
+      `--accept-lang=${lang}`,
       '--no-first-run',
       '--no-default-browser-check',
       'about:blank',

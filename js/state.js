@@ -13,6 +13,7 @@ import {
   WALLPAPERS,
 } from './config.js';
 import { DEFAULT_APP_FAVORITES, GOOGLE_APPS } from './google-apps.js';
+import { LANGUAGES } from './i18n.js';
 import { HISTORY_DAYS } from './stats.js';
 import { durationFor, readyTimer } from './timer.js';
 
@@ -40,6 +41,7 @@ export function validURL(value) {
 export function createDefaultState() {
   return {
     schema: SCHEMA_VERSION,
+    lang: 'auto',
     theme: 'tokyo',
     wallpaper: 'workstation',
     wallpaperRev: 0,
@@ -170,8 +172,9 @@ export function normalizeState(raw) {
   );
   return {
     schema: SCHEMA_VERSION,
+    lang: pick(input.lang, LANGUAGES, base.lang),
     theme: pick(input.theme, Object.keys(THEMES), base.theme),
-    wallpaper: pick(input.wallpaper, [...Object.keys(WALLPAPERS), CUSTOM_WALLPAPER], base.wallpaper),
+    wallpaper: pick(input.wallpaper, [...WALLPAPERS, CUSTOM_WALLPAPER], base.wallpaper),
     wallpaperRev: toInt(input.wallpaperRev, 0, Number.MAX_SAFE_INTEGER, 0),
     shade: toInt(input.shade, 0, 75, base.shade),
     blur: toInt(input.blur, 0, LIMITS.blur, base.blur),

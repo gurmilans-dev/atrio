@@ -1,0 +1,563 @@
+// Interface language: Italian or English. The choice ("auto" follows the browser) is read from
+// the saved state when this module loads, so every formatter below already uses it; changing the
+// language reloads the page (js/settings.js). tests/i18n.test.js checks that both languages have
+// the same keys and placeholders.
+import { STORAGE_KEY, THEMES } from './config.js';
+
+export const LANGUAGES = ['auto', 'it', 'en'];
+
+const it = {
+  'page.title': 'Nuova scheda',
+  'page.searchAndLinks': 'Ricerca e collegamenti',
+  'page.tools': 'Strumenti',
+  'common.cancel': 'Annulla',
+  'common.undo': 'Annulla',
+  'common.or': 'o',
+  'common.text': 'testo',
+  'key.enter': 'Invio',
+
+  'greeting.morning': 'Buongiorno',
+  'greeting.afternoon': 'Buon pomeriggio',
+  'greeting.evening': 'Buonasera',
+  'greeting.night': 'Buonanotte',
+  'greeting.named': '{greeting}, {name}.',
+  'greeting.plain': '{greeting}.',
+
+  'search.placeholder': 'Cerca o inserisci un URL',
+  'search.label': 'Cerca sul web, inserisci un URL o un comando',
+  'search.go': 'Vai',
+  'search.goTitle': 'Vai (Invio)',
+  'search.suggestions': 'Suggerimenti',
+  'search.clear': 'Cancella',
+  'tips.prefixes': 'Prefissi:',
+  'tips.commands': 'comandi',
+  'tips.tasks': 'attività',
+  'tips.tools': 'Strumenti:',
+  'tips.alwaysSearch': 'cerca sempre',
+  'hint.commands': '› comandi',
+  'hint.task': '+ attività',
+  'hint.openSite': '↗ apri sito',
+  'hint.chromePage': '↗ pagina Chrome',
+  'result.searchOn': 'Cerca su {target}',
+  'result.openSite': 'Apri sito',
+  'result.chromePage': 'Pagina di Chrome',
+  'result.command': 'Comando',
+  'result.addTask': 'Aggiungi attività',
+  'result.copyHint': 'Invio copia',
+  'toast.taskAdded': 'Attività aggiunta.',
+  'toast.chromeOnly': 'Le pagine chrome:// si aprono solo dall’estensione installata.',
+  'toast.noCommand': 'Nessun comando trovato.',
+  'toast.copied': 'Copiato: {text}',
+  'toast.copyFailed': 'Impossibile copiare negli appunti.',
+  'toast.saveFailed': 'Impossibile salvare: spazio di archiviazione pieno o bloccato.',
+
+  'links.title': 'Collegamenti',
+  'links.quick': 'Collegamenti rapidi',
+  'links.edit': 'Modifica',
+  'links.remove': 'Rimuovi',
+  'links.empty': 'Nessun collegamento: aggiungine uno da “Modifica”.',
+  'links.moveUp': 'Sposta su: {name}',
+  'links.moveDown': 'Sposta giù: {name}',
+  'links.editOne': 'Modifica: {name}',
+  'links.removeOne': 'Rimuovi: {name}',
+  'links.add': 'Aggiungi collegamento',
+  'links.save': 'Salva modifiche',
+  'links.removed': '“{name}” rimosso.',
+  'links.invalidUrl': 'URL non valido: usa un indirizzo http o https.',
+  'links.updated': 'Collegamento aggiornato.',
+  'links.max': 'Massimo {n} collegamenti.',
+  'links.added': 'Collegamento aggiunto.',
+  'links.name': 'Nome',
+  'links.namePlaceholder': 'Es. Vercel',
+  'links.url': 'URL',
+  'links.urlPlaceholder': 'vercel.com/dashboard o http://localhost:3000',
+  'links.symbol': 'Sigla',
+  'links.symbolHint': '(facoltativa, max 3 caratteri)',
+  'links.symbolPlaceholder': 'Es. VC',
+  'links.showIcons': 'Mostra le icone dei siti',
+
+  'focus.title': 'Focus',
+  'focus.today': '{n} oggi',
+  'focus.total': { one: 'In totale: {n} sessione', other: 'In totale: {n} sessioni' },
+  'focus.kind': 'Tipo di sessione',
+  'focus.work': 'Lavoro',
+  'focus.break': 'Pausa',
+  'focus.progress': 'Avanzamento sessione',
+  'timer.running': 'In corso',
+  'timer.done': 'Completato',
+  'timer.ready': 'Pronto',
+  'timer.paused': 'In pausa',
+  'timer.start': 'Avvia',
+  'timer.pause': 'Pausa',
+  'timer.resume': 'Riprendi',
+  'timer.reset': 'Azzera',
+  'timer.modeFocus': 'Focus',
+  'timer.modeBreak': 'Pausa',
+  'timer.minutes': '{n} min',
+  'timer.focusDone': 'Sessione completata. La pausa è pronta.',
+  'timer.breakDone': 'Pausa finita. Pronto per il focus.',
+  'timer.presetLater': 'Il nuovo preset vale dalla prossima sessione.',
+  'heatmap.range': 'Ultime 20 settimane',
+  'heatmap.sessions': { one: '{n} sessione', other: '{n} sessioni' },
+  'heatmap.days': { one: '{n} giorno', other: '{n} giorni' },
+  'heatmap.streak': 'serie: {days}',
+  'heatmap.noStreak': 'nessuna serie attiva',
+  'heatmap.label': '{sessions} nelle ultime settimane, serie di {days}',
+
+  'tasks.panel': 'Attività e note',
+  'tasks.tab': 'Attività',
+  'tasks.placeholder': 'Nuova attività…',
+  'tasks.new': 'Nuova attività',
+  'tasks.add': 'Aggiungi attività',
+  'tasks.empty': 'Nessuna attività in sospeso.',
+  'tasks.clearDone': 'Rimuovi completate',
+  'tasks.delete': 'Elimina: {text}',
+  'tasks.max': 'Massimo {n} attività: rimuovi quelle completate.',
+  'tasks.deleted': 'Attività eliminata.',
+  'tasks.cleared': { one: '1 attività completata rimossa.', other: '{n} attività completate rimosse.' },
+  'notes.tab': 'Note',
+  'notes.placeholder': 'Appunti, snippet, comandi da ricordare…',
+  'notes.saved': 'salvate',
+  'notes.saving': 'salvataggio…',
+
+  'apps.title': 'App Google',
+  'apps.buttonTitle': 'App Google (G)',
+  'apps.favorites': 'Preferiti',
+  'apps.editFavorites': 'Modifica i preferiti',
+  'apps.done': 'Fine',
+  'apps.emptyFavorites': 'Nessun preferito: premi la matita e scegli le app.',
+  'apps.editHint':
+    'Tocca un’app per aggiungerla o toglierla. Trascina i preferiti (o Ctrl + ← / →) per riordinarli.',
+  'apps.openWith': 'Apri con l’account',
+  'apps.accountHelp':
+    'Solo se hai più account Google collegati: 1° è il primo dell’elenco account di Google, 2° il secondo…',
+  'apps.add': 'Aggiungi {name} ai preferiti',
+  'apps.removeOne': 'Togli {name} dai preferiti',
+  'apps.useAccount': 'Apri le app con il {ordinal} account Google',
+
+  'settings.title': 'Impostazioni',
+  'settings.buttonTitle': 'Impostazioni (S)',
+  'settings.eyebrow': 'Preferenze',
+  'settings.close': 'Chiudi impostazioni',
+  'settings.general': 'Generale',
+  'settings.language': 'Lingua · Language',
+  'settings.name': 'Il tuo nome',
+  'settings.nameHint': '(per il saluto, facoltativo)',
+  'settings.namePlaceholder': 'Es. Alex',
+  'settings.engine': 'Motore di ricerca',
+  'settings.engineHint': '(i prefissi come gh o yt restano attivi)',
+  'settings.showApps': 'Mostra il pulsante delle app Google',
+  'settings.mouseEffects': 'Effetti del mouse: bordi luminosi e profondità dello sfondo',
+  'settings.wallpaper': 'Sfondo',
+  'settings.upload': 'Carica immagine',
+  'settings.remove': 'Rimuovi',
+  'settings.dim': 'Oscuramento',
+  'settings.blur': 'Sfocatura',
+  'settings.colors': 'Colori',
+  'settings.theme': 'Tema',
+  'settings.timer': 'Timer',
+  'settings.durations': 'Durata delle sessioni',
+  'settings.notify': 'Notifica a fine sessione',
+  'settings.shortcuts': 'Scorciatoie',
+  'settings.focusNote':
+    'Quando apri una nuova scheda, Chrome mette il cursore nella barra degli indirizzi: fai clic sulla pagina per usare le scorciatoie.',
+  'settings.data': 'Dati',
+  'settings.dataNote':
+    'Il backup contiene collegamenti, attività, note, preferenze e sfondo personale. Tutto resta sul tuo computer.',
+  'settings.export': 'Esporta backup',
+  'settings.import': 'Importa backup',
+  'settings.reset': 'Ripristina impostazioni e dati',
+  'language.auto': 'Automatica (lingua del browser)',
+  'language.it': 'Italiano',
+  'language.en': 'English',
+  'wallpaper.workstation': 'Postazione',
+  'wallpaper.city': 'Città',
+  'wallpaper.custom': 'Personale',
+  'theme.auto': 'Dallo sfondo',
+  'preset.label': '{focus} / {pause} min',
+  'wallpaper.unsupported': 'Formato non supportato: usa JPG, PNG, WEBP o AVIF.',
+  'wallpaper.tooBig': 'Immagine troppo grande: massimo {size}.',
+  'wallpaper.optimizing': 'Ottimizzo l’immagine…',
+  'wallpaper.updated': 'Sfondo aggiornato ({size}).',
+  'wallpaper.failed': 'Non riesco a leggere o salvare questa immagine.',
+  'wallpaper.removeFailed': 'Non riesco a rimuovere l’immagine.',
+  'wallpaper.removed': 'Immagine personale rimossa.',
+  'backup.exported': 'Backup esportato.',
+  'backup.exportFailed': 'Esportazione non riuscita.',
+  'backup.tooBig': 'File troppo grande per essere un backup.',
+  'backup.invalidJson': 'Il file non è un JSON valido.',
+  'backup.notAtrio': 'Questo file non sembra un backup di Atrio.',
+  'backup.confirmImport': 'Importare il backup? Sostituirà impostazioni, collegamenti e attività attuali.',
+  'backup.imported': 'Backup importato.',
+  'backup.importedNoImage': 'Backup importato, ma non lo sfondo personale.',
+  'reset.confirm': 'Ripristinare impostazioni, collegamenti, attività e sfondo personale?',
+  'reset.done': 'Impostazioni ripristinate.',
+
+  'shortcuts.search': 'Cerca',
+  'shortcuts.palette': 'Palette dei comandi',
+  'shortcuts.addTask': 'Nella ricerca: aggiunge un’attività',
+  'shortcuts.pick': 'Scegli tra i suggerimenti della ricerca',
+  'shortcuts.alwaysSearch': 'Cerca sempre, anche se sembra un URL',
+  'shortcuts.tools':
+    'Strumenti nella ricerca: calcoli, timestamp, UUID, Base64, URL, password, colori. Invio copia il risultato.',
+  'shortcuts.openLink': 'Apri il collegamento',
+  'shortcuts.newTask': 'Nuova attività',
+  'shortcuts.apps': 'App Google',
+  'shortcuts.notes': 'Note',
+  'shortcuts.timer': 'Avvia o metti in pausa il timer',
+  'shortcuts.settings': 'Impostazioni',
+  'shortcuts.list': 'Questo elenco',
+  'shortcuts.escape': 'Chiudi il pannello o esci dal campo',
+
+  'command.startTimer': 'Avvia il timer',
+  'command.pauseTimer': 'Metti in pausa il timer',
+  'command.resetTimer': 'Azzera il timer',
+  'command.newTask': 'Nuova attività',
+  'command.notes': 'Apri le note',
+  'command.settings': 'Impostazioni',
+  'command.apps': 'App Google',
+  'command.shortcuts': 'Scorciatoie da tastiera',
+  'command.export': 'Esporta backup',
+  'command.theme': 'Tema: {name}',
+  'command.wallpaper': 'Sfondo: {name}',
+
+  'tool.calc': 'Calcolatrice',
+  'tool.ts': 'Timestamp',
+  'tool.uuid': 'UUID',
+  'tool.b64': 'Base64',
+  'tool.url': 'URL',
+  'tool.color': 'Colore',
+  'tool.pw': 'Password',
+  'tool.hex': 'Esadecimale',
+  'tool.bin': 'Binario',
+  'tool.badExpression': 'Espressione non valida',
+  'tool.localDate': 'Data locale',
+  'tool.iso': 'ISO 8601 (UTC)',
+  'tool.relative': 'Relativo',
+  'tool.unixSeconds': 'Unix, secondi',
+  'tool.unixMs': 'Unix, millisecondi',
+  'tool.badDate': 'Data non riconosciuta',
+  'tool.uuidV4': 'UUID v4',
+  'tool.password': 'Password, {n} caratteri',
+  'tool.alnum': 'Solo lettere e numeri',
+  'tool.b64Encoded': 'Base64, codificato',
+  'tool.b64Decoded': 'Base64, decodificato',
+  'tool.b64Invalid': 'Base64 non valido',
+  'tool.urlEncoded': 'URL, codificato',
+  'tool.urlDecoded': 'URL, decodificato',
+  'tool.urlInvalid': 'Codifica URL non valida',
+};
+
+const en = {
+  'page.title': 'New Tab',
+  'page.searchAndLinks': 'Search and links',
+  'page.tools': 'Tools',
+  'common.cancel': 'Cancel',
+  'common.undo': 'Undo',
+  'common.or': 'or',
+  'common.text': 'text',
+  'key.enter': 'Enter',
+
+  'greeting.morning': 'Good morning',
+  'greeting.afternoon': 'Good afternoon',
+  'greeting.evening': 'Good evening',
+  'greeting.night': 'Good night',
+  'greeting.named': '{greeting}, {name}.',
+  'greeting.plain': '{greeting}.',
+
+  'search.placeholder': 'Search or type a URL',
+  'search.label': 'Search the web, type a URL or a command',
+  'search.go': 'Go',
+  'search.goTitle': 'Go (Enter)',
+  'search.suggestions': 'Suggestions',
+  'search.clear': 'Clear',
+  'tips.prefixes': 'Prefixes:',
+  'tips.commands': 'commands',
+  'tips.tasks': 'tasks',
+  'tips.tools': 'Tools:',
+  'tips.alwaysSearch': 'always searches',
+  'hint.commands': '› commands',
+  'hint.task': '+ task',
+  'hint.openSite': '↗ open site',
+  'hint.chromePage': '↗ Chrome page',
+  'result.searchOn': 'Search {target}',
+  'result.openSite': 'Open site',
+  'result.chromePage': 'Chrome page',
+  'result.command': 'Command',
+  'result.addTask': 'Add task',
+  'result.copyHint': 'Enter copies',
+  'toast.taskAdded': 'Task added.',
+  'toast.chromeOnly': 'chrome:// pages open only from the installed extension.',
+  'toast.noCommand': 'No command found.',
+  'toast.copied': 'Copied: {text}',
+  'toast.copyFailed': 'Could not copy to the clipboard.',
+  'toast.saveFailed': 'Could not save: storage is full or blocked.',
+
+  'links.title': 'Links',
+  'links.quick': 'Quick links',
+  'links.edit': 'Edit',
+  'links.remove': 'Remove',
+  'links.empty': 'No links yet: add one from “Edit”.',
+  'links.moveUp': 'Move up: {name}',
+  'links.moveDown': 'Move down: {name}',
+  'links.editOne': 'Edit: {name}',
+  'links.removeOne': 'Remove: {name}',
+  'links.add': 'Add link',
+  'links.save': 'Save changes',
+  'links.removed': '“{name}” removed.',
+  'links.invalidUrl': 'Invalid URL: use an http or https address.',
+  'links.updated': 'Link updated.',
+  'links.max': 'At most {n} links.',
+  'links.added': 'Link added.',
+  'links.name': 'Name',
+  'links.namePlaceholder': 'e.g. Vercel',
+  'links.url': 'URL',
+  'links.urlPlaceholder': 'vercel.com/dashboard or http://localhost:3000',
+  'links.symbol': 'Monogram',
+  'links.symbolHint': '(optional, up to 3 characters)',
+  'links.symbolPlaceholder': 'e.g. VC',
+  'links.showIcons': 'Show site icons',
+
+  'focus.title': 'Focus',
+  'focus.today': '{n} today',
+  'focus.total': { one: '{n} session in total', other: '{n} sessions in total' },
+  'focus.kind': 'Session type',
+  'focus.work': 'Focus',
+  'focus.break': 'Break',
+  'focus.progress': 'Session progress',
+  'timer.running': 'Running',
+  'timer.done': 'Done',
+  'timer.ready': 'Ready',
+  'timer.paused': 'Paused',
+  'timer.start': 'Start',
+  'timer.pause': 'Pause',
+  'timer.resume': 'Resume',
+  'timer.reset': 'Reset',
+  'timer.modeFocus': 'Focus',
+  'timer.modeBreak': 'Break',
+  'timer.minutes': '{n} min',
+  'timer.focusDone': 'Session complete. Your break is ready.',
+  'timer.breakDone': 'Break over. Ready to focus.',
+  'timer.presetLater': 'The new preset applies from the next session.',
+  'heatmap.range': 'Last 20 weeks',
+  'heatmap.sessions': { one: '{n} session', other: '{n} sessions' },
+  'heatmap.days': { one: '{n} day', other: '{n} days' },
+  'heatmap.streak': 'streak: {days}',
+  'heatmap.noStreak': 'no active streak',
+  'heatmap.label': '{sessions} in the last weeks, streak of {days}',
+
+  'tasks.panel': 'Tasks and notes',
+  'tasks.tab': 'Tasks',
+  'tasks.placeholder': 'New task…',
+  'tasks.new': 'New task',
+  'tasks.add': 'Add task',
+  'tasks.empty': 'Nothing to do.',
+  'tasks.clearDone': 'Clear completed',
+  'tasks.delete': 'Delete: {text}',
+  'tasks.max': 'At most {n} tasks: clear the completed ones.',
+  'tasks.deleted': 'Task deleted.',
+  'tasks.cleared': { one: '1 completed task cleared.', other: '{n} completed tasks cleared.' },
+  'notes.tab': 'Notes',
+  'notes.placeholder': 'Notes, snippets, commands to remember…',
+  'notes.saved': 'saved',
+  'notes.saving': 'saving…',
+
+  'apps.title': 'Google apps',
+  'apps.buttonTitle': 'Google apps (G)',
+  'apps.favorites': 'Favorites',
+  'apps.editFavorites': 'Edit favorites',
+  'apps.done': 'Done',
+  'apps.emptyFavorites': 'No favorites: press the pencil and pick some apps.',
+  'apps.editHint': 'Tap an app to add or remove it. Drag favorites (or Ctrl + ← / →) to reorder them.',
+  'apps.openWith': 'Open with account',
+  'apps.accountHelp':
+    'Only if you are signed in to several Google accounts: 1st is the first in Google’s account list, 2nd the second…',
+  'apps.add': 'Add {name} to favorites',
+  'apps.removeOne': 'Remove {name} from favorites',
+  'apps.useAccount': 'Open the apps with your {ordinal} Google account',
+
+  'settings.title': 'Settings',
+  'settings.buttonTitle': 'Settings (S)',
+  'settings.eyebrow': 'Preferences',
+  'settings.close': 'Close settings',
+  'settings.general': 'General',
+  'settings.language': 'Language · Lingua',
+  'settings.name': 'Your name',
+  'settings.nameHint': '(for the greeting, optional)',
+  'settings.namePlaceholder': 'e.g. Alex',
+  'settings.engine': 'Search engine',
+  'settings.engineHint': '(prefixes such as gh or yt keep working)',
+  'settings.showApps': 'Show the Google apps button',
+  'settings.mouseEffects': 'Mouse effects: glowing borders and wallpaper depth',
+  'settings.wallpaper': 'Wallpaper',
+  'settings.upload': 'Upload image',
+  'settings.remove': 'Remove',
+  'settings.dim': 'Dim',
+  'settings.blur': 'Blur',
+  'settings.colors': 'Colors',
+  'settings.theme': 'Theme',
+  'settings.timer': 'Timer',
+  'settings.durations': 'Session length',
+  'settings.notify': 'Notify when a session ends',
+  'settings.shortcuts': 'Shortcuts',
+  'settings.focusNote':
+    'When you open a new tab, Chrome puts the cursor in the address bar: click the page to use the shortcuts.',
+  'settings.data': 'Data',
+  'settings.dataNote':
+    'The backup contains links, tasks, notes, preferences and your wallpaper. Everything stays on your computer.',
+  'settings.export': 'Export backup',
+  'settings.import': 'Import backup',
+  'settings.reset': 'Reset settings and data',
+  'language.auto': 'Automatic (browser language)',
+  'language.it': 'Italiano',
+  'language.en': 'English',
+  'wallpaper.workstation': 'Workstation',
+  'wallpaper.city': 'City',
+  'wallpaper.custom': 'Yours',
+  'theme.auto': 'From wallpaper',
+  'preset.label': '{focus} / {pause} min',
+  'wallpaper.unsupported': 'Unsupported format: use JPG, PNG, WEBP or AVIF.',
+  'wallpaper.tooBig': 'Image too large: up to {size}.',
+  'wallpaper.optimizing': 'Optimizing the image…',
+  'wallpaper.updated': 'Wallpaper updated ({size}).',
+  'wallpaper.failed': 'Could not read or save this image.',
+  'wallpaper.removeFailed': 'Could not remove the image.',
+  'wallpaper.removed': 'Your image was removed.',
+  'backup.exported': 'Backup exported.',
+  'backup.exportFailed': 'Export failed.',
+  'backup.tooBig': 'This file is too large to be a backup.',
+  'backup.invalidJson': 'This file is not valid JSON.',
+  'backup.notAtrio': 'This does not look like an Atrio backup.',
+  'backup.confirmImport': 'Import this backup? It replaces your current settings, links and tasks.',
+  'backup.imported': 'Backup imported.',
+  'backup.importedNoImage': 'Backup imported, except the wallpaper.',
+  'reset.confirm': 'Reset settings, links, tasks and your wallpaper?',
+  'reset.done': 'Settings reset.',
+
+  'shortcuts.search': 'Search',
+  'shortcuts.palette': 'Command palette',
+  'shortcuts.addTask': 'In the search box: adds a task',
+  'shortcuts.pick': 'Pick a search suggestion',
+  'shortcuts.alwaysSearch': 'Search even if it looks like a URL',
+  'shortcuts.tools':
+    'Tools in the search box: math, timestamps, UUIDs, Base64, URLs, passwords, colors. Enter copies the result.',
+  'shortcuts.openLink': 'Open the link',
+  'shortcuts.newTask': 'New task',
+  'shortcuts.apps': 'Google apps',
+  'shortcuts.notes': 'Notes',
+  'shortcuts.timer': 'Start or pause the timer',
+  'shortcuts.settings': 'Settings',
+  'shortcuts.list': 'This list',
+  'shortcuts.escape': 'Close the panel or leave the field',
+
+  'command.startTimer': 'Start the timer',
+  'command.pauseTimer': 'Pause the timer',
+  'command.resetTimer': 'Reset the timer',
+  'command.newTask': 'New task',
+  'command.notes': 'Open notes',
+  'command.settings': 'Settings',
+  'command.apps': 'Google apps',
+  'command.shortcuts': 'Keyboard shortcuts',
+  'command.export': 'Export backup',
+  'command.theme': 'Theme: {name}',
+  'command.wallpaper': 'Wallpaper: {name}',
+
+  'tool.calc': 'Calculator',
+  'tool.ts': 'Timestamp',
+  'tool.uuid': 'UUID',
+  'tool.b64': 'Base64',
+  'tool.url': 'URL',
+  'tool.color': 'Color',
+  'tool.pw': 'Password',
+  'tool.hex': 'Hexadecimal',
+  'tool.bin': 'Binary',
+  'tool.badExpression': 'Invalid expression',
+  'tool.localDate': 'Local date',
+  'tool.iso': 'ISO 8601 (UTC)',
+  'tool.relative': 'Relative',
+  'tool.unixSeconds': 'Unix, seconds',
+  'tool.unixMs': 'Unix, milliseconds',
+  'tool.badDate': 'Date not recognized',
+  'tool.uuidV4': 'UUID v4',
+  'tool.password': 'Password, {n} characters',
+  'tool.alnum': 'Letters and digits only',
+  'tool.b64Encoded': 'Base64, encoded',
+  'tool.b64Decoded': 'Base64, decoded',
+  'tool.b64Invalid': 'Invalid Base64',
+  'tool.urlEncoded': 'URL, encoded',
+  'tool.urlDecoded': 'URL, decoded',
+  'tool.urlInvalid': 'Invalid URL encoding',
+};
+
+export const STRINGS = { it, en };
+
+const browserLanguage = () => globalThis.navigator?.language ?? 'en';
+
+/** "auto" follows the browser: Italian for it-*, English otherwise. */
+export function resolveLanguage(choice, browser = browserLanguage()) {
+  if (choice === 'it' || choice === 'en') return choice;
+  return String(browser).toLowerCase().startsWith('it') ? 'it' : 'en';
+}
+
+function storedChoice() {
+  try {
+    return JSON.parse(globalThis.localStorage?.getItem(STORAGE_KEY) ?? 'null')?.lang;
+  } catch {
+    return undefined;
+  }
+}
+
+let language = resolveLanguage(storedChoice());
+
+export const getLanguage = () => language;
+export function setLanguage(next) {
+  language = next === 'it' ? 'it' : 'en';
+}
+
+/** Locale for dates and numbers: English keeps the browser's variant (en-US, en-GB…). */
+export function locale() {
+  if (language === 'it') return 'it-IT';
+  const browser = browserLanguage();
+  return browser.toLowerCase().startsWith('en') ? browser : 'en-GB';
+}
+
+/** t('links.max', { n: 30 }); plural entries pick `one` when n === 1. Unknown keys return the key. */
+export function t(key, params = {}) {
+  let entry = STRINGS[language][key] ?? STRINGS.en[key] ?? key;
+  if (typeof entry === 'object') entry = params.n === 1 ? entry.one : entry.other;
+  return entry.replace(/\{(\w+)\}/g, (match, name) => (name in params ? String(params[name]) : match));
+}
+
+export function ordinal(n) {
+  if (language === 'it') return `${n}°`;
+  const suffix = { 1: 'st', 2: 'nd', 3: 'rd' }[n % 100 > 10 && n % 100 < 14 ? 0 : n % 10] ?? 'th';
+  return `${n}${suffix}`;
+}
+
+const formatters = new Map();
+function cached(kind, options, create) {
+  const key = `${kind}|${language}|${JSON.stringify(options)}`;
+  if (!formatters.has(key)) formatters.set(key, create());
+  return formatters.get(key);
+}
+export const dateFormat = (options) =>
+  cached('date', options, () => new Intl.DateTimeFormat(locale(), options));
+export const relativeFormat = () =>
+  cached('relative', {}, () => new Intl.RelativeTimeFormat(locale(), { numeric: 'auto' }));
+export const numberFormat = (options) =>
+  cached('number', options, () => new Intl.NumberFormat(locale(), options));
+
+export const themeName = (id) => THEMES[id].label ?? t(`theme.${id}`);
+export const wallpaperName = (id) => t(`wallpaper.${id}`);
+
+/** Applies the static strings marked in index.html with data-i18n / data-i18n-<attribute>. */
+export function translatePage(root = document) {
+  document.documentElement.lang = language;
+  document.title = t('page.title');
+  for (const node of root.querySelectorAll('[data-i18n]')) node.textContent = t(node.dataset.i18n);
+  for (const attribute of ['placeholder', 'title', 'aria-label']) {
+    for (const node of root.querySelectorAll(`[data-i18n-${attribute}]`)) {
+      node.setAttribute(attribute, t(node.getAttribute(`data-i18n-${attribute}`)));
+    }
+  }
+}
