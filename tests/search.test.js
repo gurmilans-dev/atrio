@@ -76,6 +76,15 @@ describe('resolveInput', () => {
     assert.equal(resolve('xyz flexbox').label, 'Google');
   });
 
+  test('a prefix alone opens the site', () => {
+    assert.deepEqual(resolve('yt'), { kind: 'url', url: 'https://www.youtube.com/', label: 'YouTube' });
+    assert.equal(resolve('!gh').url, 'https://github.com/');
+    assert.equal(resolve('  NPM  ').url, 'https://www.npmjs.com/');
+    assert.equal(resolve('dd').url, 'https://devdocs.io/');
+    assert.equal(resolve('yt', { force: true }).kind, 'search');
+    assert.equal(resolve('xyz').kind, 'search');
+  });
+
   test('force always searches the default engine', () => {
     assert.equal(resolve('github.com', { force: true }).url, searchOf('github.com'));
     assert.equal(resolve('npm zod', { force: true }).url, searchOf('npm zod'));

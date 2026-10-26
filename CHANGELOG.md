@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- A search prefix typed alone opens its site: `yt` → YouTube, `gh` → GitHub, `npm` → npmjs.com. Previously it was
+  searched as text. `Shift + Enter` still searches.
+
 ## 3.1.0 — 2026-10-26
 
 First public release, under the new name **Atrio** (previously "Workspace").

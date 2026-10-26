@@ -27,8 +27,9 @@ no tracking.
 ## Features
 
 - **Search that knows code from URLs.** `console.log`, `next.js` or `README.md` are searched, not opened as domains.
-  `localhost:5173`, LAN IPs, `[::1]` and `*.test` open over `http://`. Prefixes jump straight to a site (`gh`, `npm`,
-  `mdn`, `so`, `py`, `ciu`, `dd`, `yt`), `chrome://` pages work, `Shift + Enter` always searches.
+  `localhost:5173`, LAN IPs, `[::1]` and `*.test` open over `http://`. Prefixes search a site directly (`yt lofi`,
+  `npm zod`; also `gh`, `mdn`, `so`, `py`, `ciu`, `dd`) and, typed alone, open it (`yt` → YouTube). `chrome://`
+  pages work, `Shift + Enter` always searches.
 - **Command palette.** While you type, matching links, Google apps and commands appear under the box. `>` (or
   `Ctrl + Shift + P`) lists every command; `+ some text` adds a task without leaving the search.
 - **Focus timer.** 25/5 or 50/10 sessions, a system notification when a session ends (even with no tab open), the

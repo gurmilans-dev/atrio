@@ -52,7 +52,7 @@ try {
     const hints = await a.eval(`(() => {
       const input = document.getElementById('search-input');
       const out = {};
-      for (const value of ['npm zod', 'console.log', 'localhost:3000', 'chrome://extensions', 'so css grid']) {
+      for (const value of ['npm zod', 'console.log', 'localhost:3000', 'chrome://extensions', 'so css grid', 'yt']) {
         input.value = value;
         input.dispatchEvent(new Event('input'));
         const hint = document.getElementById('search-hint');
@@ -68,6 +68,7 @@ try {
       'localhost:3000': '↗ apri sito',
       'chrome://extensions': '↗ pagina Chrome',
       'so css grid': '→ Stack Overflow',
+      yt: '↗ YouTube',
     });
   });
 

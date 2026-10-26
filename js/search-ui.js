@@ -93,7 +93,7 @@ function primaryItem(result) {
   }
   return {
     kind: 'url',
-    label: result.url.replace(/^https?:\/\//, '').replace(/\/$/, ''),
+    label: result.label ?? result.url.replace(/^https?:\/\//, '').replace(/\/$/, ''),
     detail: result.kind === 'browser' ? 'Pagina di Chrome' : 'Apri sito',
     run: () => navigate(result),
   };
@@ -219,7 +219,7 @@ function renderHint() {
   else if (value.startsWith('+')) text = '+ attività';
   else if (value) {
     const result = resolveInput(value, engine);
-    if (result?.kind === 'url') text = '↗ apri sito';
+    if (result?.kind === 'url') text = result.label ? `↗ ${result.label}` : '↗ apri sito';
     else if (result?.kind === 'browser') text = '↗ pagina Chrome';
     else if (result?.kind === 'search' && result.label !== ENGINES[engine].label) text = `→ ${result.label}`;
   }

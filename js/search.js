@@ -64,9 +64,13 @@ export function resolveInput(raw, engine, { force = false } = {}) {
     return url ? { kind: 'url', url } : searchTarget(input, defaultTarget);
   }
 
-  const bang = input.match(/^!?([a-z]+)\s+(.+)$/i);
+  const bang = input.match(/^!?([a-z]+)(?:\s+(.+))?$/i);
   const bangTarget = bang && BANGS[bang[1].toLowerCase()];
-  if (bangTarget) return searchTarget(bang[2].trim(), bangTarget);
+  if (bangTarget) {
+    // A prefix alone ("yt", "!gh") opens the site itself instead of searching the prefix.
+    if (!bang[2]) return { kind: 'url', url: `${new URL(bangTarget.url).origin}/`, label: bangTarget.label };
+    return searchTarget(bang[2].trim(), bangTarget);
+  }
 
   if (!/\s/.test(input)) {
     const scheme = schemeFor(input);
