@@ -482,26 +482,36 @@ try {
     assert.match(text, /^(Buongiorno|Buon pomeriggio|Buonasera|Buonanotte), Alex\.$/);
   });
 
-  await check('spotlight borders and parallax (opt-in) follow the mouse', async () => {
+  await check('mouse effects: off by default, then spotlight and parallax when turned on', async () => {
     await a.eval(clearSearch);
-    const parallaxDefault = await a.eval(`${STATE}.parallax`);
-    await a.eval(settings(`document.getElementById('parallax-toggle').click()`)); // turn it on
-    const { x, y } = await a.eval(
-      `(() => { const r = document.querySelector('#links .shortcut').getBoundingClientRect(); return { x: r.x + 30, y: r.y + 20 }; })()`,
-    );
-    await a.move(x, y);
-    await a.move(x + 5, y + 2);
-    const card = await a.eval(`(() => {
+    const firstCard = `(() => { const r = document.querySelector('#links .shortcut').getBoundingClientRect(); return { x: r.x + 30, y: r.y + 20 }; })()`;
+    const read = `(() => {
       const c = document.querySelector('#links .shortcut');
-      return { lit: c.classList.contains('lit'), mx: c.querySelector('.glow-ring').style.getPropertyValue('--mx'), far: document.querySelector('.tasks-panel').classList.contains('lit') };
-    })()`);
-    const transform = await a.eval(`document.querySelector('.wallpaper').style.transform`);
-    await a.eval(settings(`document.getElementById('parallax-toggle').click()`)); // back off
-    const off = await a.eval(`document.querySelector('.wallpaper').style.transform`);
-    assert.equal(parallaxDefault, false);
-    assert.deepEqual(card, { lit: true, mx: '35px', far: false });
-    assert.ok(transform.startsWith('translate3d('), transform);
-    assert.equal(off, '');
+      return {
+        lit: c.classList.contains('lit'),
+        mx: c.querySelector('.glow-ring')?.style.getPropertyValue('--mx') ?? null,
+        parallax: document.querySelector('.wallpaper').style.transform.startsWith('translate3d('),
+        lift: getComputedStyle(c).transform !== 'none',
+      };
+    })()`;
+    const wiggle = async () => {
+      const { x, y } = await a.eval(firstCard);
+      await a.move(x, y);
+      await a.move(x + 5, y + 2);
+      await sleep(250);
+    };
+    const stored = await a.eval(`${STATE}.mouseEffects`);
+    await wiggle();
+    const off = await a.eval(read);
+    await a.eval(settings(`document.getElementById('mouse-effects-toggle').click()`)); // on
+    await wiggle();
+    const on = await a.eval(read);
+    await a.eval(settings(`document.getElementById('mouse-effects-toggle').click()`)); // off again
+    const offAgain = await a.eval(read);
+    assert.equal(stored, false);
+    assert.deepEqual(off, { lit: false, mx: null, parallax: false, lift: false });
+    assert.deepEqual(on, { lit: true, mx: '35px', parallax: true, lift: true });
+    assert.equal(offAgain.parallax || offAgain.lit, false);
   });
 
   await check('developer tools in the palette: results, hint, Enter copies', async () => {
@@ -670,8 +680,8 @@ try {
     assert.deepEqual({ hidden, stillClosed, back }, { hidden: 'none', stillClosed: true, back: 'grid' });
   });
 
-  await check('reduced motion turns off parallax, spotlight and lift', async () => {
-    await a.eval(settings(`document.getElementById('parallax-toggle').click()`)); // parallax on
+  await check('reduced motion keeps the mouse effects off even when enabled', async () => {
+    await a.eval(settings(`document.getElementById('mouse-effects-toggle').click()`)); // effects on
     await a.reducedMotion(true);
     await a.goto();
     const { x, y } = await a.eval(
@@ -685,7 +695,7 @@ try {
       lift: getComputedStyle(document.querySelector('#links .shortcut')).transform,
     })`);
     await a.reducedMotion(false);
-    await a.eval(settings(`document.getElementById('parallax-toggle').click()`)); // back off
+    await a.eval(settings(`document.getElementById('mouse-effects-toggle').click()`)); // back off
     assert.deepEqual(r, { transform: '', lit: 0, lift: 'none' });
   });
 

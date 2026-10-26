@@ -1,7 +1,9 @@
-// Pointer effects: borders that light up near the cursor and a gentle wallpaper parallax.
-// They run only while the mouse moves and never with reduced motion. Kept cheap on purpose:
-// element positions are cached instead of measured every frame, and the parallax target is
-// updated ~10 times a second while the CSS transition on .wallpaper smooths the movement.
+// Optional mouse effects (Settings → General, off by default): link borders that light up near
+// the cursor, a slight lift of the hovered link and a gentle wallpaper parallax.
+// When they are off, or the system asks for reduced motion, no pointer listener is attached at
+// all, so the page does no work when the mouse moves. When on, they are kept cheap: element
+// positions are cached instead of measured every frame, and the parallax target is updated
+// ~10 times a second while the CSS transition on .wallpaper smooths the movement.
 import { getState, subscribe } from './store.js';
 
 const PARALLAX_PX = 10; // style.css oversizes the wallpaper by more than this
@@ -9,6 +11,7 @@ const PARALLAX_EVERY_MS = 100;
 const REACH_PX = 100; // how far from an element its border starts to glow (fewer lit at once = less repaint)
 const RECTS_TTL_MS = 500; // cached positions are refreshed at least this often
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+let enabled = false;
 let pointer = null;
 let frame = 0;
 let targets = null;
@@ -17,7 +20,6 @@ let parallaxAt = 0;
 let parallaxTimer = 0;
 
 const wallpaper = () => document.querySelector('.wallpaper');
-const parallaxOn = () => getState().parallax && !reducedMotion.matches;
 
 // The light lives on a childless ring: updating it restyles one node, not the whole element.
 function lightRing(node) {
@@ -65,7 +67,7 @@ function paintSpotlight() {
 function applyParallax() {
   parallaxTimer = 0;
   parallaxAt = Date.now();
-  if (!pointer || !parallaxOn()) return;
+  if (!pointer || !enabled) return;
   const dx = (0.5 - pointer.x / innerWidth) * 2 * PARALLAX_PX;
   const dy = (0.5 - pointer.y / innerHeight) * 2 * PARALLAX_PX;
   wallpaper().style.transform = `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0)`;
@@ -73,8 +75,17 @@ function applyParallax() {
 
 // Throttled with a trailing call, so the wallpaper always settles on the last position.
 function scheduleParallax() {
-  if (parallaxTimer || !parallaxOn()) return;
+  if (parallaxTimer) return;
   parallaxTimer = setTimeout(applyParallax, Math.max(0, PARALLAX_EVERY_MS - (Date.now() - parallaxAt)));
+}
+
+function onPointerMove(event) {
+  if (event.pointerType === 'touch') return;
+  const moved = !pointer || Math.abs(event.clientX - pointer.x) + Math.abs(event.clientY - pointer.y) >= 2;
+  if (!moved) return;
+  pointer = { x: event.clientX, y: event.clientY };
+  frame ||= requestAnimationFrame(paintSpotlight);
+  scheduleParallax();
 }
 
 function reset() {
@@ -85,30 +96,32 @@ function reset() {
   wallpaper().style.transform = '';
 }
 
+function setEnabled(on) {
+  if (on === enabled) return;
+  enabled = on;
+  document.documentElement.toggleAttribute('data-mouse-effects', on); // hover lift in style.css
+  if (on) {
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
+  } else {
+    window.removeEventListener('pointermove', onPointerMove);
+    reset();
+  }
+}
+
+const sync = () => setEnabled(getState().mouseEffects && !reducedMotion.matches);
+
 export function initEffects() {
-  window.addEventListener(
-    'pointermove',
-    (event) => {
-      if (event.pointerType === 'touch' || reducedMotion.matches) return;
-      const moved =
-        !pointer || Math.abs(event.clientX - pointer.x) + Math.abs(event.clientY - pointer.y) >= 2;
-      if (!moved) return;
-      pointer = { x: event.clientX, y: event.clientY };
-      frame ||= requestAnimationFrame(paintSpotlight);
-      scheduleParallax();
-    },
-    { passive: true },
-  );
   const forgetPositions = () => (targets = null);
   window.addEventListener('resize', forgetPositions, { passive: true });
   window.addEventListener('scroll', forgetPositions, { passive: true });
   // relatedTarget is null when the mouse leaves the window.
   document.addEventListener('mouseout', (event) => {
-    if (!event.relatedTarget) reset();
+    if (enabled && !event.relatedTarget) reset();
   });
-  reducedMotion.addEventListener('change', reset);
-  subscribe((state) => {
+  reducedMotion.addEventListener('change', sync);
+  subscribe(() => {
     targets = null; // a re-render may have replaced or moved the glowing elements
-    if (!state.parallax) wallpaper().style.transform = '';
+    sync();
   });
+  sync();
 }

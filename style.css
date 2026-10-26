@@ -719,15 +719,20 @@ kbd {
   border-radius: 11px;
   min-height: 83px;
 }
-.shortcut {
+/* Hover is instant by default: animating the colors repaints every link many times while the
+   mouse moves (measured ~5 points of a CPU core). Animations and lift come with the optional mouse
+   effects, flagged on the root by js/effects.js (never with reduced motion). */
+.shortcut:hover {
+  border-color: var(--accent-line);
+  background: var(--panel-hover);
+}
+:root[data-mouse-effects] .shortcut {
   transition:
     transform 0.18s ease,
     border-color 0.18s ease,
     background-color 0.18s ease;
 }
-.shortcut:hover {
-  border-color: var(--accent-line);
-  background: var(--panel-hover);
+:root[data-mouse-effects] .shortcut:hover {
   transform: translateY(-2px);
 }
 
@@ -1687,9 +1692,6 @@ kbd {
   .search-results,
   .focus-panel.celebrate {
     animation: none;
-  }
-  .shortcut:hover {
-    transform: none;
   }
   .shortcut,
   .glow-ring,

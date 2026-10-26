@@ -113,7 +113,7 @@ function render(state) {
     $(`${key}-number`).textContent = format(state[key]);
   }
   $('notify-toggle').checked = state.notify;
-  $('parallax-toggle').checked = state.parallax;
+  $('mouse-effects-toggle').checked = state.mouseEffects;
   $('apps-toggle').checked = state.apps.visible;
   if (document.activeElement !== $('name-input')) $('name-input').value = state.name;
   const swatch = $('auto-swatch');
@@ -319,9 +319,9 @@ export function initSettings() {
     });
     syncAlarm();
   });
-  $('parallax-toggle').addEventListener('change', (event) => {
+  $('mouse-effects-toggle').addEventListener('change', (event) => {
     update((state) => {
-      state.parallax = event.target.checked;
+      state.mouseEffects = event.target.checked;
     });
   });
   $('apps-toggle').addEventListener('change', (event) => {

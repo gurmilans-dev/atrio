@@ -84,9 +84,10 @@ describe('normalizeState', () => {
     assert.equal(state.notes.length, 10000);
     assert.equal(state.panelTab, 'tasks');
     assert.equal(normalizeState({ panelTab: 'notes' }).panelTab, 'notes');
-    assert.equal(normalizeState({}).parallax, false);
-    assert.equal(normalizeState({ schema: 3, parallax: true }).parallax, false);
-    assert.equal(normalizeState({ schema: 4, parallax: true }).parallax, true);
+    assert.equal(normalizeState({}).mouseEffects, false);
+    assert.equal(normalizeState({ schema: 4, parallax: true }).mouseEffects, false);
+    assert.equal(normalizeState({ schema: 5, mouseEffects: true }).mouseEffects, true);
+    assert.equal('parallax' in normalizeState({ parallax: true }), false);
   });
 
   test('auto accent must be a hex color with a key', () => {

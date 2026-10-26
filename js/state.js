@@ -45,7 +45,7 @@ export function createDefaultState() {
     wallpaperRev: 0,
     shade: 25,
     blur: 0,
-    parallax: false,
+    mouseEffects: false,
     autoAccent: null,
     name: '',
     preset: 25,
@@ -175,8 +175,8 @@ export function normalizeState(raw) {
     wallpaperRev: toInt(input.wallpaperRev, 0, Number.MAX_SAFE_INTEGER, 0),
     shade: toInt(input.shade, 0, 75, base.shade),
     blur: toInt(input.blur, 0, LIMITS.blur, base.blur),
-    // Schema 4 turned parallax off by default; before that "on" was only the old default.
-    parallax: Number(input.schema) >= 4 ? bool(input.parallax, base.parallax) : false,
+    // Schema 5 made the mouse effects optional and off by default: older saves start with them off.
+    mouseEffects: Number(input.schema) >= 5 ? bool(input.mouseEffects, base.mouseEffects) : false,
     autoAccent: normalizeAccent(input.autoAccent),
     name: cleanText(input.name, LIMITS.name),
     preset,

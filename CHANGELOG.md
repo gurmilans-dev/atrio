@@ -12,17 +12,18 @@
 
 - A search prefix typed alone opens its site: `yt` → YouTube, `gh` → GitHub, `npm` → npmjs.com. Previously it was
   searched as text. `Shift + Enter` still searches.
-- Parallax is off by default (it was on only as the previous default, so it is switched off once); it can be turned
-  on in the settings.
+- **Mouse effects are one optional switch**, off by default (Impostazioni → Generale): spotlight borders, the lift of
+  the hovered link and the wallpaper parallax. Existing setups start with it off.
 - The search-engine menu moved from the search bar to **Impostazioni → Generale**.
 - The spotlight lights only the quick links and the search box, without the inner glow, and from a shorter distance.
 
 ### Performance
 
-- Pointer effects are lighter: the spotlight updates one small layer per element instead of restyling whole panels,
-  element positions are cached, the parallax target is updated about ten times a second. Measured in headless Chrome:
-  the page uses ~0.03% of a core when still; the effects' extra cost while moving the mouse went from ~10.5 to ~8.7
-  points of a core.
+- With the mouse effects off no pointer listener is attached and hover states change instantly instead of animating:
+  moving the mouse over the page went from ~14% to ~4% of a CPU core in headless Chrome, about the browser's own cost.
+- When the effects are on they are lighter than before: the spotlight updates one small layer per element instead of
+  restyling whole panels, element positions are cached, the parallax target is updated about ten times a second.
+- The page uses ~0.03% of a core when still.
 
 ## 3.1.0 — 2026-10-26
 
