@@ -1,11 +1,12 @@
 // Developer tools for the command palette: calculator, timestamps, UUIDs, Base64, URL encoding,
-// colors and passwords. Pure functions, everything local; see tests/devtools.test.js.
+// JWT decoding, SHA-256, colors and passwords. Pure functions, everything local; see
+// tests/devtools.test.js.
 // Each result row is { tool, value, detail, first, color?, error? }: Enter copies `value`;
 // `first` puts the rows above the web search (an explicit tool keyword or an obvious match).
 import { hslToHex, rgbToHsl } from './color.js';
 import { dateFormat, relativeFormat, t } from './i18n.js';
 
-/** calc, ts, uuid, b64, url, color, pw */
+/** calc, ts, uuid, b64, url, jwt, hash, color, pw */
 export const toolName = (tool) => t(`tool.${tool}`);
 
 const row = (tool, value, detail, extra = {}) => ({
@@ -216,6 +217,78 @@ function decodeURL(text) {
   }
 }
 
+// ---------- Tokens and hashes ----------
+
+const decodeJSON = (part) => {
+  try {
+    const value = JSON.parse(decodeBase64(part));
+    return typeof value === 'object' && value !== null && !Array.isArray(value) ? value : null;
+  } catch {
+    return null;
+  }
+};
+
+// Shows what a token says; the signature is not checked (that needs the issuer's key).
+function jwtRows(token, now) {
+  const parts = token.split('.');
+  const header = parts.length === 3 ? decodeJSON(parts[0]) : null;
+  const payload = header && decodeJSON(parts[1]);
+  if (!payload) return [errorRow('jwt', t('tool.jwtInvalid'))];
+  const rows = [row('jwt', JSON.stringify(payload), t('tool.jwtPayload'))];
+  const claims = [
+    ['exp', 'tool.jwtExpires', 'tool.jwtExpired'],
+    ['iat', 'tool.jwtIssued', 'tool.jwtIssued'],
+  ];
+  for (const [claim, future, past] of claims) {
+    if (!Number.isFinite(payload[claim])) continue;
+    const ms = payload[claim] * 1000;
+    const date = dateFormat({ dateStyle: 'medium', timeStyle: 'medium' }).format(ms);
+    rows.push(row('jwt', date, t(ms > now ? future : past, { when: relative(ms, now) })));
+  }
+  rows.push(row('jwt', JSON.stringify(header), t('tool.jwtHeader')));
+  return rows;
+}
+
+// SHA-256 (FIPS 180-4) written out: crypto.subtle.digest is async and the palette is not.
+// The constants are the fractional parts of the square and cube roots of the first primes.
+const PRIMES = [];
+for (let n = 2; PRIMES.length < 64; n++) if (PRIMES.every((p) => n % p)) PRIMES.push(n);
+const fraction = (value) => (value % 1) * 2 ** 32;
+const ROUND_CONSTANTS = Uint32Array.from(PRIMES, (p) => fraction(Math.cbrt(p)));
+const INITIAL_HASH = Uint32Array.from(PRIMES.slice(0, 8), (p) => fraction(Math.sqrt(p)));
+const rotr = (x, n) => (x >>> n) | (x << (32 - n));
+
+export function sha256(text) {
+  const bytes = new TextEncoder().encode(text);
+  // Message + 0x80 + zero padding + 64-bit big-endian bit length, in 64-byte blocks.
+  const data = new Uint8Array(Math.ceil((bytes.length + 9) / 64) * 64);
+  data.set(bytes);
+  data[bytes.length] = 0x80;
+  const view = new DataView(data.buffer);
+  view.setUint32(data.length - 8, Math.floor(bytes.length / 2 ** 29));
+  view.setUint32(data.length - 4, bytes.length * 8);
+
+  const hash = Uint32Array.from(INITIAL_HASH);
+  const w = new Uint32Array(64);
+  for (let offset = 0; offset < data.length; offset += 64) {
+    for (let i = 0; i < 16; i++) w[i] = view.getUint32(offset + i * 4);
+    for (let i = 16; i < 64; i++) {
+      const s0 = rotr(w[i - 15], 7) ^ rotr(w[i - 15], 18) ^ (w[i - 15] >>> 3);
+      const s1 = rotr(w[i - 2], 17) ^ rotr(w[i - 2], 19) ^ (w[i - 2] >>> 10);
+      w[i] = w[i - 16] + s0 + w[i - 7] + s1;
+    }
+    let [a, b, c, d, e, f, g, h] = hash;
+    for (let i = 0; i < 64; i++) {
+      const t1 =
+        h + (rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25)) + ((e & f) ^ (~e & g)) + ROUND_CONSTANTS[i] + w[i];
+      const t2 = (rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22)) + ((a & b) ^ (a & c) ^ (b & c));
+      [h, g, f, e, d, c, b, a] = [g, f, e, (d + t1) >>> 0, c, b, a, (t1 + t2) >>> 0];
+    }
+    [a, b, c, d, e, f, g, h].forEach((value, i) => (hash[i] += value));
+  }
+  return Array.from(hash, (value) => value.toString(16).padStart(8, '0')).join('');
+}
+
 // ---------- Colors ----------
 
 const toHex = (r, g, b) => `#${[r, g, b].map((value) => value.toString(16).padStart(2, '0')).join('')}`;
@@ -321,9 +394,16 @@ export function runTools(raw, now = Date.now()) {
         decoded === null ? errorRow('url', t('tool.urlInvalid')) : row('url', decoded, t('tool.urlDecoded')),
       ];
     }
+    case 'jwt':
+      return argument ? jwtRows(argument, now) : [];
+    case 'sha256':
+      return argument ? [row('hash', sha256(argument), t('tool.sha256'))] : [];
     default:
       break;
   }
+
+  // A pasted token: header and payload are base64url JSON, so both start with "eyJ" ('{"').
+  if (/^eyJ[\w-]*\.eyJ[\w-]*\.[\w-]*$/.test(text)) return jwtRows(text, now);
 
   const color = colorRows(text);
   if (color) return color;

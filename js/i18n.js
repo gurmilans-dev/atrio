@@ -199,7 +199,7 @@ const it = {
   'shortcuts.pick': 'Scegli tra i suggerimenti della ricerca',
   'shortcuts.alwaysSearch': 'Cerca sempre, anche se sembra un URL',
   'shortcuts.tools':
-    'Strumenti nella ricerca: calcoli, timestamp, UUID, Base64, URL, password, colori. Invio copia il risultato.',
+    'Strumenti nella ricerca: calcoli, timestamp, UUID, Base64, URL, JWT, SHA-256, password, colori. Invio copia il risultato.',
   'shortcuts.openLink': 'Apri il collegamento',
   'shortcuts.newTask': 'Nuova attività',
   'shortcuts.apps': 'App Google',
@@ -246,6 +246,15 @@ const it = {
   'tool.urlEncoded': 'URL, codificato',
   'tool.urlDecoded': 'URL, decodificato',
   'tool.urlInvalid': 'Codifica URL non valida',
+  'tool.jwt': 'JWT',
+  'tool.jwtPayload': 'JWT, payload (firma non verificata)',
+  'tool.jwtHeader': 'JWT, header',
+  'tool.jwtExpires': 'Scade {when}',
+  'tool.jwtExpired': 'Scaduto {when}',
+  'tool.jwtIssued': 'Emesso {when}',
+  'tool.jwtInvalid': 'JWT non valido',
+  'tool.hash': 'SHA-256',
+  'tool.sha256': 'SHA-256, esadecimale',
 };
 
 const en = {
@@ -440,7 +449,7 @@ const en = {
   'shortcuts.pick': 'Pick a search suggestion',
   'shortcuts.alwaysSearch': 'Search even if it looks like a URL',
   'shortcuts.tools':
-    'Tools in the search box: math, timestamps, UUIDs, Base64, URLs, passwords, colors. Enter copies the result.',
+    'Tools in the search box: math, timestamps, UUIDs, Base64, URLs, JWTs, SHA-256, passwords, colors. Enter copies the result.',
   'shortcuts.openLink': 'Open the link',
   'shortcuts.newTask': 'New task',
   'shortcuts.apps': 'Google apps',
@@ -487,6 +496,15 @@ const en = {
   'tool.urlEncoded': 'URL, encoded',
   'tool.urlDecoded': 'URL, decoded',
   'tool.urlInvalid': 'Invalid URL encoding',
+  'tool.jwt': 'JWT',
+  'tool.jwtPayload': 'JWT, payload (signature not verified)',
+  'tool.jwtHeader': 'JWT, header',
+  'tool.jwtExpires': 'Expires {when}',
+  'tool.jwtExpired': 'Expired {when}',
+  'tool.jwtIssued': 'Issued {when}',
+  'tool.jwtInvalid': 'Invalid JWT',
+  'tool.hash': 'SHA-256',
+  'tool.sha256': 'SHA-256, hex',
 };
 
 export const STRINGS = { it, en };

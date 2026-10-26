@@ -38,6 +38,8 @@ no tracking.
   - timestamps both ways: `ts`, `ts 1730000000`, `ts 2026-10-26 14:00`;
   - `uuid` (or `uuid 5`), `pw` / `pw 32` for random passwords;
   - `b64` / `b64d` and `url` / `urld` to encode and decode text;
+  - `jwt <token>`, or just paste a token: payload, header, expiry and issue dates (the signature is not checked);
+  - `sha256 <text>` for a hex digest;
   - colors: `#7aa2f7`, `rgb(…)` or `hsl(…)` converted to the other formats, with a swatch.
 - **Focus timer.** 25/5 or 50/10 sessions, a system notification when a session ends (even with no tab open), the
   countdown in the tab title, a 20-week heatmap and your current streak.

@@ -540,8 +540,21 @@ try {
     const uuid = await rowsFor('uuid');
     const auto = await rowsFor('1024*3');
     const search = await rowsFor('react hooks');
+    const jwt = await rowsFor(
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
+    );
+    const hash = await rowsFor('sha256 abc');
     await a.press('Escape');
     await a.eval(clearSearch);
+    assert.deepEqual(
+      { jwt: jwt.rows[0], jwtHint: jwt.hint, hash: hash.rows[0], hashHint: hash.hint },
+      {
+        jwt: '{"sub":"1234567890","name":"John Doe","iat":1516239022}',
+        jwtHint: '⧉ JWT',
+        hash: 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
+        hashHint: '⧉ SHA-256',
+      },
+    );
     assert.deepEqual(calc, {
       rows: ['1024', '0x400', '0b10000000000', '= 2^10'],
       hint: '⧉ Calcolatrice',

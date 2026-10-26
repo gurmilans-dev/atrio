@@ -10,7 +10,8 @@
 - A **×** in the search box clears it and keeps the cursor there; it shows only while there is text.
 - **Developer tools in the search box**, local, `Enter` copies the result: calculator (`= …` or plain arithmetic,
   with hex/binary), timestamps both ways (`ts`), `uuid`, passwords (`pw`), Base64 (`b64` / `b64d`), URL encoding
-  (`url` / `urld`), color conversion (`#hex`, `rgb()`, `hsl()`).
+  (`url` / `urld`), JWT decoding (`jwt <token>` or a pasted token: payload, header, expiry), SHA-256 (`sha256`),
+  color conversion (`#hex`, `rgb()`, `hsl()`).
 
 ### Changed
 

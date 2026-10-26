@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { afterEach, describe, test } from 'node:test';
-import { decodeBase64, encodeBase64, evaluate, password, runTools } from '../js/devtools.js';
+import { createHash } from 'node:crypto';
+import { decodeBase64, encodeBase64, evaluate, password, runTools, sha256 } from '../js/devtools.js';
 import { setLanguage } from '../js/i18n.js';
 
 // Labels and dates follow the interface language: pin it, whatever the machine's locale.
@@ -158,6 +159,65 @@ describe('random values', () => {
     assert.equal(values('pw 3')[0].length, 8);
     assert.notEqual(password(24, 'abc'), password(24, 'abc'));
     assert.deepEqual(tools('pw'), ['pw', 'pw']);
+  });
+});
+
+describe('JWT', () => {
+  const part = (value) =>
+    encodeBase64(JSON.stringify(value)).replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
+  const token = (payload) => `${part({ alg: 'HS256', typ: 'JWT' })}.${part(payload)}.c2lnbmF0dXJl`;
+
+  test('payload first, then expiry and issue dates, then header', () => {
+    const results = runTools(
+      `jwt ${token({ sub: 'ada', exp: NOW / 1000 + 7200, iat: NOW / 1000 - 3600 })}`,
+      NOW,
+    );
+    assert.deepEqual(
+      results.map((result) => result.detail),
+      ['JWT, payload (signature not verified)', 'Expires in 2 hours', 'Issued 1 hour ago', 'JWT, header'],
+    );
+    assert.deepEqual(JSON.parse(results[0].value), {
+      sub: 'ada',
+      exp: NOW / 1000 + 7200,
+      iat: NOW / 1000 - 3600,
+    });
+    assert.equal(results[3].value, '{"alg":"HS256","typ":"JWT"}');
+  });
+
+  test('an expired token says so; a pasted token is recognized without the keyword', () => {
+    const results = runTools(token({ exp: NOW / 1000 - 86400 }), NOW);
+    assert.ok(results.every((result) => result.tool === 'jwt' && result.first));
+    assert.equal(results[1].detail, 'Expired yesterday');
+  });
+
+  test('broken tokens are reported, look-alikes are left alone', () => {
+    assert.equal(runTools('jwt abc.def', NOW)[0].error, true);
+    assert.equal(runTools('jwt eyJhbGciOiJIUzI1NiJ9.bm90IGpzb24.x', NOW)[0].error, true);
+    assert.deepEqual(values('eyJ is a prefix'), []);
+  });
+});
+
+describe('SHA-256', () => {
+  test('known vectors', () => {
+    assert.equal(sha256(''), 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855');
+    assert.equal(sha256('abc'), 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
+    assert.equal(
+      sha256('abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq'),
+      '248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1',
+    );
+  });
+
+  test('matches node:crypto across block boundaries and UTF-8', () => {
+    for (const text of ['ciao è 🙂', 'x'.repeat(55), 'x'.repeat(56), 'x'.repeat(64), 'y'.repeat(1000)]) {
+      assert.equal(sha256(text), createHash('sha256').update(text).digest('hex'), text.slice(0, 10));
+    }
+  });
+
+  test('"sha256 text" in the palette', () => {
+    assert.deepEqual(values('sha256 abc'), [
+      'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
+    ]);
+    assert.deepEqual(values('sha256'), []);
   });
 });
 
