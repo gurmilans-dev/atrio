@@ -699,6 +699,33 @@ try {
     assert.deepEqual(r, { transform: '', lit: 0, lift: 'none' });
   });
 
+  await check('search: the × clears the box and keeps the focus', async () => {
+    await blur();
+    const read = () =>
+      a.eval(`({
+        clear: !document.getElementById('search-clear').hidden,
+        key: !document.getElementById('search-key').hidden,
+        value: document.getElementById('search-input').value,
+        focused: document.activeElement.id,
+        open: !document.getElementById('search-results').hidden,
+      })`);
+    const empty = await read();
+    await a.press('/');
+    await a.type('>tema');
+    const typed = await read();
+    await a.click('#search-clear');
+    const cleared = await read();
+    await a.eval(clearSearch);
+    assert.deepEqual(
+      { empty, typed, cleared },
+      {
+        empty: { clear: false, key: true, value: '', focused: '', open: false },
+        typed: { clear: true, key: false, value: '>tema', focused: 'search-input', open: true },
+        cleared: { clear: false, key: true, value: '', focused: 'search-input', open: false },
+      },
+    );
+  });
+
   await check('language: English from settings, every text translated, back to Italian', async () => {
     const before = await a.eval(`document.documentElement.lang`);
     await a.eval(

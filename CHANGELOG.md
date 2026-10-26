@@ -7,6 +7,7 @@
 - **English interface** alongside Italian. It follows the browser language, or can be set in Settings → General.
   Dates, numbers, Google app names and the end-of-session notification follow the chosen language. Palette commands
   and apps can be found by typing in either language.
+- A **×** in the search box clears it and keeps the cursor there; it shows only while there is text.
 - **Developer tools in the search box**, local, `Enter` copies the result: calculator (`= …` or plain arithmetic,
   with hex/binary), timestamps both ways (`ts`), `uuid`, passwords (`pw`), Base64 (`b64` / `b64d`), URL encoding
   (`url` / `urld`), color conversion (`#hex`, `rgb()`, `hsl()`).

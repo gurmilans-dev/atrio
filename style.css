@@ -540,6 +540,32 @@ kbd {
 .search input::placeholder {
   color: var(--text-muted);
 }
+/* × that empties the box, shown only while there is text. */
+.search-clear {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin: 0 -6px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+}
+.search-clear:hover {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+.search-clear svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
 .search-hint {
   flex: none;
   padding: 4px 9px;

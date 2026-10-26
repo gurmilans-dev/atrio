@@ -280,7 +280,16 @@ function renderHint() {
   const hint = $('search-hint');
   if (hint.textContent !== text) hint.textContent = text;
   hint.hidden = !text;
-  $('search-key').hidden = Boolean(text);
+  // The "/" key only invites to an empty box; with text the × to clear it takes its place.
+  const empty = !input().value;
+  $('search-clear').hidden = empty;
+  $('search-key').hidden = !empty || Boolean(text);
+}
+
+function clearSearch() {
+  input().value = '';
+  input().focus();
+  refresh();
 }
 
 function renderTips() {
@@ -346,6 +355,9 @@ export function initSearch() {
     else if (box.value.trim().startsWith('>')) announce(t('toast.noCommand'));
     else go(false);
   });
+
+  $('search-clear').addEventListener('mousedown', (event) => event.preventDefault()); // keep focus in the box
+  $('search-clear').addEventListener('click', clearSearch);
 
   const list = $('search-results');
   list.addEventListener('mousedown', (event) => event.preventDefault()); // keep focus in the box
