@@ -1,0 +1,201 @@
+// Focus timer panel. Ticks only while running: once per displayed second when visible,
+// once per minute when hidden (just to keep the tab title current).
+import { $, announce, el } from './dom.js';
+import { ensureTimerAlarm, syncTimerAlarm } from './platform.js';
+import { dayKey, heatLevel, heatmap, sessionsToday, streak } from './stats.js';
+import { getState, subscribe, update } from './store.js';
+import {
+  completeSession,
+  formatClock,
+  isExpired,
+  msUntilNextMinute,
+  msUntilNextSecond,
+  pauseTimer,
+  presetById,
+  progressOf,
+  readyTimer,
+  remainingSeconds,
+  startTimer,
+} from './timer.js';
+
+const MODE_LABEL = { focus: 'Focus', break: 'Pausa' };
+const DEFAULT_TITLE = 'Nuova scheda';
+const cellDate = new Intl.DateTimeFormat('it-IT', { weekday: 'short', day: 'numeric', month: 'short' });
+let tickTimeout;
+let pendingMessage = null;
+let heatmapKey = '';
+
+const plural = (count, one, many) => `${count} ${count === 1 ? one : many}`;
+
+// GitHub-style grid of the last weeks; rebuilt only when the history or the day changes.
+function renderHeatmap(stats, now) {
+  const key = JSON.stringify(stats.history) + dayKey(new Date(now));
+  if (key === heatmapKey) return;
+  heatmapKey = key;
+  const cells = heatmap(stats.history, now);
+  const days = streak(stats.history, now);
+  const recent = cells.reduce((sum, cell) => sum + (cell?.count ?? 0), 0);
+  $('heatmap').replaceChildren(
+    ...cells.map((cell) => {
+      if (!cell) return el('span', 'cell empty');
+      const node = el('span', `cell l${heatLevel(cell.count)}${cell.today ? ' today' : ''}`);
+      node.title = `${plural(cell.count, 'sessione', 'sessioni')} · ${cellDate.format(cell.date)}`;
+      return node;
+    }),
+  );
+  $('heatmap').setAttribute(
+    'aria-label',
+    `${plural(recent, 'sessione', 'sessioni')} nelle ultime settimane, serie di ${plural(days, 'giorno', 'giorni')}`,
+  );
+  $('streak').textContent = days ? `serie: ${plural(days, 'giorno', 'giorni')}` : 'nessuna serie attiva';
+}
+
+// A short glow on the panel when a session ends while the page is visible.
+function celebrate() {
+  const panel = $('focus-panel');
+  panel.classList.remove('celebrate');
+  void panel.offsetWidth; // restart the animation
+  panel.classList.add('celebrate');
+}
+
+function render(state) {
+  const now = Date.now();
+  const { timer } = state;
+  const seconds = remainingSeconds(timer, now);
+  const fresh = !timer.running && seconds === timer.total;
+
+  $('timer').textContent = formatClock(seconds);
+  $('timer-state').textContent = timer.running
+    ? 'In corso'
+    : seconds === 0
+      ? 'Completato'
+      : fresh
+        ? 'Pronto'
+        : 'In pausa';
+  $('timer-toggle').textContent = timer.running ? 'Pausa' : fresh || seconds === 0 ? 'Avvia' : 'Riprendi';
+  for (const mode of ['focus', 'break']) {
+    const node = $(`${mode}-mode`);
+    node.classList.toggle('active', timer.mode === mode);
+    node.setAttribute('aria-pressed', String(timer.mode === mode));
+  }
+
+  const preset = presetById(state.preset);
+  $('preset-caption').textContent = `${preset.focus} / ${preset.break}`;
+  const total = state.stats.total;
+  $('focus-count').textContent = `${sessionsToday(state.stats, now)} oggi`;
+  $('focus-count').title = `In totale: ${total} ${total === 1 ? 'sessione' : 'sessioni'}`;
+
+  const progress = progressOf(timer, now);
+  $('progress').setAttribute('aria-valuenow', String(Math.round(progress * 100)));
+  $('progress-fill').style.transform = `scaleX(${progress})`;
+  renderHeatmap(state.stats, now);
+
+  if (!timer.running) document.title = DEFAULT_TITLE;
+  else {
+    const left = document.hidden ? `${Math.ceil(seconds / 60)} min` : formatClock(seconds);
+    document.title = `${left} · ${MODE_LABEL[timer.mode]}`;
+  }
+}
+
+function schedule(state) {
+  clearTimeout(tickTimeout);
+  if (!state.timer.running) return;
+  const now = Date.now();
+  const delay = document.hidden ? msUntilNextMinute(state.timer, now) : msUntilNextSecond(state.timer, now);
+  tickTimeout = setTimeout(tick, delay);
+}
+
+function finish() {
+  let finishedFocus = false;
+  update((state) => {
+    if (!isExpired(state.timer, Date.now())) return;
+    const result = completeSession(state);
+    finishedFocus = result.finishedFocus;
+    state.stats = result.stats;
+    state.timer = result.timer;
+  });
+  const message = finishedFocus
+    ? 'Sessione completata. La pausa è pronta.'
+    : 'Pausa finita. Pronto per il focus.';
+  if (document.hidden) pendingMessage = message;
+  else {
+    announce(message);
+    celebrate();
+  }
+}
+
+function tick() {
+  const state = getState();
+  if (isExpired(state.timer, Date.now())) {
+    finish(); // the update re-renders and reschedules through subscribe()
+    return;
+  }
+  render(state);
+  schedule(state);
+}
+
+export function syncAlarm() {
+  const { timer, notify } = getState();
+  syncTimerAlarm(timer, notify).catch(() => {});
+}
+
+export function toggleTimer() {
+  const now = Date.now();
+  if (isExpired(getState().timer, now)) {
+    finish();
+    return;
+  }
+  update((state) => {
+    state.timer = state.timer.running ? pauseTimer(state.timer, now) : startTimer(state.timer, now);
+  });
+  syncAlarm();
+}
+
+export function resetTimer() {
+  update((state) => {
+    state.timer = readyTimer(state.timer.mode, state.preset);
+  });
+  syncAlarm();
+}
+
+function setMode(mode) {
+  if (getState().timer.mode === mode) return;
+  update((state) => {
+    state.timer = readyTimer(mode, state.preset);
+  });
+  syncAlarm();
+}
+
+// A session already started keeps its length; the new preset applies from the next one.
+export function applyPreset(presetId) {
+  const { timer, preset } = getState();
+  if (preset === presetId) return;
+  const untouched = !timer.running && timer.remaining === timer.total;
+  update((state) => {
+    state.preset = presetId;
+    if (untouched) state.timer = readyTimer(state.timer.mode, presetId);
+  });
+  if (!untouched) announce('Il nuovo preset vale dalla prossima sessione.');
+}
+
+export function initFocus() {
+  $('timer-toggle').addEventListener('click', toggleTimer);
+  $('timer-reset').addEventListener('click', resetTimer);
+  $('focus-mode').addEventListener('click', () => setMode('focus'));
+  $('break-mode').addEventListener('click', () => setMode('break'));
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && pendingMessage) {
+      announce(pendingMessage);
+      celebrate();
+      pendingMessage = null;
+    }
+    tick();
+  });
+  subscribe((state) => {
+    render(state);
+    schedule(state);
+  });
+  tick();
+  const { timer, notify } = getState();
+  ensureTimerAlarm(timer, notify).catch(() => {});
+}

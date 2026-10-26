@@ -1,0 +1,635 @@
+// End-to-end checks in a real headless Chrome: `npm run test:e2e` (set CHROME_PATH if Chrome is not found).
+// Layout checks assume the default fonts of the machine; they were written on Windows.
+import assert from 'node:assert/strict';
+import { fileURLToPath } from 'node:url';
+import { launch, sleep } from './harness.js';
+
+const ROOT = fileURLToPath(new URL('../..', import.meta.url));
+const STATE = `JSON.parse(localStorage.getItem('workspace.newtab.v2'))`;
+const results = [];
+
+async function check(name, fn) {
+  const started = Date.now();
+  try {
+    const detail = await fn();
+    results.push({ name, ok: true });
+    console.log(`✔ ${name}${detail ? ` — ${detail}` : ''} (${Date.now() - started} ms)`);
+  } catch (error) {
+    results.push({ name, ok: false });
+    console.log(`✖ ${name}\n    ${error.message.split('\n').join('\n    ')}`);
+  }
+}
+
+const browser = await launch(ROOT);
+const a = await browser.openPage();
+
+// Snippets evaluated inside the page.
+const settings = (code) =>
+  `(() => { const d = document.getElementById('settings'); d.showModal(); ${code}; d.close(); })()`;
+const labels = (selector) =>
+  `[...document.querySelectorAll(${JSON.stringify(selector)})].map((n) => n.textContent)`;
+const blur = () => a.eval('document.activeElement.blur()');
+const clearSearch = `(() => { const i = document.getElementById('search-input'); i.value = ''; i.dispatchEvent(new Event('input')); i.blur(); })()`;
+const pageScroll = 'document.documentElement.scrollHeight - innerHeight';
+
+try {
+  await check('first render', async () => {
+    const info = await a.eval(`({
+      links: document.querySelectorAll('#links .shortcut').length,
+      engines: document.querySelectorAll('#search-engine option').length,
+      tips: document.querySelectorAll('#search-tips code').length,
+      clock: document.getElementById('clock').textContent,
+      saved: localStorage.getItem('workspace.newtab.v2') !== null,
+    })`);
+    assert.deepEqual(
+      { ...info, clock: info.clock !== '--:--' },
+      { links: 6, engines: 3, tips: 12, clock: true, saved: true },
+    );
+    assert.ok((await a.eval(pageScroll)) <= 0, 'the page scrolls at 1440×900');
+  });
+
+  await check('search hints', async () => {
+    const hints = await a.eval(`(() => {
+      const input = document.getElementById('search-input');
+      const out = {};
+      for (const value of ['npm zod', 'console.log', 'localhost:3000', 'chrome://extensions', 'so css grid']) {
+        input.value = value;
+        input.dispatchEvent(new Event('input'));
+        const hint = document.getElementById('search-hint');
+        out[value] = hint.hidden ? '' : hint.textContent;
+      }
+      input.value = '';
+      input.dispatchEvent(new Event('input'));
+      return out;
+    })()`);
+    assert.deepEqual(hints, {
+      'npm zod': '→ npm',
+      'console.log': '',
+      'localhost:3000': '↗ apri sito',
+      'chrome://extensions': '↗ pagina Chrome',
+      'so css grid': '→ Stack Overflow',
+    });
+  });
+
+  await check('tasks: add, toggle, clear done, undo', async () => {
+    const r = await a.eval(`(() => {
+      const input = document.getElementById('task-input');
+      for (const text of ['Primo', 'Secondo']) { input.value = text; document.getElementById('task-form').requestSubmit(); }
+      const rows = () => ${labels('#task-list .task-label')}.join();
+      const added = rows();
+      document.querySelector('#task-list [data-action=toggle]').click();
+      const counter = document.getElementById('task-counter').textContent;
+      document.getElementById('clear-done').click();
+      const cleared = rows();
+      document.querySelector('#toast .toast-action').click();
+      return { added, counter, cleared, undone: rows() };
+    })()`);
+    assert.deepEqual(r, {
+      added: 'Secondo,Primo',
+      counter: '1 / 2',
+      cleared: 'Primo',
+      undone: 'Secondo,Primo',
+    });
+  });
+
+  await check('keyboard shortcuts T, S, Esc, /', async () => {
+    await blur();
+    await a.press('t');
+    const task = await a.eval('document.activeElement.id');
+    await a.press('Escape');
+    await a.press('s');
+    const open = await a.eval(`document.getElementById('settings').open`);
+    await sleep(300);
+    await a.press('Escape');
+    await sleep(300);
+    const closed = !(await a.eval(`document.getElementById('settings').open`));
+    await a.press('/');
+    const search = await a.eval('document.activeElement.id');
+    await a.press('Escape');
+    assert.deepEqual(
+      { task, open, closed, search },
+      { task: 'task-input', open: true, closed: true, search: 'search-input' },
+    );
+  });
+
+  await check('timer: start and pause with P, countdown in the tab title', async () => {
+    await blur();
+    await a.press('p');
+    await sleep(1200);
+    const running = await a.eval(`({ title: document.title, stored: ${STATE}.timer.running })`);
+    await a.press('p');
+    const paused = await a.eval(
+      `({ title: document.title, button: document.getElementById('timer-toggle').textContent })`,
+    );
+    await a.click('#timer-reset');
+    assert.ok(running.stored && /^24:5\d · Focus$/.test(running.title), JSON.stringify(running));
+    assert.deepEqual(paused, { title: 'Nuova scheda', button: 'Riprendi' });
+  });
+
+  await check('timer: a finished session readies the break and counts the day', async () => {
+    await a.eval(`(() => {
+      const s = ${STATE};
+      s.timer = { mode: 'focus', running: true, remaining: 1500, total: 1500, endAt: Date.now() + 1200 };
+      localStorage.setItem('workspace.newtab.v2', JSON.stringify(s));
+    })()`);
+    await a.goto();
+    await sleep(1800);
+    const r = await a.eval(`({
+      mode: ${STATE}.timer.mode,
+      count: document.getElementById('focus-count').textContent,
+      timer: document.getElementById('timer').textContent,
+      celebrate: document.getElementById('focus-panel').classList.contains('celebrate'),
+    })`);
+    assert.deepEqual(r, { mode: 'break', count: '1 oggi', timer: '05:00', celebrate: true });
+  });
+
+  await check('timer: a new preset does not cut a started session', async () => {
+    const r = await a.eval(`(() => {
+      document.getElementById('timer-toggle').click();
+      document.getElementById('settings').showModal();
+      document.querySelector('[data-preset="50"]').click();
+      const during = ${STATE};
+      document.getElementById('timer-reset').click();
+      const reset = ${STATE}.timer.total;
+      document.querySelector('[data-preset="25"]').click();
+      document.getElementById('settings').close();
+      return { preset: during.preset, total: during.timer.total, running: during.timer.running, reset };
+    })()`);
+    assert.deepEqual(r, { preset: 50, total: 300, running: true, reset: 600 });
+  });
+
+  await check('themes recolor the whole interface', async () => {
+    const colors = new Set();
+    for (const theme of ['mocha', 'matrix', 'tokyo']) {
+      await a.eval(settings(`document.querySelector('[data-theme-choice="${theme}"]').click()`));
+      colors.add(await a.eval(`getComputedStyle(document.querySelector('.link-icon')).borderColor`));
+    }
+    assert.equal(colors.size, 3);
+  });
+
+  await check('links: edit, move, remove with undo, URL without scheme', async () => {
+    const r = await a.eval(`(() => {
+      const names = () => ${labels('#links .link-name')}.slice(0, 2).join();
+      document.getElementById('settings').showModal();
+      document.querySelector('#settings-links [data-action=edit]').click();
+      document.getElementById('link-name').value = 'GitHub Pro';
+      document.getElementById('link-form').requestSubmit();
+      const edited = names();
+      document.querySelector('#settings-links [data-action=down]').click();
+      const moved = names();
+      document.querySelector('#settings-links [data-action=remove]').click();
+      const toastInDialog = document.getElementById('toast').parentElement.id;
+      document.querySelector('#toast .toast-action').click();
+      const undone = names();
+      document.getElementById('link-name').value = 'Local';
+      document.getElementById('link-url').value = 'localhost:5173';
+      document.getElementById('link-form').requestSubmit();
+      document.getElementById('settings').close();
+      return { edited, moved, toastInDialog, undone, last: ${STATE}.links.at(-1).url };
+    })()`);
+    assert.deepEqual(r, {
+      edited: 'GitHub Pro,ChatGPT',
+      moved: 'ChatGPT,GitHub Pro',
+      toastInDialog: 'settings',
+      undone: 'ChatGPT,GitHub Pro',
+      last: 'http://localhost:5173/',
+    });
+  });
+
+  await check('wallpaper upload is downscaled to WebP and survives reload', async () => {
+    const r = await a.eval(`(async () => {
+      const canvas = new OffscreenCanvas(4000, 3000);
+      const context = canvas.getContext('2d');
+      const gradient = context.createLinearGradient(0, 0, 4000, 3000);
+      gradient.addColorStop(0, '#203060');
+      gradient.addColorStop(1, '#f0a040');
+      context.fillStyle = gradient;
+      context.fillRect(0, 0, 4000, 3000);
+      const png = await canvas.convertToBlob({ type: 'image/png' });
+      const transfer = new DataTransfer();
+      transfer.items.add(new File([png], 'big.png', { type: 'image/png' }));
+      const input = document.getElementById('wallpaper-upload');
+      input.files = transfer.files;
+      input.dispatchEvent(new Event('change'));
+      for (let i = 0; i < 50 && !document.documentElement.hasAttribute('data-wallpaper-ready'); i++) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+      const db = await new Promise((resolve) => { const q = indexedDB.open('workspace-wallpaper', 1); q.onsuccess = () => resolve(q.result); });
+      const blob = await new Promise((resolve) => { const q = db.transaction('images').objectStore('images').get('selected'); q.onsuccess = () => resolve(q.result); });
+      const bitmap = await createImageBitmap(blob);
+      return { type: blob.type, smaller: bitmap.width < 4000, ready: document.documentElement.hasAttribute('data-wallpaper-ready') };
+    })()`);
+    assert.deepEqual(r, { type: 'image/webp', smaller: true, ready: true });
+    await a.goto();
+    const boot = await a.eval(`({
+      wallpaper: document.documentElement.dataset.wallpaper,
+      ready: document.documentElement.hasAttribute('data-wallpaper-ready'),
+      blob: getComputedStyle(document.documentElement).getPropertyValue('--wallpaper').includes('blob:'),
+    })`);
+    assert.deepEqual(boot, { wallpaper: 'custom', ready: true, blob: true });
+  });
+
+  await check('backup: export, reset, import (wallpaper included)', async () => {
+    const r = await a.eval(`(async () => {
+      let href;
+      const click = HTMLAnchorElement.prototype.click;
+      HTMLAnchorElement.prototype.click = function () { if (this.download) href = this.href; else click.call(this); };
+      document.getElementById('export-data').click();
+      for (let i = 0; i < 50 && !href; i++) await new Promise((resolve) => setTimeout(resolve, 100));
+      HTMLAnchorElement.prototype.click = click;
+      const text = await (await fetch(href)).text();
+      const payload = JSON.parse(text);
+      window.confirm = () => true;
+      document.getElementById('settings').showModal();
+      document.getElementById('reset-data').click();
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      const afterReset = document.querySelectorAll('#task-list li').length;
+      const transfer = new DataTransfer();
+      transfer.items.add(new File([text], 'backup.json', { type: 'application/json' }));
+      const input = document.getElementById('import-file');
+      input.files = transfer.files;
+      input.dispatchEvent(new Event('change'));
+      for (let i = 0; i < 50 && !document.querySelector('#task-list li'); i++) await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      document.getElementById('settings').close();
+      const s = ${STATE};
+      return { app: payload.app, image: Boolean(payload.wallpaperImage), timer: 'timer' in payload.state, afterReset, tasks: s.tasks.length, wallpaper: s.wallpaper };
+    })()`);
+    assert.deepEqual(r, {
+      app: 'atrio',
+      image: true,
+      timer: false,
+      afterReset: 0,
+      tasks: 2,
+      wallpaper: 'custom',
+    });
+  });
+
+  await check('several open tabs never overwrite each other', async () => {
+    const b = await browser.openPage();
+    await a.eval(
+      `(() => { const i = document.getElementById('task-input'); i.value = 'Da scheda A'; document.getElementById('task-form').requestSubmit(); })()`,
+    );
+    await sleep(300);
+    const seenInB = await b.eval(`${labels('#task-list .task-label')}.includes('Da scheda A')`);
+    await b.eval(`document.getElementById('timer-toggle').click()`);
+    await sleep(300);
+    const kept = await a.eval(`${STATE}.tasks.some((task) => task.text === 'Da scheda A')`);
+    const timerInA = await a.eval(`document.getElementById('timer-state').textContent`);
+    await b.eval(`document.getElementById('timer-reset').click()`);
+    await b.close();
+    assert.deepEqual({ seenInB, kept, timerInA }, { seenInB: true, kept: true, timerInA: 'In corso' });
+  });
+
+  await check('v1 data is migrated, base64 wallpaper included', async () => {
+    await a.eval(`(async () => {
+      const canvas = new OffscreenCanvas(64, 64);
+      const context = canvas.getContext('2d');
+      context.fillStyle = '#c33';
+      context.fillRect(0, 0, 64, 64);
+      const blob = await canvas.convertToBlob({ type: 'image/png' });
+      const dataURL = await new Promise((resolve) => { const r = new FileReader(); r.onload = () => resolve(r.result); r.readAsDataURL(blob); });
+      localStorage.clear();
+      await new Promise((resolve) => { const q = indexedDB.deleteDatabase('workspace-wallpaper'); q.onsuccess = q.onerror = q.onblocked = resolve; });
+      localStorage.setItem('devstart.v1', JSON.stringify({
+        theme: 'mocha', wallpaper: 'custom', uploadedWallpaper: dataURL, completedSessions: 7,
+        tasks: [{ text: 'vecchio task' }, { text: 'senza id' }], links: [{ name: 'Old', url: 'https://old.dev' }],
+      }));
+    })()`);
+    await a.goto();
+    await sleep(1200);
+    const r = await a.eval(`({
+      legacyLeft: localStorage.getItem('devstart.v1') !== null,
+      theme: document.documentElement.dataset.theme,
+      tasks: document.querySelectorAll('#task-list li').length,
+      links: document.querySelectorAll('#links .shortcut').length,
+      total: ${STATE}.stats.total,
+      wallpaperReady: document.documentElement.hasAttribute('data-wallpaper-ready'),
+    })`);
+    assert.deepEqual(r, {
+      legacyLeft: false,
+      theme: 'mocha',
+      tasks: 2,
+      links: 1,
+      total: 7,
+      wallpaperReady: true,
+    });
+    // v2 deleted every task without an id at once; now each gets its own.
+    await a.eval(`document.querySelector('#task-list .task-delete').click()`);
+    assert.equal(await a.eval(`document.querySelectorAll('#task-list li').length`), 1);
+  });
+
+  await check('corrupted storage is backed up, not lost', async () => {
+    await a.eval(`localStorage.setItem('workspace.newtab.v2', '{broken json')`);
+    await a.goto();
+    const r = await a.eval(`({
+      backup: localStorage.getItem('workspace.newtab.v2.corrupt'),
+      links: document.querySelectorAll('#links .shortcut').length,
+    })`);
+    assert.deepEqual(r, { backup: '{broken json', links: 6 });
+  });
+
+  await check('settings button in the corner opens the drawer', async () => {
+    await a.click('#open-settings');
+    await sleep(300);
+    const open = await a.eval(`document.getElementById('settings').open`);
+    await a.click('#close-settings');
+    await sleep(300);
+    assert.ok(open);
+  });
+
+  await check('wallpaper blur: live preview, saved, applied before paint, off at 0', async () => {
+    const set = (value) =>
+      a.eval(
+        settings(`const r = document.getElementById('blur-range'); r.value = '${value}';
+        r.dispatchEvent(new Event('input')); r.dispatchEvent(new Event('change'))`),
+      );
+    const read = `({ filter: getComputedStyle(document.querySelector('.wallpaper')).filter, stored: ${STATE}.blur })`;
+    await set(14);
+    const after = await a.eval(read);
+    await a.goto();
+    const reloaded = await a.eval(read);
+    await set(0);
+    const zero = await a.eval(read);
+    assert.deepEqual(
+      { after, reloaded, zero },
+      {
+        after: { filter: 'blur(14px)', stored: 14 },
+        reloaded: { filter: 'blur(14px)', stored: 14 },
+        zero: { filter: 'none', stored: 0 },
+      },
+    );
+  });
+
+  await check('palette: links and commands while typing, ↓ and Esc', async () => {
+    await blur();
+    await a.press('/');
+    await a.type('git');
+    const rows = await a.eval(labels('#search-results .result-label'));
+    await a.press('ArrowDown');
+    const active = await a.eval(
+      `document.getElementById('search-input').getAttribute('aria-activedescendant')`,
+    );
+    await a.press('Escape');
+    const afterEsc = await a.eval(
+      `({ open: !document.getElementById('search-results').hidden, value: document.getElementById('search-input').value })`,
+    );
+    await a.eval(clearSearch);
+    assert.ok(rows[0] === 'git' && rows.includes('GitHub'), JSON.stringify(rows));
+    assert.deepEqual({ active, afterEsc }, { active: 'result-1', afterEsc: { open: false, value: 'git' } });
+  });
+
+  await check('palette: ">" runs commands, Ctrl+Shift+P opens it', async () => {
+    await blur();
+    await a.press('>');
+    const count = await a.eval(`document.querySelectorAll('#search-results .result').length`);
+    await a.type('moch');
+    const first = await a.eval(`${labels('#search-results .result-label')}[0]`);
+    await a.press('Enter');
+    const theme = await a.eval('document.documentElement.dataset.theme');
+    await a.press('p', { ctrl: true, shift: true });
+    const opened = await a.eval(`document.getElementById('search-input').value`);
+    await a.type('tokyo');
+    await a.press('Enter');
+    assert.ok(count >= 10, `${count} commands`);
+    assert.deepEqual({ first, theme, opened }, { first: 'Tema: Mocha', theme: 'mocha', opened: '>' });
+  });
+
+  await check('palette: "+ text" adds a task', async () => {
+    await blur();
+    await a.press('/');
+    await a.type('+ rivedere la PR #42');
+    await a.press('Enter');
+    assert.equal(await a.eval(`${labels('#task-list .task-label')}[0]`), 'rivedere la PR #42');
+  });
+
+  await check('focus heatmap and streak', async () => {
+    await a.eval(`(() => {
+      const s = ${STATE};
+      const key = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      const ago = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return key(d); };
+      s.stats.history = { [ago(1)]: 2, [ago(2)]: 4, [ago(3)]: 7, [ago(9)]: 1, [ago(30)]: 3 };
+      s.timer = { mode: 'focus', running: true, remaining: 1500, total: 1500, endAt: Date.now() + 1500 };
+      localStorage.setItem('workspace.newtab.v2', JSON.stringify(s));
+    })()`);
+    await a.goto();
+    await sleep(1600);
+    const r = await a.eval(`({
+      cells: document.querySelectorAll('#heatmap .cell').length,
+      today: document.querySelector('#heatmap .cell.today').classList.contains('l1'),
+      strongest: document.querySelectorAll('#heatmap .cell.l4').length,
+      streak: document.getElementById('streak').textContent,
+    })`);
+    assert.deepEqual(r, { cells: 140, today: true, strongest: 1, streak: 'serie: 4 giorni' });
+  });
+
+  await check('"Dallo sfondo" theme extracts the accent and applies it before paint', async () => {
+    await a.eval(
+      `(() => { document.getElementById('settings').showModal(); document.querySelector('[data-theme-choice="auto"]').click(); })()`,
+    );
+    let accent = null;
+    for (let i = 0; i < 30 && !accent; i++) {
+      await sleep(100);
+      accent = await a.eval(`${STATE}.autoAccent`);
+    }
+    await a.eval(`document.getElementById('settings').close()`);
+    await a.goto();
+    const boot = await a.eval(`document.documentElement.style.getPropertyValue('--accent')`);
+    await a.eval(settings(`document.querySelector('[data-theme-choice="tokyo"]').click()`));
+    const reset = await a.eval(`document.documentElement.style.getPropertyValue('--accent')`);
+    assert.ok(accent?.key === 'workstation' && /^#[0-9a-f]{6}$/.test(accent.color), JSON.stringify(accent));
+    assert.deepEqual({ boot, reset }, { boot: accent.color, reset: '' });
+  });
+
+  await check('notes: N opens them, autosave, survive reload', async () => {
+    await blur();
+    await a.press('n');
+    const focused = await a.eval('document.activeElement.id');
+    await a.type('npm run dev -- --port 5173');
+    await sleep(700);
+    const saved = await a.eval(
+      `({ notes: ${STATE}.notes, status: document.getElementById('notes-status').textContent })`,
+    );
+    assert.ok((await a.eval(pageScroll)) <= 0, 'the page scrolls with the notes open');
+    await a.goto();
+    const reloaded = await a.eval(`document.getElementById('notes-input').value`);
+    await blur();
+    await a.press('t');
+    const back = await a.eval(
+      `({ id: document.activeElement.id, notesHidden: document.getElementById('notes-pane').hidden })`,
+    );
+    assert.deepEqual(
+      { focused, saved, reloaded, back },
+      {
+        focused: 'notes-input',
+        saved: { notes: 'npm run dev -- --port 5173', status: 'salvate' },
+        reloaded: 'npm run dev -- --port 5173',
+        back: { id: 'task-input', notesHidden: true },
+      },
+    );
+  });
+
+  await check('greeting uses the name', async () => {
+    const text = await a.eval(`(() => {
+      document.getElementById('settings').showModal();
+      const input = document.getElementById('name-input');
+      input.value = 'Alex';
+      input.dispatchEvent(new Event('input'));
+      document.getElementById('settings').close();
+      return document.getElementById('greeting').textContent;
+    })()`);
+    assert.match(text, /^(Buongiorno|Buon pomeriggio|Buonasera|Buonanotte), Alex\.$/);
+  });
+
+  await check('spotlight borders and parallax follow the mouse', async () => {
+    await a.eval(clearSearch);
+    const { x, y } = await a.eval(
+      `(() => { const r = document.querySelector('#links .shortcut').getBoundingClientRect(); return { x: r.x + 30, y: r.y + 20 }; })()`,
+    );
+    await a.move(x, y);
+    await a.move(x + 5, y + 2);
+    const card = await a.eval(`(() => {
+      const c = document.querySelector('#links .shortcut');
+      return { lit: c.classList.contains('lit'), mx: c.style.getPropertyValue('--mx'), far: document.querySelector('.tasks-panel').classList.contains('lit') };
+    })()`);
+    const transform = await a.eval(`document.querySelector('.wallpaper').style.transform`);
+    await a.eval(settings(`document.getElementById('parallax-toggle').click()`));
+    const off = await a.eval(`document.querySelector('.wallpaper').style.transform`);
+    await a.eval(settings(`document.getElementById('parallax-toggle').click()`));
+    assert.deepEqual(card, { lit: true, mx: '35px', far: false });
+    assert.ok(transform.startsWith('translate3d('), transform);
+    assert.equal(off, '');
+  });
+
+  const apps = `(() => {
+    const panel = document.getElementById('apps-panel');
+    return {
+      open: panel.matches(':popover-open'),
+      favorites: [...document.querySelectorAll('#apps-favorites .app')].map((n) => n.dataset.id),
+      others: document.querySelectorAll('#apps-others .app').length,
+      focused: document.activeElement.dataset.id ?? document.activeElement.id,
+    };
+  })()`;
+
+  await check('Google apps: G opens the launcher, icons render, Esc closes', async () => {
+    await a.goto();
+    await blur();
+    await a.press('g');
+    await sleep(250);
+    const opened = await a.eval(apps);
+    const icons = await a.eval(`({
+      empty: [...document.querySelectorAll('#apps-panel .app-icon')].filter((s) => !s.getBBox().width).length,
+      day: document.querySelector('#apps-panel [data-id="calendar"] text').textContent,
+      fits: (() => { const p = document.getElementById('apps-panel'); return p.scrollHeight <= p.clientHeight; })(),
+    })`);
+    await a.press('Escape');
+    await sleep(250);
+    const closed = !(await a.eval(`document.getElementById('apps-panel').matches(':popover-open')`));
+    assert.deepEqual(
+      { ...opened, favorites: opened.favorites.length, ...icons, closed },
+      {
+        open: true,
+        favorites: 9,
+        others: 15,
+        focused: 'account',
+        empty: 0,
+        day: String(new Date().getDate()),
+        fits: true,
+        closed: true,
+      },
+    );
+  });
+
+  await check('Google apps: edit favorites, drag and keyboard reorder, account', async () => {
+    await a.click('#apps-button');
+    await sleep(250);
+    await a.click('#apps-edit');
+    await a.eval(`document.querySelector('#apps-others [data-id="youtube"]').click()`);
+    await a.eval(`document.querySelector('#apps-favorites [data-id="account"]').click()`);
+    await a.eval(`document.querySelector('#apps-favorites [data-id="youtube"]').focus()`);
+    await a.press('ArrowLeft', { ctrl: true });
+    await a.eval(`(() => {
+      const grid = document.getElementById('apps-favorites');
+      const gmail = grid.querySelector('[data-id="gmail"]');
+      const drive = grid.querySelector('[data-id="drive"]');
+      const rect = drive.getBoundingClientRect();
+      const dataTransfer = new DataTransfer();
+      gmail.dispatchEvent(new DragEvent('dragstart', { bubbles: true, dataTransfer }));
+      drive.dispatchEvent(new DragEvent('dragover', { bubbles: true, cancelable: true, dataTransfer, clientX: rect.right - 5, clientY: rect.top + 10 }));
+      drive.dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer }));
+      gmail.dispatchEvent(new DragEvent('dragend', { bubbles: true, dataTransfer }));
+    })()`);
+    await a.click('#apps-edit');
+    await a.click('#account-picks [data-account="1"]');
+    const href = await a.eval(`document.querySelector('#apps-favorites [data-id="gmail"]').href`);
+    const stored = await a.eval(`${STATE}.apps`);
+    await a.press('Escape');
+    assert.deepEqual(stored.favorites, [
+      'drive',
+      'gmail',
+      'classroom',
+      'docs',
+      'gemini',
+      'sheets',
+      'slides',
+      'youtube',
+      'calendar',
+    ]);
+    assert.equal(stored.account, 1);
+    assert.equal(href, 'https://mail.google.com/mail/?authuser=1');
+  });
+
+  await check('Google apps: found by the palette, button can be hidden', async () => {
+    await blur();
+    await a.press('/');
+    await a.type('calendario');
+    const rows = await a.eval(
+      `[...document.querySelectorAll('#search-results .result')].map((r) => r.querySelector('.result-label').textContent + '|' + r.querySelector('.result-detail').textContent)`,
+    );
+    await a.press('Escape');
+    await a.eval(clearSearch);
+    await a.eval(settings(`document.getElementById('apps-toggle').click()`));
+    await a.goto();
+    const hidden = await a.eval(`getComputedStyle(document.getElementById('apps-button')).display`);
+    await a.press('g');
+    const stillClosed = !(await a.eval(`document.getElementById('apps-panel').matches(':popover-open')`));
+    await a.eval(settings(`document.getElementById('apps-toggle').click()`));
+    const back = await a.eval(`getComputedStyle(document.getElementById('apps-button')).display`);
+    assert.ok(rows.includes('Calendar|Google'), JSON.stringify(rows));
+    assert.deepEqual({ hidden, stillClosed, back }, { hidden: 'none', stillClosed: true, back: 'grid' });
+  });
+
+  await check('reduced motion turns off parallax, spotlight and lift', async () => {
+    await a.reducedMotion(true);
+    await a.goto();
+    const { x, y } = await a.eval(
+      `(() => { const r = document.querySelector('#links .shortcut').getBoundingClientRect(); return { x: r.x + 30, y: r.y + 20 }; })()`,
+    );
+    await a.move(x, y);
+    await a.move(x + 5, y + 2);
+    const r = await a.eval(`({
+      transform: document.querySelector('.wallpaper').style.transform,
+      lit: document.querySelectorAll('.glow.lit').length,
+      lift: getComputedStyle(document.querySelector('#links .shortcut')).transform,
+    })`);
+    await a.reducedMotion(false);
+    assert.deepEqual(r, { transform: '', lit: 0, lift: 'none' });
+  });
+
+  await check('narrow window (420 px): no horizontal scroll', async () => {
+    await a.resize(420, 860);
+    await sleep(300);
+    const r = await a.eval(
+      `({ scroll: document.documentElement.scrollWidth, client: document.documentElement.clientWidth })`,
+    );
+    await a.resize(1440, 900);
+    assert.ok(r.scroll <= r.client, JSON.stringify(r));
+  });
+} finally {
+  await browser.close();
+}
+
+const failed = results.filter((result) => !result.ok);
+console.log(`\n${results.length - failed.length}/${results.length} passed`);
+if (browser.problems.length) console.log(`\nConsole errors or warnings:\n${browser.problems.join('\n')}`);
+process.exitCode = failed.length || browser.problems.length ? 1 : 0;

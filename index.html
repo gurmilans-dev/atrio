@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="it" data-theme="tokyo" data-wallpaper="workstation">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>Nuova scheda</title>
+    <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="js/boot.js"></script>
+    <script type="module" src="js/main.js"></script>
+  </head>
+  <body>
+    <div class="wallpaper" aria-hidden="true"></div>
+    <div class="shade" aria-hidden="true"></div>
+
+    <div class="page">
+      <main class="layout">
+        <section class="primary" aria-label="Ricerca e collegamenti">
+          <div class="clock-area">
+            <p class="greeting" id="greeting">&nbsp;</p>
+            <div class="clock" id="clock">--:--</div>
+            <div class="date" id="date-label">&nbsp;</div>
+          </div>
+
+          <form id="search-form" class="search glow" autocomplete="off" role="search">
+            <svg class="search-symbol" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="10.5" cy="10.5" r="6.5" />
+              <path d="m15.5 15.5 5 5" />
+            </svg>
+            <input
+              id="search-input"
+              type="text"
+              placeholder="Cerca o inserisci un URL"
+              spellcheck="false"
+              autocomplete="off"
+              enterkeyhint="go"
+              role="combobox"
+              aria-expanded="false"
+              aria-controls="search-results"
+              aria-autocomplete="list"
+              aria-label="Cerca sul web, inserisci un URL o un comando"
+              aria-describedby="search-tips"
+              aria-keyshortcuts="/ Control+K Control+Shift+P"
+            />
+            <span class="search-hint" id="search-hint" hidden></span>
+            <select id="search-engine" aria-label="Motore di ricerca" title="Motore di ricerca"></select>
+            <kbd class="search-key" id="search-key" aria-hidden="true">/</kbd>
+            <button class="go" type="submit" aria-label="Vai" title="Vai (Invio)">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6" /></svg>
+            </button>
+            <ul
+              class="search-results"
+              id="search-results"
+              role="listbox"
+              aria-label="Suggerimenti"
+              hidden
+            ></ul>
+          </form>
+          <p class="search-tips" id="search-tips"></p>
+
+          <div class="block-header links-header">
+            <h1>Collegamenti <span class="small-index" id="link-count">00</span></h1>
+            <button class="subtle-action" id="edit-links" type="button">
+              Modifica <span aria-hidden="true">↗</span>
+            </button>
+          </div>
+          <nav id="links" class="links-grid" aria-label="Collegamenti rapidi"></nav>
+          <p class="empty-note" id="links-empty" hidden>Nessun collegamento: aggiungine uno da “Modifica”.</p>
+        </section>
+
+        <aside class="side" aria-label="Strumenti">
+          <section class="panel focus-panel glow" id="focus-panel" aria-labelledby="focus-title">
+            <div class="panel-head">
+              <h2 id="focus-title">Focus</h2>
+              <span class="panel-muted" id="focus-count">0 oggi</span>
+            </div>
+            <div class="focus-switch" role="group" aria-label="Tipo di sessione">
+              <button id="focus-mode" type="button" class="switch active" aria-pressed="true">Lavoro</button>
+              <button id="break-mode" type="button" class="switch" aria-pressed="false">Pausa</button>
+              <span id="preset-caption" class="preset-caption">25 / 5</span>
+            </div>
+            <div class="timer-row">
+              <div class="timer" id="timer">25:00</div>
+              <div class="timer-state" id="timer-state">Pronto</div>
+            </div>
+            <div
+              class="progress"
+              id="progress"
+              role="progressbar"
+              aria-label="Avanzamento sessione"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="0"
+            >
+              <span id="progress-fill"></span>
+            </div>
+            <div class="timer-buttons">
+              <button type="button" class="main-button" id="timer-toggle" aria-keyshortcuts="P">Avvia</button>
+              <button type="button" class="outline-button" id="timer-reset">Azzera</button>
+            </div>
+            <div class="activity">
+              <div class="activity-head">
+                <span class="panel-muted">Ultime 20 settimane</span>
+                <span class="panel-muted streak" id="streak"></span>
+              </div>
+              <div class="heatmap" id="heatmap" role="img"></div>
+            </div>
+          </section>
+
+          <section class="panel tasks-panel glow" aria-label="Attività e note">
+            <div class="panel-head">
+              <div class="panel-tabs" id="panel-tabs" role="tablist" aria-label="Attività e note">
+                <button
+                  type="button"
+                  role="tab"
+                  class="tab active"
+                  id="tab-tasks"
+                  data-tab="tasks"
+                  aria-selected="true"
+                  aria-controls="tasks-pane"
+                >
+                  Attività
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  class="tab"
+                  id="tab-notes"
+                  data-tab="notes"
+                  aria-selected="false"
+                  aria-controls="notes-pane"
+                  tabindex="-1"
+                  aria-keyshortcuts="N"
+                >
+                  Note
+                </button>
+              </div>
+              <span class="panel-muted" id="tasks-count"><span id="task-counter">0 / 0</span></span>
+              <span class="panel-muted" id="notes-count" hidden
+                ><span id="notes-length"></span> · <span id="notes-status">salvate</span></span
+              >
+            </div>
+            <div id="tasks-pane" role="tabpanel" aria-labelledby="tab-tasks">
+              <form id="task-form" class="add-task" autocomplete="off">
+                <input
+                  id="task-input"
+                  type="text"
+                  maxlength="120"
+                  placeholder="Nuova attività…"
+                  aria-label="Nuova attività"
+                  aria-keyshortcuts="T"
+                  required
+                />
+                <button type="submit" aria-label="Aggiungi attività" title="Aggiungi attività">+</button>
+              </form>
+              <ul id="task-list" class="task-list"></ul>
+              <p class="empty-note" id="empty-tasks">Nessuna attività in sospeso.</p>
+              <div class="task-bottom">
+                <button type="button" id="clear-done" class="subtle-action">Rimuovi completate</button>
+              </div>
+            </div>
+            <div id="notes-pane" role="tabpanel" aria-labelledby="tab-notes" hidden>
+              <textarea
+                id="notes-input"
+                class="notes"
+                spellcheck="false"
+                placeholder="Appunti, snippet, comandi da ricordare…"
+                aria-label="Note"
+              ></textarea>
+            </div>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <button
+      type="button"
+      class="settings-fab"
+      id="open-settings"
+      aria-label="Impostazioni"
+      title="Impostazioni (S)"
+      aria-keyshortcuts="S"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
+        />
+        <circle cx="12" cy="12" r="3" />
+      </svg>
+    </button>
+
+    <button
+      type="button"
+      class="apps-button"
+      id="apps-button"
+      popovertarget="apps-panel"
+      aria-label="App Google"
+      title="App Google (G)"
+      aria-keyshortcuts="G"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="5" cy="5" r="2" />
+        <circle cx="12" cy="5" r="2" />
+        <circle cx="19" cy="5" r="2" />
+        <circle cx="5" cy="12" r="2" />
+        <circle cx="12" cy="12" r="2" />
+        <circle cx="19" cy="12" r="2" />
+        <circle cx="5" cy="19" r="2" />
+        <circle cx="12" cy="19" r="2" />
+        <circle cx="19" cy="19" r="2" />
+      </svg>
+    </button>
+    <div id="apps-panel" class="apps-panel" popover role="dialog" aria-label="App Google">
+      <div class="apps-favorites-box">
+        <div class="apps-head">
+          <h2>Preferiti</h2>
+          <button
+            type="button"
+            class="apps-edit"
+            id="apps-edit"
+            aria-pressed="false"
+            aria-label="Modifica i preferiti"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z" />
+              <path d="m13.5 6.5 4 4" />
+            </svg>
+            <span class="done">Fine</span>
+          </button>
+        </div>
+        <div class="apps-grid" id="apps-favorites"></div>
+        <p class="apps-hint" id="apps-favorites-empty" hidden>
+          Nessun preferito: premi la matita e scegli le app.
+        </p>
+        <p class="apps-hint edit-only">
+          Tocca un'app per aggiungerla o toglierla. Trascina i preferiti (o
+          <kbd>Ctrl</kbd>+<kbd>←</kbd>/<kbd>→</kbd>) per riordinarli.
+        </p>
+      </div>
+      <div class="apps-grid" id="apps-others"></div>
+      <div class="apps-foot">
+        <div class="apps-foot-row">
+          <span id="account-label">Apri con l'account</span>
+          <div class="account-picks" id="account-picks" role="group" aria-labelledby="account-label"></div>
+        </div>
+        <p class="apps-foot-help">
+          Solo se hai più account Google collegati: 1° è il primo dell'elenco account di Google, 2° il
+          secondo…
+        </p>
+      </div>
+    </div>
+
+    <dialog id="settings" class="drawer" aria-labelledby="settings-title">
+      <div class="drawer-inner">
+        <header class="drawer-top">
+          <div>
+            <span class="eyebrow">Preferenze</span>
+            <h2 id="settings-title">Impostazioni</h2>
+          </div>
+          <button
+            type="button"
+            class="close-button"
+            id="close-settings"
+            aria-label="Chiudi impostazioni"
+            autofocus
+          >
+            ×
+          </button>
+        </header>
+
+        <div class="drawer-content">
+          <section class="settings-section" aria-labelledby="general-title">
+            <h3 id="general-title">Generale</h3>
+            <div class="field">
+              <label for="name-input">Il tuo nome <span>(per il saluto, facoltativo)</span></label>
+              <input id="name-input" type="text" autocomplete="given-name" placeholder="Es. Alex" />
+            </div>
+            <label class="toggle"
+              ><input type="checkbox" id="apps-toggle" /> Mostra il pulsante delle app Google</label
+            >
+          </section>
+
+          <section class="settings-section" aria-labelledby="wallpaper-title">
+            <h3 id="wallpaper-title">Sfondo</h3>
+            <div class="wallpaper-picks" id="wallpaper-picks" role="group" aria-label="Sfondo"></div>
+            <div class="upload-row">
+              <button type="button" class="upload-button" id="upload-wallpaper">
+                Carica immagine <span>JPG · PNG · WEBP · AVIF</span>
+              </button>
+              <button type="button" class="subtle-action danger" id="remove-wallpaper" hidden>Rimuovi</button>
+            </div>
+            <input
+              type="file"
+              id="wallpaper-upload"
+              accept="image/jpeg,image/png,image/webp,image/avif"
+              hidden
+            />
+            <div class="range-heading">
+              <label for="shade-range">Oscuramento</label>
+              <output id="shade-number" for="shade-range">25%</output>
+            </div>
+            <input id="shade-range" class="range" type="range" min="0" max="75" value="25" />
+            <div class="range-heading">
+              <label for="blur-range">Sfocatura</label>
+              <output id="blur-number" for="blur-range">0 px</output>
+            </div>
+            <input id="blur-range" class="range" type="range" min="0" max="24" value="0" />
+            <label class="toggle"
+              ><input type="checkbox" id="parallax-toggle" /> Effetto profondità al movimento del mouse</label
+            >
+          </section>
+
+          <section class="settings-section" aria-labelledby="theme-title">
+            <h3 id="theme-title">Colori</h3>
+            <div class="theme-picks" id="theme-picks" role="group" aria-label="Tema"></div>
+          </section>
+
+          <section class="settings-section" aria-labelledby="timer-title">
+            <h3 id="timer-title">Timer</h3>
+            <div class="preset-picks" id="preset-picks" role="group" aria-label="Durata delle sessioni"></div>
+            <label class="toggle"
+              ><input type="checkbox" id="notify-toggle" /> Notifica a fine sessione</label
+            >
+          </section>
+
+          <section class="settings-section" id="links-section" aria-labelledby="links-title">
+            <h3 id="links-title">Collegamenti</h3>
+            <div id="settings-links" class="settings-links"></div>
+            <label class="toggle"
+              ><input type="checkbox" id="favicon-toggle" /> Mostra le icone dei siti</label
+            >
+            <form id="link-form" class="link-form" autocomplete="off">
+              <label for="link-name">Nome</label>
+              <input id="link-name" type="text" maxlength="30" placeholder="Es. Vercel" required />
+              <label for="link-url">URL</label>
+              <input
+                id="link-url"
+                type="text"
+                inputmode="url"
+                spellcheck="false"
+                placeholder="vercel.com/dashboard o http://localhost:3000"
+                required
+              />
+              <label for="link-symbol">Sigla <span>(facoltativa, max 3 caratteri)</span></label>
+              <input id="link-symbol" type="text" maxlength="3" placeholder="Es. VC" />
+              <div class="link-form-actions">
+                <button type="submit" class="main-button" id="link-submit">Aggiungi collegamento</button>
+                <button type="button" class="outline-button" id="link-cancel" hidden>Annulla</button>
+              </div>
+            </form>
+          </section>
+
+          <section class="settings-section" id="shortcuts-section" aria-labelledby="shortcuts-title">
+            <h3 id="shortcuts-title">Scorciatoie</h3>
+            <dl class="shortcut-list">
+              <div>
+                <dt><kbd>/</kbd> o <kbd>Ctrl</kbd>+<kbd>K</kbd></dt>
+                <dd>Cerca</dd>
+              </div>
+              <div>
+                <dt><kbd>&gt;</kbd> o <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd></dt>
+                <dd>Palette dei comandi</dd>
+              </div>
+              <div>
+                <dt><kbd>+</kbd> testo</dt>
+                <dd>Nella ricerca: aggiunge un'attività</dd>
+              </div>
+              <div>
+                <dt><kbd>↑</kbd> <kbd>↓</kbd> <kbd>Invio</kbd></dt>
+                <dd>Scegli tra i suggerimenti della ricerca</dd>
+              </div>
+              <div>
+                <dt><kbd>Shift</kbd>+<kbd>Invio</kbd></dt>
+                <dd>Cerca sempre, anche se sembra un URL</dd>
+              </div>
+              <div>
+                <dt><kbd>1</kbd>–<kbd>9</kbd></dt>
+                <dd>Apri il collegamento</dd>
+              </div>
+              <div>
+                <dt><kbd>T</kbd></dt>
+                <dd>Nuova attività</dd>
+              </div>
+              <div>
+                <dt><kbd>G</kbd></dt>
+                <dd>App Google</dd>
+              </div>
+              <div>
+                <dt><kbd>N</kbd></dt>
+                <dd>Note</dd>
+              </div>
+              <div>
+                <dt><kbd>P</kbd></dt>
+                <dd>Avvia o metti in pausa il timer</dd>
+              </div>
+              <div>
+                <dt><kbd>S</kbd></dt>
+                <dd>Impostazioni</dd>
+              </div>
+              <div>
+                <dt><kbd>?</kbd></dt>
+                <dd>Questo elenco</dd>
+              </div>
+              <div>
+                <dt><kbd>Esc</kbd></dt>
+                <dd>Chiudi il pannello o esci dal campo</dd>
+              </div>
+            </dl>
+            <p class="settings-note">
+              Quando apri una nuova scheda, Chrome mette il cursore nella barra degli indirizzi: fai clic
+              sulla pagina per usare le scorciatoie.
+            </p>
+          </section>
+
+          <section class="settings-section" aria-labelledby="data-title">
+            <h3 id="data-title">Dati</h3>
+            <p class="settings-note">
+              Il backup contiene collegamenti, attività, preferenze e sfondo personale. Tutto resta sul tuo
+              computer.
+            </p>
+            <div class="data-actions">
+              <button type="button" class="outline-button" id="export-data">Esporta backup</button>
+              <button type="button" class="outline-button" id="import-data">Importa backup</button>
+            </div>
+            <input type="file" id="import-file" accept="application/json,.json" hidden />
+            <button type="button" class="danger-button" id="reset-data">
+              Ripristina impostazioni e dati
+            </button>
+            <p class="version" id="app-version"></p>
+          </section>
+        </div>
+      </div>
+    </dialog>
+
+    <div role="status" aria-live="polite" id="toast" class="toast"></div>
+  </body>
+</html>

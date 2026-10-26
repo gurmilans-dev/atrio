@@ -1,0 +1,8 @@
+node_modules/
+*.pem
+*.crx
+*.zip
+atrio-backup-*.json
+workspace-backup-*.json
+.DS_Store
+Thumbs.db

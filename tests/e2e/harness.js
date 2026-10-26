@@ -1,0 +1,251 @@
+// Minimal Chrome DevTools Protocol harness, zero dependencies (Node 22+: global fetch and WebSocket).
+// Serves the extension folder over HTTP and drives a headless Chrome with a throwaway profile.
+// The page runs outside the extension, so chrome.* APIs are absent and degrade gracefully.
+import { execFileSync, spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import http from 'node:http';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+
+export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const TYPES = {
+  '.html': 'text/html',
+  '.js': 'text/javascript',
+  '.css': 'text/css',
+  '.json': 'application/json',
+  '.webp': 'image/webp',
+  '.png': 'image/png',
+  '.svg': 'image/svg+xml',
+};
+
+function findChrome() {
+  if (process.env.CHROME_PATH) return process.env.CHROME_PATH;
+  const env = process.env;
+  const candidates =
+    {
+      win32: [
+        `${env.PROGRAMFILES}\\Google\\Chrome\\Application\\chrome.exe`,
+        `${env['PROGRAMFILES(X86)']}\\Google\\Chrome\\Application\\chrome.exe`,
+        `${env.LOCALAPPDATA}\\Google\\Chrome\\Application\\chrome.exe`,
+        `${env['PROGRAMFILES(X86)']}\\Microsoft\\Edge\\Application\\msedge.exe`,
+      ],
+      darwin: [
+        '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+        '/Applications/Chromium.app/Contents/MacOS/Chromium',
+      ],
+    }[process.platform] ?? [];
+  const found = candidates.find((file) => existsSync(file));
+  if (found) return found;
+  for (const name of ['google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser']) {
+    try {
+      return execFileSync('which', [name], { encoding: 'utf8' }).trim();
+    } catch {
+      // Try the next name.
+    }
+  }
+  throw new Error('Chrome not found: set the CHROME_PATH environment variable.');
+}
+
+function serve(root) {
+  const server = http.createServer(async (request, response) => {
+    const file = path.join(root, decodeURIComponent(new URL(request.url, 'http://local').pathname));
+    try {
+      const body = await readFile(file);
+      response.writeHead(200, { 'content-type': TYPES[path.extname(file)] ?? 'application/octet-stream' });
+      response.end(body);
+    } catch {
+      response.writeHead(404);
+      response.end();
+    }
+  });
+  return new Promise((resolve) => {
+    server.listen(0, '127.0.0.1', () => {
+      resolve({ url: `http://127.0.0.1:${server.address().port}`, close: () => server.close() });
+    });
+  });
+}
+
+// Chrome writes the port it picked into <profile>/DevToolsActivePort.
+async function waitForDevTools(profile) {
+  for (let i = 0; i < 100; i++) {
+    try {
+      const [port, wsPath] = (await readFile(path.join(profile, 'DevToolsActivePort'), 'utf8')).split('\n');
+      if (port && wsPath) return `ws://127.0.0.1:${port}${wsPath}`;
+    } catch {
+      // Not written yet.
+    }
+    await sleep(100);
+  }
+  throw new Error('Chrome did not start (no DevToolsActivePort).');
+}
+
+async function connect(url) {
+  const socket = new WebSocket(url);
+  await new Promise((resolve, reject) => {
+    socket.addEventListener('open', resolve, { once: true });
+    socket.addEventListener('error', reject, { once: true });
+  });
+  let id = 0;
+  const pending = new Map();
+  const listeners = new Set();
+  const problems = [];
+
+  socket.addEventListener('message', ({ data }) => {
+    const message = JSON.parse(data);
+    if (message.id && pending.has(message.id)) {
+      const { resolve, reject } = pending.get(message.id);
+      pending.delete(message.id);
+      if (message.error) reject(new Error(JSON.stringify(message.error)));
+      else resolve(message.result);
+      return;
+    }
+    // Every uncaught exception, console.error/warn and failed request counts as a problem.
+    const { method, params } = message;
+    if (method === 'Runtime.exceptionThrown') {
+      problems.push(params.exceptionDetails.exception?.description ?? params.exceptionDetails.text);
+    } else if (method === 'Runtime.consoleAPICalled' && ['error', 'warning'].includes(params.type)) {
+      problems.push(
+        `console.${params.type}: ${params.args.map((arg) => arg.value ?? arg.description).join(' ')}`,
+      );
+    } else if (method === 'Log.entryAdded' && ['error', 'warning'].includes(params.entry.level)) {
+      problems.push(`${params.entry.text} ${params.entry.url ?? ''}`.trim());
+    }
+    for (const listener of listeners) listener(message);
+  });
+
+  const send = (method, params = {}, sessionId) =>
+    new Promise((resolve, reject) => {
+      pending.set(++id, { resolve, reject });
+      socket.send(JSON.stringify({ id, method, params, sessionId }));
+    });
+  return { send, listeners, problems, close: () => socket.close() };
+}
+
+// Keys used by the tests: [code, windowsVirtualKeyCode, text].
+const KEYS = {
+  Escape: ['Escape', 27],
+  Enter: ['Enter', 13, '\r'],
+  ArrowDown: ['ArrowDown', 40],
+  ArrowUp: ['ArrowUp', 38],
+  ArrowLeft: ['ArrowLeft', 37],
+  ArrowRight: ['ArrowRight', 39],
+  '/': ['Slash', 191, '/'],
+  '>': ['IntlBackslash', 226, '>'],
+};
+const MODIFIERS = { alt: 1, ctrl: 2, meta: 4, shift: 8 };
+
+async function openPage(cdp, url, { width, height }) {
+  const { send, listeners } = cdp;
+  const { targetId } = await send('Target.createTarget', { url: 'about:blank' });
+  const { sessionId } = await send('Target.attachToTarget', { targetId, flatten: true });
+  for (const domain of ['Runtime', 'Log', 'Page']) await send(`${domain}.enable`, {}, sessionId);
+  await send(
+    'Emulation.setDeviceMetricsOverride',
+    { width, height, deviceScaleFactor: 1, mobile: false },
+    sessionId,
+  );
+  await send('Emulation.setFocusEmulationEnabled', { enabled: true }, sessionId);
+  const call = (method, params) => send(method, params, sessionId);
+
+  const page = {
+    targetId,
+    call,
+    async eval(expression) {
+      const result = await call('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true });
+      if (result.exceptionDetails) {
+        throw new Error(result.exceptionDetails.exception?.description ?? result.exceptionDetails.text);
+      }
+      return result.result.value;
+    },
+    async goto(target = url) {
+      const loaded = new Promise((resolve) => {
+        const onLoad = (message) => {
+          if (message.sessionId !== sessionId || message.method !== 'Page.loadEventFired') return;
+          listeners.delete(onLoad);
+          resolve();
+        };
+        listeners.add(onLoad);
+      });
+      await call('Page.navigate', { url: target });
+      await loaded;
+      await sleep(300);
+    },
+    /** Trusted key press, e.g. press('Escape'), press('g'), press('p', { ctrl: true, shift: true }). */
+    async press(key, modifiers = {}) {
+      const [code, vk, text] = KEYS[key] ?? [`Key${key.toUpperCase()}`, key.toUpperCase().charCodeAt(0), key];
+      const mask = Object.entries(modifiers).reduce((sum, [name, on]) => sum + (on ? MODIFIERS[name] : 0), 0);
+      const base = { key, code, windowsVirtualKeyCode: vk, modifiers: mask };
+      await call('Input.dispatchKeyEvent', { type: 'keyDown', ...base, text: mask & 2 ? undefined : text });
+      await call('Input.dispatchKeyEvent', { type: 'keyUp', ...base });
+      await sleep(120);
+    },
+    async type(text) {
+      await call('Input.insertText', { text });
+      await sleep(150);
+    },
+    async move(x, y) {
+      await call('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y });
+      await sleep(120);
+    },
+    async click(selector) {
+      const { x, y } = await page.eval(`(() => {
+        const rect = document.querySelector(${JSON.stringify(selector)}).getBoundingClientRect();
+        return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
+      })()`);
+      for (const type of ['mousePressed', 'mouseReleased']) {
+        await call('Input.dispatchMouseEvent', { type, x, y, button: 'left', clickCount: 1 });
+      }
+      await sleep(150);
+    },
+    resize: (w, h) =>
+      call('Emulation.setDeviceMetricsOverride', {
+        width: w,
+        height: h,
+        deviceScaleFactor: 1,
+        mobile: false,
+      }),
+    reducedMotion: (on) =>
+      call('Emulation.setEmulatedMedia', {
+        features: on ? [{ name: 'prefers-reduced-motion', value: 'reduce' }] : [],
+      }),
+    async screenshot(options = { format: 'png' }) {
+      return Buffer.from((await call('Page.captureScreenshot', options)).data, 'base64');
+    },
+    close: () => send('Target.closeTarget', { targetId }),
+  };
+  await page.goto();
+  return page;
+}
+
+/** Starts the static server and headless Chrome; call close() when done. */
+export async function launch(root, { width = 1440, height = 900 } = {}) {
+  const server = await serve(root);
+  const profile = await mkdtemp(path.join(tmpdir(), 'atrio-e2e-'));
+  const chrome = spawn(
+    findChrome(),
+    [
+      '--headless=new',
+      '--remote-debugging-port=0',
+      `--user-data-dir=${profile}`,
+      `--window-size=${width},${height}`,
+      '--no-first-run',
+      '--no-default-browser-check',
+      'about:blank',
+    ],
+    { stdio: 'ignore' },
+  );
+  const cdp = await connect(await waitForDevTools(profile));
+  return {
+    problems: cdp.problems,
+    openPage: (file = 'index.html') => openPage(cdp, `${server.url}/${file}`, { width, height }),
+    async close() {
+      cdp.close();
+      chrome.kill();
+      server.close();
+      await sleep(500);
+      await rm(profile, { recursive: true, force: true }).catch(() => {});
+    },
+  };
+}

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Atrio: a keycap with an "A" (keyboard-first). Source of the PNG icons: npm run icons -->
+  <defs>
+    <linearGradient id="top" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9db7ff"/>
+      <stop offset="1" stop-color="#6f8cf2"/>
+    </linearGradient>
+  </defs>
+  <rect x="6" y="12" width="116" height="110" rx="28" fill="#2c3a6e"/>
+  <rect x="6" y="6" width="116" height="104" rx="28" fill="url(#top)"/>
+  <rect x="18" y="14" width="92" height="80" rx="20" fill="#fff" fill-opacity=".14"/>
+  <g fill="none" stroke="#0e1530" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M43 82 64 30l21 52" stroke-width="13"/>
+    <path d="M51 66h26" stroke-width="11"/>
+  </g>
+</svg>

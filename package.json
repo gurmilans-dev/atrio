@@ -1,0 +1,26 @@
+{
+  "name": "atrio",
+  "version": "3.1.0",
+  "private": true,
+  "description": "Keyboard-first new tab for developers: command palette, focus timer with a GitHub-style heatmap, Google apps launcher. Vanilla JS, Manifest V3, zero dependencies.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "test:e2e": "node tests/e2e/run.js",
+    "lint": "npx --yes eslint@9.30.0 .",
+    "format": "npx --yes prettier@3.6.2 --write .",
+    "format:check": "npx --yes prettier@3.6.2 --check .",
+    "check": "npm test && npm run lint && npm run format:check",
+    "icons": "node scripts/make-icons.js",
+    "screenshots": "node scripts/screenshots.js",
+    "apply-key": "node scripts/apply-key.js"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gurmilans-dev/atrio.git"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

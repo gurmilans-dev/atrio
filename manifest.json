@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Atrio",
+  "version": "3.1.0",
+  "description": "Nuova scheda per developer: ricerca intelligente, collegamenti, timer focus e attività. Tutto in locale.",
+  "homepage_url": "https://github.com/gurmilans-dev/atrio",
+  "minimum_chrome_version": "117",
+  "icons": {
+    "16": "assets/icons/icon-16.png",
+    "32": "assets/icons/icon-32.png",
+    "48": "assets/icons/icon-48.png",
+    "128": "assets/icons/icon-128.png"
+  },
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["alarms", "notifications", "favicon"],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'; base-uri 'none'"
+  }
+}
