@@ -191,6 +191,17 @@ describe('JWT', () => {
     assert.equal(results[1].detail, 'Expired yesterday');
   });
 
+  test('dates no Date can hold are skipped instead of throwing', () => {
+    for (const exp of [1e20, -1e300, 'soon', null]) {
+      const results = runTools(`jwt ${token({ exp })}`, NOW);
+      assert.deepEqual(
+        results.map((result) => result.detail),
+        ['JWT, payload (signature not verified)', 'JWT, header'],
+        String(exp),
+      );
+    }
+  });
+
   test('broken tokens are reported, look-alikes are left alone', () => {
     assert.equal(runTools('jwt abc.def', NOW)[0].error, true);
     assert.equal(runTools('jwt eyJhbGciOiJIUzI1NiJ9.bm90IGpzb24.x', NOW)[0].error, true);

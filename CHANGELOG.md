@@ -37,6 +37,11 @@
 
 - Typing `constructor` in the search box broke the suggestions: the prefix lookup reached `Object.prototype`.
 - A saved state without theme or wallpaper made the page request `assets/undefined.webp` before the first paint.
+- A JWT whose `exp` or `iat` no date can hold (such as `1e20`) broke the suggestions, and `Enter` could then run a
+  stale row. Those dates are now skipped, and a failing tool can no longer break the search box.
+- Importing a backup or resetting the settings changed the saved language without reloading the page, which stayed
+  in the old one until the next new tab.
+- Italian dates had every word capitalized ("26 Ottobre"); only the first letter is now.
 
 ### Removed
 

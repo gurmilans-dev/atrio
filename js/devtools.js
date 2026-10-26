@@ -240,7 +240,8 @@ function jwtRows(token, now) {
     ['iat', 'tool.jwtIssued', 'tool.jwtIssued'],
   ];
   for (const [claim, future, past] of claims) {
-    if (!Number.isFinite(payload[claim])) continue;
+    // Numbers a Date can hold only (±8.64e15 ms): Intl throws on anything else.
+    if (typeof payload[claim] !== 'number' || !(Math.abs(payload[claim] * 1000) <= 8.64e15)) continue;
     const ms = payload[claim] * 1000;
     const date = dateFormat({ dateStyle: 'medium', timeStyle: 'medium' }).format(ms);
     rows.push(row('jwt', date, t(ms > now ? future : past, { when: relative(ms, now) })));

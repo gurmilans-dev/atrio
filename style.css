@@ -497,9 +497,12 @@ kbd {
 .date {
   color: var(--text-secondary);
   font: 400 clamp(13px, 1.08vw, 16px) var(--mono);
-  text-transform: capitalize;
   margin-top: 23px;
   letter-spacing: -0.25px;
+}
+/* First letter only: Italian months stay lowercase ("Lunedì 26 ottobre 2026"). */
+.date::first-letter {
+  text-transform: uppercase;
 }
 
 /* ---------- Search ---------- */

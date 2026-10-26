@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { afterEach, describe, test } from 'node:test';
 import { GOOGLE_APPS, appName } from '../js/google-apps.js';
-import { STRINGS, ordinal, resolveLanguage, setLanguage, t } from '../js/i18n.js';
+import { STRINGS, needsReload, ordinal, resolveLanguage, setLanguage, t } from '../js/i18n.js';
 import { normalizeState } from '../js/state.js';
 
 const placeholders = (entry) =>
@@ -58,6 +58,12 @@ describe('language choice', () => {
     assert.equal(resolveLanguage('auto', 'de-DE'), 'en');
     assert.equal(resolveLanguage('it', 'en-US'), 'it');
     assert.equal(resolveLanguage('en', 'it-IT'), 'en');
+  });
+
+  test('a reload is needed only when the resolved language changes', () => {
+    setLanguage('en');
+    assert.equal(needsReload('en'), false);
+    assert.equal(needsReload('it'), true);
   });
 
   test('the saved choice is validated', () => {

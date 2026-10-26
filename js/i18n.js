@@ -570,6 +570,9 @@ function storedChoice() {
 let language = resolveLanguage(storedChoice());
 
 export const getLanguage = () => language;
+
+/** Texts are set once at startup: a saved choice that resolves to another language needs a reload. */
+export const needsReload = (choice) => resolveLanguage(choice) !== language;
 export function setLanguage(next) {
   language = next === 'it' ? 'it' : 'en';
 }

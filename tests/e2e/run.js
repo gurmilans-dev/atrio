@@ -770,11 +770,8 @@ try {
         visible: getComputedStyle(document.querySelector('.page')).visibility,
       })`);
     const english = await read();
-    await a.eval(
-      settings(
-        `const s = document.getElementById('language-select'); s.value = 'auto'; s.dispatchEvent(new Event('change'))`,
-      ),
-    );
+    // A reset goes back to the browser language (Italian here) and must reload the page too.
+    await a.eval(`window.confirm = () => true; ${settings(`document.getElementById('reset-data').click()`)}`);
     await sleep(800);
     const auto = await read();
     assert.equal(before, 'it');

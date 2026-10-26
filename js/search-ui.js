@@ -154,7 +154,13 @@ function buildItems(value) {
   }
 
   const state = getState();
-  const tools = runTools(text).map(toolItem);
+  // A failing tool must not break the search box: it is logged and shows no rows.
+  let tools = [];
+  try {
+    tools = runTools(text).map(toolItem);
+  } catch (error) {
+    console.error(error);
+  }
   // Explicit tool keywords ("= 2^10", "uuid") go above the web search, guesses below it.
   const list = [
     ...tools.filter((tool) => tool.first),

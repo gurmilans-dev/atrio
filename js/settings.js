@@ -336,12 +336,11 @@ export function initSettings() {
       state.mouseEffects = event.target.checked;
     });
   });
-  // Every text is set once at startup: a new language reloads the page (other tabs do it too).
+  // The page reloads in the new language (js/main.js), and so do the other open tabs.
   $('language-select').addEventListener('change', (event) => {
     update((state) => {
       state.lang = event.target.value;
     });
-    window.location.reload();
   });
   $('apps-toggle').addEventListener('change', (event) => {
     update((state) => {

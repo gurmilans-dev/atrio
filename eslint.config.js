@@ -31,6 +31,7 @@ const browserGlobals = Object.fromEntries(
     'innerWidth',
     'innerHeight',
     'requestAnimationFrame',
+    'console',
   ].map((name) => [name, 'readonly']),
 );
 const nodeGlobals = {
