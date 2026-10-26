@@ -11,7 +11,7 @@
 - **Developer tools in the search box**, local, `Enter` copies the result: calculator (`= …` or plain arithmetic,
   with hex/binary), timestamps both ways (`ts`), `uuid`, passwords (`pw`), Base64 (`b64` / `b64d`), URL encoding
   (`url` / `urld`), JWT decoding (`jwt <token>` or a pasted token: payload, header, expiry), SHA-256 (`sha256`),
-  color conversion (`#hex`, `rgb()`, `hsl()`).
+  color conversion (`#hex`, `rgb()`, `hsl()`). Hovering a result shows it in full when it is too long for the row.
 
 ### Changed
 
@@ -29,6 +29,11 @@
 - When the effects are on they are lighter than before: the spotlight updates one small layer per element instead of
   restyling whole panels, element positions are cached, the parallax target is updated about ten times a second.
 - The page uses ~0.03% of a core when still.
+
+### Removed
+
+- Migration from the versions before the first public release: the v1 save (`devstart.v1`, with its base64
+  wallpaper) and the v2 session counter. Backups exported as "Workspace" still import.
 
 ## 3.1.0 — 2026-10-26
 

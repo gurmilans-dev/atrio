@@ -222,10 +222,10 @@ function render() {
       row.dataset.index = String(index);
       row.setAttribute('role', 'option');
       const text = el('span', 'result-text');
-      text.append(
-        el('span', item.mono ? 'result-label mono' : 'result-label', item.label),
-        el('span', 'result-detail', item.detail),
-      );
+      const label = el('span', item.mono ? 'result-label mono' : 'result-label', item.label);
+      // Long results (a JWT payload, a hash) are cut with an ellipsis: hovering shows them whole.
+      if (item.kind === 'tool') label.title = item.label;
+      text.append(label, el('span', 'result-detail', item.detail));
       row.append(item.icon ?? kindIcon(item.kind), text);
       if (item.key) row.append(el('kbd', 'result-key', item.key));
       return row;

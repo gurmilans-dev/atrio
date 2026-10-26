@@ -12,29 +12,8 @@ import { initNotes } from './notes.js';
 import { initSearch } from './search-ui.js';
 import { initSettings } from './settings.js';
 import { initShortcuts } from './shortcuts.js';
-import { readLegacyState, removeLegacyState } from './state.js';
-import { getState, initStore, reloadFromStorage, update } from './store.js';
+import { getState, initStore, reloadFromStorage } from './store.js';
 import { initTasks } from './tasks.js';
-import { dataURLToBlob, getImage, prepareWallpaper, putImage } from './wallpaper.js';
-
-// v1 kept the custom wallpaper as base64 inside localStorage: move it to IndexedDB,
-// then delete the old key so it stops eating the ~5 MB localStorage quota.
-async function migrateLegacy() {
-  const legacy = readLegacyState();
-  if (!legacy) return;
-  try {
-    const image = legacy.uploadedWallpaper;
-    if (typeof image === 'string' && image.startsWith('data:image/') && !(await getImage())) {
-      await putImage(await prepareWallpaper(await dataURLToBlob(image)));
-      update((state) => {
-        state.wallpaperRev = Date.now();
-      });
-    }
-    removeLegacyState();
-  } catch {
-    // Keep the old data: the migration is retried on the next new tab.
-  }
-}
 
 // The page stays hidden (style.css) until the static texts are in the right language.
 try {
@@ -67,5 +46,3 @@ window.addEventListener('storage', (event) => {
 window.addEventListener('pageshow', (event) => {
   if (event.persisted) reloadFromStorage();
 });
-
-migrateLegacy();

@@ -4,7 +4,6 @@ import {
   CUSTOM_WALLPAPER,
   DEFAULT_LINKS,
   ENGINES,
-  LEGACY_STORAGE_KEY,
   LIMITS,
   PRESETS,
   SCHEMA_VERSION,
@@ -139,8 +138,7 @@ function normalizeStats(input) {
   // Data from before the heatmap: seed it with the last known day.
   if (day && today && !history[day]) history[day] = today;
   return {
-    // v2 stored a single counter called completedSessions.
-    total: toInt(stats.total ?? input.completedSessions, 0, 1e9, 0),
+    total: toInt(stats.total, 0, 1e9, 0),
     today,
     day,
     history: normalizeHistory(history),
@@ -205,38 +203,15 @@ function parse(raw) {
   }
 }
 
-// Reads the current key, falling back to the v1 key the first time.
 export function loadState(storage = globalThis.localStorage) {
   let raw = null;
-  let legacy = false;
   try {
     raw = storage.getItem(STORAGE_KEY);
-    if (raw === null) {
-      raw = storage.getItem(LEGACY_STORAGE_KEY);
-      legacy = raw !== null;
-    }
   } catch {
     // Storage blocked: run with defaults, saving will report the error.
   }
   const { value, corrupt } = parse(raw);
-  return { state: normalizeState(value), raw, legacy, corrupt };
-}
-
-export function readLegacyState(storage = globalThis.localStorage) {
-  try {
-    const { value } = parse(storage.getItem(LEGACY_STORAGE_KEY));
-    return isObject(value) ? value : null;
-  } catch {
-    return null;
-  }
-}
-
-export function removeLegacyState(storage = globalThis.localStorage) {
-  try {
-    storage.removeItem(LEGACY_STORAGE_KEY);
-  } catch {
-    // Nothing to clean up.
-  }
+  return { state: normalizeState(value), raw, corrupt };
 }
 
 export const serialize = (state) => JSON.stringify(state);

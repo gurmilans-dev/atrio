@@ -282,44 +282,6 @@ try {
     assert.deepEqual({ seenInB, kept, timerInA }, { seenInB: true, kept: true, timerInA: 'In corso' });
   });
 
-  await check('v1 data is migrated, base64 wallpaper included', async () => {
-    await a.eval(`(async () => {
-      const canvas = new OffscreenCanvas(64, 64);
-      const context = canvas.getContext('2d');
-      context.fillStyle = '#c33';
-      context.fillRect(0, 0, 64, 64);
-      const blob = await canvas.convertToBlob({ type: 'image/png' });
-      const dataURL = await new Promise((resolve) => { const r = new FileReader(); r.onload = () => resolve(r.result); r.readAsDataURL(blob); });
-      localStorage.clear();
-      await new Promise((resolve) => { const q = indexedDB.deleteDatabase('workspace-wallpaper'); q.onsuccess = q.onerror = q.onblocked = resolve; });
-      localStorage.setItem('devstart.v1', JSON.stringify({
-        theme: 'mocha', wallpaper: 'custom', uploadedWallpaper: dataURL, completedSessions: 7,
-        tasks: [{ text: 'vecchio task' }, { text: 'senza id' }], links: [{ name: 'Old', url: 'https://old.dev' }],
-      }));
-    })()`);
-    await a.goto();
-    await sleep(1200);
-    const r = await a.eval(`({
-      legacyLeft: localStorage.getItem('devstart.v1') !== null,
-      theme: document.documentElement.dataset.theme,
-      tasks: document.querySelectorAll('#task-list li').length,
-      links: document.querySelectorAll('#links .shortcut').length,
-      total: ${STATE}.stats.total,
-      wallpaperReady: document.documentElement.hasAttribute('data-wallpaper-ready'),
-    })`);
-    assert.deepEqual(r, {
-      legacyLeft: false,
-      theme: 'mocha',
-      tasks: 2,
-      links: 1,
-      total: 7,
-      wallpaperReady: true,
-    });
-    // v2 deleted every task without an id at once; now each gets its own.
-    await a.eval(`document.querySelector('#task-list .task-delete').click()`);
-    assert.equal(await a.eval(`document.querySelectorAll('#task-list li').length`), 1);
-  });
-
   await check('corrupted storage is backed up, not lost', async () => {
     await a.eval(`localStorage.setItem('workspace.newtab.v2', '{broken json')`);
     await a.goto();
@@ -527,6 +489,7 @@ try {
         rows: ${labels('#search-results .result-label')},
         hint: document.getElementById('search-hint').textContent,
         swatch: Boolean(document.querySelector('#search-results .swatch-icon')),
+        title: document.querySelector('#search-results .result-label')?.title,
       })`);
     };
     const calc = await rowsFor('= 2^10');
@@ -547,9 +510,10 @@ try {
     await a.press('Escape');
     await a.eval(clearSearch);
     assert.deepEqual(
-      { jwt: jwt.rows[0], jwtHint: jwt.hint, hash: hash.rows[0], hashHint: hash.hint },
+      { jwt: jwt.rows[0], jwtTitle: jwt.title, jwtHint: jwt.hint, hash: hash.rows[0], hashHint: hash.hint },
       {
         jwt: '{"sub":"1234567890","name":"John Doe","iat":1516239022}',
+        jwtTitle: '{"sub":"1234567890","name":"John Doe","iat":1516239022}',
         jwtHint: '⧉ JWT',
         hash: 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
         hashHint: '⧉ SHA-256',
@@ -559,6 +523,7 @@ try {
       rows: ['1024', '0x400', '0b10000000000', '= 2^10'],
       hint: '⧉ Calcolatrice',
       swatch: false,
+      title: '1024',
     });
     assert.deepEqual(afterEnter, { copied: '1024', open: true, toast: 'Copiato: 1024' });
     assert.deepEqual(color.rows.slice(0, 2), ['#7aa2f7', 'rgb(122, 162, 247)']);

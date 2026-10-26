@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { LEGACY_STORAGE_KEY, LIMITS, STORAGE_KEY } from '../js/config.js';
+import { LIMITS, STORAGE_KEY } from '../js/config.js';
 import { createDefaultState, loadState, normalizeState, serialize } from '../js/state.js';
 
 function memoryStorage(entries = {}) {
@@ -110,8 +110,7 @@ describe('normalizeState', () => {
       },
     }).stats;
     assert.deepEqual(stats.history, { '2026-10-20': 3, '2026-10-25': 2 });
-    const legacy = normalizeState({ completedSessions: 3 }).stats;
-    assert.deepEqual(legacy.history, {});
+    assert.deepEqual(normalizeState({}).stats.history, {});
   });
 
   test('lists are capped', () => {
@@ -120,10 +119,6 @@ describe('normalizeState', () => {
     const state = normalizeState({ links, tasks });
     assert.equal(state.links.length, LIMITS.links);
     assert.equal(state.tasks.length, LIMITS.tasks);
-  });
-
-  test('v2 completedSessions becomes stats.total', () => {
-    assert.equal(normalizeState({ completedSessions: 12 }).stats.total, 12);
   });
 
   test('a running timer needs a valid endAt', () => {
@@ -140,19 +135,10 @@ describe('normalizeState', () => {
 });
 
 describe('loadState', () => {
-  test('falls back to the v1 key', () => {
-    const storage = memoryStorage({ [LEGACY_STORAGE_KEY]: JSON.stringify({ theme: 'matrix' }) });
-    const loaded = loadState(storage);
-    assert.equal(loaded.legacy, true);
-    assert.equal(loaded.state.theme, 'matrix');
-  });
-
-  test('prefers the current key', () => {
-    const storage = memoryStorage({
-      [STORAGE_KEY]: JSON.stringify({ theme: 'mocha' }),
-      [LEGACY_STORAGE_KEY]: JSON.stringify({ theme: 'matrix' }),
-    });
-    assert.equal(loadState(storage).state.theme, 'mocha');
+  test('reads the saved state', () => {
+    const loaded = loadState(memoryStorage({ [STORAGE_KEY]: JSON.stringify({ theme: 'mocha' }) }));
+    assert.equal(loaded.state.theme, 'mocha');
+    assert.equal(loaded.corrupt, false);
   });
 
   test('corrupted JSON is reported instead of thrown', () => {

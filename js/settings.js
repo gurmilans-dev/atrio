@@ -215,7 +215,8 @@ async function importData(file) {
     announce(t('backup.invalidJson'));
     return;
   }
-  // Accepts Atrio backups, those made when the project was called Workspace, and raw state.
+  // Accepts Atrio backups, those made when the project was called Workspace (old files may still
+  // be around), and raw state.
   const raw = ['atrio', 'workspace'].includes(payload?.app) ? payload.state : payload;
   if (typeof raw !== 'object' || raw === null || !('links' in raw || 'tasks' in raw)) {
     announce(t('backup.notAtrio'));
