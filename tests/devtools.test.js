@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { afterEach, describe, test } from 'node:test';
 import { createHash } from 'node:crypto';
+import { TOOL_KEYWORDS } from '../js/config.js';
 import { decodeBase64, encodeBase64, evaluate, password, runTools, sha256 } from '../js/devtools.js';
 import { setLanguage } from '../js/i18n.js';
 
@@ -219,6 +220,10 @@ describe('SHA-256', () => {
     ]);
     assert.deepEqual(values('sha256'), []);
   });
+});
+
+test('every reserved tool keyword runs a tool', () => {
+  for (const keyword of TOOL_KEYWORDS) assert.ok(runTools(`${keyword} abc`, NOW).length > 0, keyword);
 });
 
 test('ordinary searches trigger no tool', () => {

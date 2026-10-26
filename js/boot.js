@@ -6,12 +6,14 @@
     const saved = JSON.parse(localStorage.getItem('workspace.newtab.v2') || 'null');
     if (!saved || typeof saved !== 'object') return;
     const root = document.documentElement;
-    if (/^[a-z]+$/.test(saved.theme)) root.dataset.theme = saved.theme;
+    // Strings only: a missing field would be tested as "undefined", which matches.
+    const isWord = (value) => typeof value === 'string' && /^[a-z]+$/.test(value);
+    if (isWord(saved.theme)) root.dataset.theme = saved.theme;
     // Automatic theme: the accent extracted earlier from the wallpaper.
     const accent = saved.autoAccent?.color;
     if (saved.theme === 'auto' && /^#[0-9a-f]{6}$/i.test(accent)) root.style.setProperty('--accent', accent);
     if (saved.apps?.visible === false) root.setAttribute('data-apps-off', '');
-    if (/^[a-z]+$/.test(saved.wallpaper)) {
+    if (isWord(saved.wallpaper)) {
       root.dataset.wallpaper = saved.wallpaper;
       if (saved.wallpaper !== 'custom') {
         root.style.setProperty('--wallpaper', `url("assets/${saved.wallpaper}.webp")`);

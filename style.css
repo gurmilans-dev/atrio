@@ -1450,6 +1450,8 @@ kbd {
 
 .settings-links {
   display: grid;
+  /* minmax(0, …): a long URL is cut with an ellipsis instead of widening the drawer. */
+  grid-template-columns: minmax(0, 1fr);
   gap: 2px;
 }
 .settings-link {

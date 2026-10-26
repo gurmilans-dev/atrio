@@ -11,6 +11,7 @@ import { GOOGLE_APPS, appName, appURL } from './google-apps.js';
 import { getLanguage, t } from './i18n.js';
 import { hostOf, linkIcon } from './links.js';
 import { openBrowserPage } from './platform.js';
+import { prefixTargets } from './prefixes.js';
 import { resolveInput } from './search.js';
 import { getState, subscribe, update } from './store.js';
 import { addTask } from './tasks.js';
@@ -65,7 +66,8 @@ async function navigate(result) {
 }
 
 function go(force) {
-  const result = resolveInput(input().value, getState().engine, { force });
+  const state = getState();
+  const result = resolveInput(input().value, state.engine, { force, prefixes: prefixTargets(state) });
   if (result) navigate(result);
 }
 
@@ -156,7 +158,7 @@ function buildItems(value) {
   // Explicit tool keywords ("= 2^10", "uuid") go above the web search, guesses below it.
   const list = [
     ...tools.filter((tool) => tool.first),
-    primaryItem(resolveInput(text, state.engine)),
+    primaryItem(resolveInput(text, state.engine, { prefixes: prefixTargets(state) })),
     ...tools.filter((tool) => !tool.first),
   ];
   if (text.length >= 2) {
@@ -265,14 +267,15 @@ function execute(index) {
 
 // Shows where Enter will go: a tool, a prefix target, a site, or a chrome:// page.
 function renderHint() {
-  const { engine } = getState();
+  const state = getState();
+  const { engine } = state;
   const value = input().value.trim();
   let text = '';
   if (value.startsWith('>')) text = t('hint.commands');
   else if (value.startsWith('+')) text = t('hint.task');
   else if (value && items[0]?.kind === 'tool') text = `⧉ ${toolName(items[0].tool)}`;
   else if (value) {
-    const result = resolveInput(value, engine);
+    const result = resolveInput(value, engine, { prefixes: prefixTargets(state) });
     if (result?.kind === 'url') text = result.label ? `↗ ${result.label}` : t('hint.openSite');
     else if (result?.kind === 'browser') text = t('hint.chromePage');
     else if (result?.kind === 'search' && result.label !== ENGINES[engine].label) text = `→ ${result.label}`;

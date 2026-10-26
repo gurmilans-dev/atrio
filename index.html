@@ -444,6 +444,52 @@
             </form>
           </section>
 
+          <section class="settings-section" id="prefixes-section" aria-labelledby="prefixes-title">
+            <h3 id="prefixes-title" data-i18n="prefixes.title">Prefissi di ricerca</h3>
+            <p class="settings-note" data-i18n="prefixes.note"></p>
+            <div id="settings-prefixes" class="settings-links"></div>
+            <form id="prefix-form" class="link-form" autocomplete="off">
+              <label for="prefix-key" data-i18n="prefixes.key"></label>
+              <input
+                id="prefix-key"
+                type="text"
+                maxlength="15"
+                spellcheck="false"
+                autocapitalize="off"
+                data-i18n-placeholder="prefixes.keyPlaceholder"
+                required
+              />
+              <label for="prefix-name"
+                ><span data-i18n="prefixes.name"></span> <span data-i18n="prefixes.nameHint"></span
+              ></label>
+              <input
+                id="prefix-name"
+                type="text"
+                maxlength="30"
+                data-i18n-placeholder="prefixes.namePlaceholder"
+              />
+              <label for="prefix-url" data-i18n="prefixes.url"></label>
+              <input
+                id="prefix-url"
+                type="text"
+                inputmode="url"
+                spellcheck="false"
+                data-i18n-placeholder="prefixes.urlPlaceholder"
+                required
+              />
+              <div class="link-form-actions">
+                <button type="submit" class="main-button" id="prefix-submit"></button>
+                <button
+                  type="button"
+                  class="outline-button"
+                  id="prefix-cancel"
+                  data-i18n="common.cancel"
+                  hidden
+                ></button>
+              </div>
+            </form>
+          </section>
+
           <section class="settings-section" id="shortcuts-section" aria-labelledby="shortcuts-title">
             <h3 id="shortcuts-title" data-i18n="settings.shortcuts">Scorciatoie</h3>
             <dl class="shortcut-list">

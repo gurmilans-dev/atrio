@@ -134,6 +134,34 @@ describe('normalizeState', () => {
   });
 });
 
+describe('search prefixes', () => {
+  test('valid prefixes are kept, the rest dropped', () => {
+    const { prefixes } = normalizeState({
+      prefixes: [
+        { key: ' Jira ', name: 'Jira', url: 'https://acme.atlassian.net/browse/%s' },
+        { key: 'docs', url: 'https://www.example.com/search?q=%s' },
+        { key: 'jira', url: 'https://other.dev/%s' }, // duplicate
+        { key: 'gh', url: 'https://example.com/%s' }, // built-in prefix
+        { key: 'uuid', url: 'https://example.com/%s' }, // palette tool
+        { key: 'two words', url: 'https://example.com/%s' },
+        { key: 'nourl', url: 'https://example.com/' },
+        { key: 'host', url: 'https://%s.example.com/' },
+        'junk',
+      ],
+    });
+    assert.deepEqual(prefixes, [
+      { key: 'jira', name: 'Jira', url: 'https://acme.atlassian.net/browse/%s' },
+      { key: 'docs', name: 'example.com', url: 'https://www.example.com/search?q=%s' },
+    ]);
+  });
+
+  test('defaults to none and is capped', () => {
+    assert.deepEqual(normalizeState({}).prefixes, []);
+    const many = Array.from({ length: 30 }, (_, i) => ({ key: `p${i}`, url: `https://p.dev/${i}/%s` }));
+    assert.equal(normalizeState({ prefixes: many }).prefixes.length, LIMITS.prefixes);
+  });
+});
+
 describe('loadState', () => {
   test('reads the saved state', () => {
     const loaded = loadState(memoryStorage({ [STORAGE_KEY]: JSON.stringify({ theme: 'mocha' }) }));

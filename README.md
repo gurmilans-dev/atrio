@@ -29,8 +29,9 @@ no tracking.
 
 - **Search that knows code from URLs.** `console.log`, `next.js` or `README.md` are searched, not opened as domains.
   `localhost:5173`, LAN IPs, `[::1]` and `*.test` open over `http://`. Prefixes search a site directly (`yt lofi`,
-  `npm zod`; also `gh`, `mdn`, `so`, `py`, `ciu`, `dd`) and, typed alone, open it (`yt` → YouTube). `chrome://`
-  pages work, `Shift + Enter` always searches.
+  `npm zod`; also `gh`, `mdn`, `so`, `py`, `ciu`, `dd`) and, typed alone, open it (`yt` → YouTube). Add your own
+  in Settings with `%s` where the text goes: `jira 123` → your Jira ticket, `pr 42` → a pull request of your repo.
+  `chrome://` pages work, `Shift + Enter` always searches.
 - **Command palette.** While you type, matching links, Google apps and commands appear under the box. `>` (or
   `Ctrl + Shift + P`) lists every command; `+ some text` adds a task without leaving the search.
 - **Developer tools in the search box**, all local; `Enter` copies the result:

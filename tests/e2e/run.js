@@ -677,6 +677,53 @@ try {
     assert.deepEqual(r, { transform: '', lit: 0, lift: 'none' });
   });
 
+  await check('personal search prefixes: add, use, reserved names, remove', async () => {
+    const submit = async (key, url, name = '') => {
+      await a.eval(
+        settings(`
+          document.getElementById('prefix-key').value = ${JSON.stringify(key)};
+          document.getElementById('prefix-name').value = ${JSON.stringify(name)};
+          document.getElementById('prefix-url').value = ${JSON.stringify(url)};
+          document.getElementById('prefix-form').requestSubmit()`),
+      );
+      return a.eval(`document.getElementById('toast').textContent`);
+    };
+    const hintFor = async (text) => {
+      await a.eval(clearSearch);
+      await blur();
+      await a.press('/');
+      await a.type(text);
+      return a.eval(`document.getElementById('search-hint').textContent`);
+    };
+    const added = await submit('Jira', 'acme.atlassian.net/browse/%s', 'Jira');
+    const reserved = await submit('gh', 'https://example.com/%s');
+    const badUrl = await submit('host', 'https://%s.example.com/');
+    const saved = await a.eval(`${STATE}.prefixes`);
+    const search = await hintFor('jira ABC-12');
+    const alone = await hintFor('jira');
+    await a.eval(clearSearch);
+    await a.eval(
+      settings(
+        `document.querySelector('#settings-prefixes [data-key="jira"] [data-action="remove"]').click()`,
+      ),
+    );
+    const after = await a.eval(
+      `({ saved: ${STATE}.prefixes.length, rows: document.querySelectorAll('#settings-prefixes .settings-link').length })`,
+    );
+    assert.deepEqual(
+      { added, reserved, badUrl, saved, search, alone, after },
+      {
+        added: 'Prefisso “jira” aggiunto.',
+        reserved: '“gh” è già usato da Atrio: scegli un altro prefisso.',
+        badUrl: 'Indirizzo non valido: serve un URL http o https con %s dove va il testo, fuori dal dominio.',
+        saved: [{ key: 'jira', name: 'Jira', url: 'https://acme.atlassian.net/browse/%s' }],
+        search: '→ Jira',
+        alone: '↗ Jira',
+        after: { saved: 0, rows: 0 },
+      },
+    );
+  });
+
   await check('search: the × clears the box and keeps the focus', async () => {
     await blur();
     const read = () =>

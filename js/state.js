@@ -1,6 +1,7 @@
 // State schema, validation and persistence. Every field is checked one by one,
 // so a single corrupted entry is dropped instead of resetting everything.
 import {
+  BANGS,
   CUSTOM_WALLPAPER,
   DEFAULT_LINKS,
   ENGINES,
@@ -9,6 +10,7 @@ import {
   SCHEMA_VERSION,
   STORAGE_KEY,
   THEMES,
+  TOOL_KEYWORDS,
   WALLPAPERS,
 } from './config.js';
 import { DEFAULT_APP_FAVORITES, GOOGLE_APPS } from './google-apps.js';
@@ -54,6 +56,7 @@ export function createDefaultState() {
     showFavicons: true,
     notify: true,
     links: DEFAULT_LINKS.map((link) => ({ id: newId(), ...link })),
+    prefixes: [],
     tasks: [],
     notes: '',
     panelTab: 'tasks',
@@ -112,6 +115,39 @@ function normalizeLinks(list) {
     if (links.length === LIMITS.links) break;
   }
   return links;
+}
+
+// Personal search prefixes ("jira 123" -> your Jira): { key, name, url }, where url has %s in
+// place of the query. The %s must not be in the host, so the prefix alone can open the site.
+export const PREFIX_KEY = /^[a-z][a-z0-9]{0,14}$/;
+export const RESERVED_PREFIXES = new Set([...Object.keys(BANGS), ...TOOL_KEYWORDS]);
+
+export function validTemplate(value) {
+  const text = typeof value === 'string' ? value.trim() : '';
+  if (!text.includes('%s')) return null;
+  const [a, b] = ['x', 'y'].map((sample) => validURL(text.replaceAll('%s', sample)));
+  return a && b && new URL(a).origin === new URL(b).origin ? text : null;
+}
+
+/** Returns a clean { key, name, url } or null; an empty name becomes the site's host. */
+export function normalizePrefix(item) {
+  if (!isObject(item)) return null;
+  const key = typeof item.key === 'string' ? item.key.trim().toLowerCase() : '';
+  const url = validTemplate(item.url);
+  if (!PREFIX_KEY.test(key) || RESERVED_PREFIXES.has(key) || !url) return null;
+  const host = new URL(url.replaceAll('%s', 'x')).hostname.replace(/^www\./, '');
+  return { key, name: cleanText(item.name, LIMITS.linkName) || host, url };
+}
+
+function normalizePrefixes(list) {
+  const prefixes = [];
+  for (const item of list) {
+    const prefix = normalizePrefix(item);
+    if (!prefix || prefixes.some((other) => other.key === prefix.key)) continue;
+    prefixes.push(prefix);
+    if (prefixes.length === LIMITS.prefixes) break;
+  }
+  return prefixes;
 }
 
 function normalizeTasks(list) {
@@ -185,6 +221,7 @@ export function normalizeState(raw) {
     showFavicons: bool(input.showFavicons, base.showFavicons),
     notify: bool(input.notify, base.notify),
     links: Array.isArray(input.links) ? normalizeLinks(input.links) : base.links,
+    prefixes: Array.isArray(input.prefixes) ? normalizePrefixes(input.prefixes) : [],
     tasks: Array.isArray(input.tasks) ? normalizeTasks(input.tasks) : [],
     notes: typeof input.notes === 'string' ? input.notes.slice(0, LIMITS.notes) : '',
     panelTab: input.panelTab === 'notes' ? 'notes' : 'tasks',

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { resolveInput, resolveLinkURL } from '../js/search.js';
+import { resolveInput, resolveLinkURL, resolvePrefixURL } from '../js/search.js';
 
 const resolve = (input, options) => resolveInput(input, 'google', options);
 const searchOf = (query) => `https://www.google.com/search?q=${encodeURIComponent(query)}`;
@@ -85,6 +85,34 @@ describe('resolveInput', () => {
     assert.equal(resolve('xyz').kind, 'search');
   });
 
+  test('names from Object.prototype are not prefixes', () => {
+    for (const text of ['constructor', 'constructor x', 'toString', 'hasOwnProperty a']) {
+      assert.equal(resolve(text).url, searchOf(text), text);
+    }
+  });
+
+  test('personal prefixes put the query in place of %s', () => {
+    const prefixes = {
+      jira: { label: 'Jira', url: 'https://acme.atlassian.net/browse/%s' },
+      pr: { label: 'PRs', url: 'https://github.com/me/app/pull/%s/files' },
+    };
+    assert.deepEqual(resolve('jira ABC-12', { prefixes }), {
+      kind: 'search',
+      url: 'https://acme.atlassian.net/browse/ABC-12',
+      label: 'Jira',
+      query: 'ABC-12',
+    });
+    assert.equal(resolve('!pr 42', { prefixes }).url, 'https://github.com/me/app/pull/42/files');
+    assert.equal(resolve('jira a b&c', { prefixes }).url, 'https://acme.atlassian.net/browse/a%20b%26c');
+    assert.deepEqual(resolve('JIRA', { prefixes }), {
+      kind: 'url',
+      url: 'https://acme.atlassian.net/',
+      label: 'Jira',
+    });
+    assert.equal(resolve('jira x', { prefixes, force: true }).url, searchOf('jira x'));
+    assert.equal(resolve('npm zod', { prefixes }).label, 'npm');
+  });
+
   test('force always searches the default engine', () => {
     assert.equal(resolve('github.com', { force: true }).url, searchOf('github.com'));
     assert.equal(resolve('npm zod', { force: true }).url, searchOf('npm zod'));
@@ -94,6 +122,21 @@ describe('resolveInput', () => {
     assert.equal(resolveInput('rust', 'ddg').url, 'https://duckduckgo.com/?q=rust');
     assert.equal(resolveInput('rust', 'unknown').label, 'Google');
     assert.equal(resolve('   '), null);
+  });
+});
+
+describe('resolvePrefixURL', () => {
+  test('completes the scheme and keeps %s', () => {
+    assert.equal(resolvePrefixURL('acme.atlassian.net/browse/%s'), 'https://acme.atlassian.net/browse/%s');
+    assert.equal(resolvePrefixURL('localhost:3000/search?q=%s'), 'http://localhost:3000/search?q=%s');
+    assert.equal(resolvePrefixURL(' https://x.dev/?a=%s&b=%s '), 'https://x.dev/?a=%s&b=%s');
+  });
+
+  test('needs %s outside the host and an http(s) address', () => {
+    assert.equal(resolvePrefixURL('https://example.com/search'), null);
+    assert.equal(resolvePrefixURL('https://%s.example.com/'), null);
+    assert.equal(resolvePrefixURL('ftp://example.com/%s'), null);
+    assert.equal(resolvePrefixURL('not a url %s'), null);
   });
 });
 

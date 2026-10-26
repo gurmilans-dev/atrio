@@ -7,6 +7,9 @@
 - **English interface** alongside Italian. It follows the browser language, or can be set in Settings → General.
   Dates, numbers, Google app names and the end-of-session notification follow the chosen language. Palette commands
   and apps can be found by typing in either language.
+- **Personal search prefixes** (Settings → Search prefixes): an address with `%s` where the text goes, so
+  `jira 123` opens your Jira ticket and `pr 42` a pull request of your repo. Typed alone, the prefix opens the site,
+  like the built-in ones. Names already used by Atrio (`gh`, `yt`, `uuid`…) are refused.
 - A **×** in the search box clears it and keeps the cursor there; it shows only while there is text.
 - **Developer tools in the search box**, local, `Enter` copies the result: calculator (`= …` or plain arithmetic,
   with hex/binary), timestamps both ways (`ts`), `uuid`, passwords (`pw`), Base64 (`b64` / `b64d`), URL encoding
@@ -29,6 +32,11 @@
 - When the effects are on they are lighter than before: the spotlight updates one small layer per element instead of
   restyling whole panels, element positions are cached, the parallax target is updated about ten times a second.
 - The page uses ~0.03% of a core when still.
+
+### Fixed
+
+- Typing `constructor` in the search box broke the suggestions: the prefix lookup reached `Object.prototype`.
+- A saved state without theme or wallpaper made the page request `assets/undefined.webp` before the first paint.
 
 ### Removed
 

@@ -9,6 +9,7 @@ import { initFocus } from './focus.js';
 import { getLanguage, resolveLanguage, t, translatePage } from './i18n.js';
 import { initLinks } from './links.js';
 import { initNotes } from './notes.js';
+import { initPrefixes } from './prefixes.js';
 import { initSearch } from './search-ui.js';
 import { initSettings } from './settings.js';
 import { initShortcuts } from './shortcuts.js';
@@ -25,6 +26,7 @@ try {
   initClock();
   initSearch();
   initLinks();
+  initPrefixes();
   initTasks();
   initNotes();
   initFocus();

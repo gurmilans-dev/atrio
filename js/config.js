@@ -44,6 +44,9 @@ export const BANGS = {
   yt: { label: 'YouTube', url: 'https://www.youtube.com/results?search_query=' },
 };
 
+// Keywords of the palette tools (js/devtools.js): personal search prefixes cannot use them.
+export const TOOL_KEYWORDS = ['ts', 'uuid', 'pw', 'b64', 'b64d', 'url', 'urld', 'jwt', 'sha256'];
+
 export const PRESETS = [
   { id: 25, focus: 25, break: 5 },
   { id: 50, focus: 50, break: 10 },
@@ -58,6 +61,7 @@ export const LIMITS = {
   taskText: 120,
   name: 24,
   notes: 10000,
+  prefixes: 20,
   uploadBytes: 25 * 1024 * 1024,
   importBytes: 40 * 1024 * 1024,
 };
