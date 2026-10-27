@@ -57,6 +57,7 @@ export const TOOL_KEYWORDS = [
   'sha256',
   'json',
   'case',
+  'http',
 ];
 
 export const PRESETS = [

@@ -1,12 +1,14 @@
 // Developer tools for the command palette: calculator, timestamps, UUIDs, Base64, URL encoding,
-// JWT decoding, SHA-256, JSON, naming styles, colors and passwords. Pure functions, everything local; see
-// tests/devtools.test.js.
+// JWT decoding, SHA-256, JSON, naming styles, HTTP status codes, colors and passwords. Pure
+// functions, everything local; see tests/devtools.test.js.
 // Each result row is { tool, value, detail, first, color?, error? }: Enter copies `value`;
 // `first` puts the rows above the web search (an explicit tool keyword or an obvious match).
 import { hslToHex, rgbToHsl } from './color.js';
-import { dateFormat, relativeFormat, t } from './i18n.js';
+import { fuzzyScore } from './fuzzy.js';
+import { HTTP_STATUS } from './http-status.js';
+import { dateFormat, getLanguage, relativeFormat, t } from './i18n.js';
 
-/** calc, ts, uuid, b64, url, jwt, hash, json, case, color, pw */
+/** calc, ts, uuid, b64, url, jwt, hash, json, case, http, color, pw */
 export const toolName = (tool) => t(`tool.${tool}`);
 
 const row = (tool, value, detail, extra = {}) => ({
@@ -358,6 +360,38 @@ function caseRows(text) {
   ];
 }
 
+// ---------- HTTP status codes ----------
+
+// "http 429" explains one code, "http 40" lists 400–409, "http too many" searches names and texts.
+function httpRows(query) {
+  if (!query) return [];
+  const english = getLanguage() !== 'it';
+  const describe = (code) => {
+    const [name, italian, englishText] = HTTP_STATUS[code];
+    return row('http', `${code} ${name}`, english ? englishText : italian);
+  };
+  const codes = Object.keys(HTTP_STATUS);
+  if (/^\d{1,3}$/.test(query)) {
+    const matches = codes.filter((code) => code.startsWith(query));
+    if (matches.length) return matches.slice(0, 8).map(describe);
+    if (/^[1-5]\d\d$/.test(query)) {
+      return [row('http', query, t('tool.httpUnknown', { kind: t(`tool.httpClass${query[0]}`) }))];
+    }
+    return [errorRow('http', t('tool.httpNone'))];
+  }
+  const matches = codes
+    .map((code) => {
+      const [name, italian, englishText] = HTTP_STATUS[code];
+      const text = `${name} ${english ? englishText : italian}`;
+      return { code, score: fuzzyScore(query, text, { subsequence: false }) };
+    })
+    .filter(({ score }) => score >= 0)
+    .sort((a, b) => b.score - a.score);
+  return matches.length
+    ? matches.slice(0, 8).map(({ code }) => describe(code))
+    : [errorRow('http', t('tool.httpNone'))];
+}
+
 // ---------- Colors ----------
 
 const toHex = (r, g, b) => `#${[r, g, b].map((value) => value.toString(16).padStart(2, '0')).join('')}`;
@@ -471,6 +505,8 @@ export function runTools(raw, now = Date.now()) {
       return argument ? jsonRows(argument, true) : [];
     case 'case':
       return caseRows(argument);
+    case 'http':
+      return httpRows(argument);
     default:
       break;
   }

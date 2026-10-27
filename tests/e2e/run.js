@@ -533,7 +533,7 @@ try {
     assert.equal(search.hint, '');
   });
 
-  await check('more developer tools: json, case', async () => {
+  await check('more developer tools: json, case, http', async () => {
     const firstRow = async (text) => {
       await a.eval(clearSearch);
       await blur();
@@ -548,6 +548,7 @@ try {
       json: await firstRow('{"a":1,"b":[2,3]}'),
       jsonError: await firstRow('json {"a":1,}'),
       case: await firstRow('case user profile id'),
+      http: await firstRow('http 404'),
     };
     await a.press('Escape');
     await a.eval(clearSearch);
@@ -555,6 +556,7 @@ try {
       json: { label: '{\n  "a": 1,\n  "b": [\n    2,\n    3\n  ]\n}', hint: '⧉ JSON' },
       jsonError: { label: 'JSON non valido al carattere 8, vicino a “{"a":1,}”', hint: '⧉ JSON' },
       case: { label: 'userProfileId', hint: '⧉ Stile dei nomi' },
+      http: { label: '404 Not Found', hint: '⧉ Codici HTTP' },
     });
   });
 

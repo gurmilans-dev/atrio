@@ -231,7 +231,7 @@ const it = {
   'shortcuts.alwaysSearch': 'Cerca sempre, anche se sembra un URL',
   'shortcuts.removeRecent': 'Togli la ricerca recente evidenziata dai suggerimenti',
   'shortcuts.tools':
-    'Strumenti nella ricerca: calcoli, timestamp, UUID, Base64, URL, JWT, SHA-256, JSON, stili dei nomi, password, colori. Invio copia il risultato.',
+    'Strumenti nella ricerca: calcoli, timestamp, UUID, Base64, URL, JWT, SHA-256, JSON, stili dei nomi, codici HTTP, password, colori. Invio copia il risultato.',
   'shortcuts.openLink': 'Apri il collegamento',
   'shortcuts.newTask': 'Nuova attività',
   'shortcuts.apps': 'App Google',
@@ -298,6 +298,14 @@ const it = {
   'tool.jsonInvalid': 'JSON non valido',
   'tool.case': 'Stile dei nomi',
   'tool.slug': 'Slug per URL',
+  'tool.http': 'Codici HTTP',
+  'tool.httpUnknown': 'Codice non standard: {kind}',
+  'tool.httpClass1': 'risposta informativa (1xx)',
+  'tool.httpClass2': 'successo (2xx)',
+  'tool.httpClass3': 'reindirizzamento (3xx)',
+  'tool.httpClass4': 'errore del client (4xx)',
+  'tool.httpClass5': 'errore del server (5xx)',
+  'tool.httpNone': 'Nessun codice HTTP trovato',
 };
 
 const en = {
@@ -524,7 +532,7 @@ const en = {
   'shortcuts.alwaysSearch': 'Search even if it looks like a URL',
   'shortcuts.removeRecent': 'Remove the highlighted recent search from the suggestions',
   'shortcuts.tools':
-    'Tools in the search box: math, timestamps, UUIDs, Base64, URLs, JWTs, SHA-256, JSON, naming styles, passwords, colors. Enter copies the result.',
+    'Tools in the search box: math, timestamps, UUIDs, Base64, URLs, JWTs, SHA-256, JSON, naming styles, HTTP status codes, passwords, colors. Enter copies the result.',
   'shortcuts.openLink': 'Open the link',
   'shortcuts.newTask': 'New task',
   'shortcuts.apps': 'Google apps',
@@ -591,6 +599,14 @@ const en = {
   'tool.jsonInvalid': 'Invalid JSON',
   'tool.case': 'Naming style',
   'tool.slug': 'URL slug',
+  'tool.http': 'HTTP status codes',
+  'tool.httpUnknown': 'Non-standard code: {kind}',
+  'tool.httpClass1': 'informational response (1xx)',
+  'tool.httpClass2': 'success (2xx)',
+  'tool.httpClass3': 'redirection (3xx)',
+  'tool.httpClass4': 'client error (4xx)',
+  'tool.httpClass5': 'server error (5xx)',
+  'tool.httpNone': 'No HTTP status code found',
 };
 
 export const STRINGS = { it, en };

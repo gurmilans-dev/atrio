@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { afterEach, describe, test } from 'node:test';
 import { createHash } from 'node:crypto';
 import { TOOL_KEYWORDS } from '../js/config.js';
+import { HTTP_STATUS } from '../js/http-status.js';
 import {
   decodeBase64,
   encodeBase64,
@@ -273,6 +274,53 @@ describe('naming styles', () => {
     assert.equal(values('case getHTTPResponse')[2], 'get_http_response');
     assert.deepEqual(values('case'), []);
     assert.deepEqual(values('case 日本'), ['日本', '日本', '日本', '日本', '日本']); // no slug without ASCII
+  });
+});
+
+describe('HTTP status codes', () => {
+  test('one code, a prefix, a search', () => {
+    assert.deepEqual(
+      runTools('http 429', NOW).map((result) => [result.value, result.detail]),
+      [['429 Too Many Requests', 'Too many requests: wait (see Retry-After) and try again.']],
+    );
+    assert.deepEqual(values('http 40'), [
+      '400 Bad Request',
+      '401 Unauthorized',
+      '402 Payment Required',
+      '403 Forbidden',
+      '404 Not Found',
+      '405 Method Not Allowed',
+      '406 Not Acceptable',
+      '407 Proxy Authentication Required',
+    ]);
+    assert.equal(values('http not found')[0], '404 Not Found');
+    assert.equal(values('http teapot')[0], '418 I’m a teapot');
+  });
+
+  test('unknown codes are described by their class; nothing found is an error row', () => {
+    assert.deepEqual(
+      runTools('http 499', NOW).map((result) => [result.value, result.detail]),
+      [['499', 'Non-standard code: client error (4xx)']],
+    );
+    assert.equal(runTools('http 999', NOW)[0].error, true);
+    assert.equal(runTools('http zzzz', NOW)[0].error, true);
+    assert.deepEqual(values('http'), []);
+  });
+
+  test('explanations follow the interface language', () => {
+    setLanguage('it');
+    assert.equal(runTools('http 404', NOW)[0].detail, 'La risorsa non esiste, o il server non vuole dirlo.');
+  });
+
+  test('every code has a name and both explanations', () => {
+    for (const [code, texts] of Object.entries(HTTP_STATUS)) {
+      assert.ok(Number(code) >= 100 && Number(code) <= 599, code);
+      assert.equal(texts.length, 3, code);
+      assert.ok(
+        texts.every((text) => typeof text === 'string' && text.length > 1),
+        code,
+      );
+    }
   });
 });
 
