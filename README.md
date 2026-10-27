@@ -19,8 +19,8 @@
 
 Atrio replaces Chrome's new tab page with a calm place to start from: a search box that understands code and
 dev URLs, a command palette, quick links, a focus timer with a GitHub-style activity heatmap, tasks and notes, and a
-Google apps launcher. It is plain HTML, CSS and JavaScript modules: no framework, no build step, no network requests,
-no tracking.
+Google apps launcher. It is plain HTML, CSS and JavaScript modules: no framework, no build step, no tracking, and no
+network requests unless you turn on online search suggestions.
 
 > The interface is in English and Italian. It follows the browser language; you can also pick one in
 > **Settings → General**.
@@ -93,13 +93,16 @@ again, then import the backup. From then on the ID no longer depends on where th
 ## Privacy and permissions
 
 Everything stays in the browser (`localStorage` and IndexedDB). Atrio makes no network requests of its own: it only
-navigates when you search or open a link.
+navigates when you search or open a link. The one exception is opt-in: with **online search suggestions** turned on
+(Settings → General, off by default), what you type in the search box is sent to Google or DuckDuckGo, whichever is
+your engine, without cookies, as Chrome's address bar does.
 
-| Permission      | Why                                                                    |
-| --------------- | ---------------------------------------------------------------------- |
-| `alarms`        | Schedule the end of a focus session, even when no tab is open          |
-| `notifications` | Tell you when the session is over                                      |
-| `favicon`       | Show site icons for quick links from Chrome's local cache (no network) |
+| Permission                                              | Why                                                                    |
+| ------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `alarms`                                                | Schedule the end of a focus session, even when no tab is open          |
+| `notifications`                                         | Tell you when the session is over                                      |
+| `favicon`                                               | Show site icons for quick links from Chrome's local cache (no network) |
+| Optional: `suggestqueries.google.com`, `duckduckgo.com` | Online search suggestions, asked only when you turn them on            |
 
 ## How it works
 
@@ -118,6 +121,9 @@ navigates when you search or open a link.
   with `data-i18n` attributes, and the page stays hidden for the moment it takes to fill them in. Dates, numbers and
   ordinals use `Intl` in the chosen language, and the end-of-session notification follows it too. A test checks that
   both languages have the same keys and placeholders.
+- **Suggestions that do not get in the way.** They are requested after a 150 ms pause in typing, every keystroke
+  cancels the previous request, answers are cached, and rows are never inserted while you are moving through the
+  list. Offline, the box works as if they were off.
 - **A calculator without `eval`.** The palette's math goes through a small recursive-descent parser: `eval` would be
   unsafe and is blocked by the extension's content security policy anyway.
 - **Pure logic, tested.** Search resolution, state validation, timer, stats, color extraction and ranking are pure
@@ -138,7 +144,8 @@ Requires Node.js 22+. There is nothing to install: the tools run through `npx`.
 | `npm run icons`       | Render the PNG icons from `assets/icons/icon.svg`                  |
 
 To work on the UI without reloading the extension, serve the folder (e.g. `npx serve .`) and open `index.html`: the
-page runs outside the extension too, just without notifications, site icons and `chrome://` pages.
+page runs outside the extension too, just without notifications, site icons, online suggestions and `chrome://`
+pages.
 
 ```
 manifest.json        Manifest V3

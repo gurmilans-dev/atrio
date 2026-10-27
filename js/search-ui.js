@@ -1,7 +1,8 @@
 // Search box + command palette. Typing shows developer tools, recent searches, matching links,
 // Google apps and commands under the box; ">" lists only commands, "+ text" adds a task. Enter
 // runs the highlighted row (for tools: copies the result). An empty box shows recent searches,
-// with none preselected.
+// with none preselected. Online suggestions (js/suggest.js), when turned on, join plain searches
+// after a short pause in typing.
 import { appIcon } from './apps.js';
 import { getCommands } from './commands.js';
 import { BANGS, ENGINES } from './config.js';
@@ -11,10 +12,11 @@ import { fuzzyScore } from './fuzzy.js';
 import { GOOGLE_APPS, appName, appURL } from './google-apps.js';
 import { getLanguage, t } from './i18n.js';
 import { hostOf, linkIcon } from './links.js';
-import { openBrowserPage } from './platform.js';
+import { hasOrigins, openBrowserPage } from './platform.js';
 import { prefixTargets } from './prefixes.js';
 import { addRecent, matchRecent } from './recent.js';
 import { resolveInput } from './search.js';
+import { SUGGEST_SOURCES, cachedSuggestions, fetchSuggestions, hasSuggestions } from './suggest.js';
 import { getState, subscribe, update } from './store.js';
 import { addTask } from './tasks.js';
 
@@ -28,9 +30,13 @@ const ICON_PATHS = {
   error: 'M12 7v6m0 4h.01',
   recent: 'M12 7.5V12l3 2M20.5 12a8.5 8.5 0 1 1-17 0 8.5 8.5 0 0 1 17 0z',
 };
+const SUGGEST_DELAY_MS = 150;
 let items = [];
 let active = 0;
 let open = false;
+let wantedQuery = null; // online suggestions to fetch for the current text
+let suggestTimer = 0;
+let suggestAbort = null;
 
 const input = () => $('search-input');
 
@@ -166,8 +172,32 @@ const recentItem = (text) => ({
   run: () => runText(text),
 });
 
+// A suggestion is always searched, even when it looks like an address.
+const suggestionItem = (text) => ({
+  kind: 'search',
+  label: text,
+  detail: t('result.searchOn', { target: ENGINES[getState().engine].label }),
+  run: () => runText(text, true),
+});
+
+// Online suggestions are for plain searches on the chosen engine: not for prefixes, addresses or
+// tools. Without an answer in the cache, the query is left for scheduleSuggestions().
+function onlineSuggestions(state, primary, explicitTool, shown) {
+  const plain = primary?.kind === 'search' && primary.label === ENGINES[state.engine].label;
+  const query = plain ? primary.query : '';
+  if (!state.suggest || explicitTool || query.length < 2 || !hasSuggestions(state.engine)) return [];
+  const cached = cachedSuggestions(state.engine, query);
+  if (!cached) {
+    wantedQuery = query;
+    return [];
+  }
+  const taken = new Set(shown.map((text) => text.toLowerCase()));
+  return cached.filter((text) => !taken.has(text.toLowerCase()));
+}
+
 function buildItems(value) {
   const text = value.trim();
+  wantedQuery = null;
   if (!text) return matchRecent(getState().recent, '', 5).map(recentItem);
   if (text.startsWith('>')) return rank(getCommands(), commandText, text.slice(1), 20, true).map(commandItem);
   if (text.startsWith('+')) {
@@ -195,12 +225,15 @@ function buildItems(value) {
   }
   // Explicit tool keywords ("= 2^10", "uuid") go above the web search, guesses below it.
   const explicitTool = tools.some((tool) => tool.first);
+  const primary = resolveInput(text, state.engine, { prefixes: prefixTargets(state) });
+  const recents = explicitTool ? [] : matchRecent(state.recent, text, 3);
   const list = [
     ...tools.filter((tool) => tool.first),
-    primaryItem(resolveInput(text, state.engine, { prefixes: prefixTargets(state) }), text),
+    primaryItem(primary, text),
     ...tools.filter((tool) => !tool.first),
-    // Recent searches right under the typed one, as in a browser's address bar.
-    ...(explicitTool ? [] : matchRecent(state.recent, text, 3).map(recentItem)),
+    // Recent searches, then online suggestions, right under the typed one, as in the address bar.
+    ...recents.map(recentItem),
+    ...onlineSuggestions(state, primary, explicitTool, [text, ...recents]).map(suggestionItem),
   ];
   if (text.length >= 2) {
     const links = rank(state.links, (link) => `${link.name} ${hostOf(link.url)}`, text, 5, true);
@@ -290,10 +323,33 @@ function refresh() {
     (!text || /^[>+]/.test(text) || items.length > 1);
   render();
   renderHint();
+  scheduleSuggestions(wantedQuery);
+}
+
+// Asks for suggestions after a short pause in typing; every newer keystroke cancels the request.
+function scheduleSuggestions(query) {
+  clearTimeout(suggestTimer);
+  suggestAbort?.abort();
+  suggestAbort = null;
+  if (!query) return;
+  suggestTimer = setTimeout(async () => {
+    const { engine } = getState();
+    const controller = new AbortController();
+    suggestAbort = controller;
+    try {
+      if (!(await hasOrigins([SUGGEST_SOURCES[engine].origin]))) return;
+      await fetchSuggestions(engine, query, getLanguage(), controller.signal);
+    } catch {
+      return; // offline, blocked or cancelled: the box simply works without them
+    }
+    // Rows are never inserted under someone already moving through the list.
+    if (!controller.signal.aborted && document.activeElement === input() && active <= 0) refresh();
+  }, SUGGEST_DELAY_MS);
 }
 
 function close() {
   open = false;
+  scheduleSuggestions(null);
   render();
 }
 

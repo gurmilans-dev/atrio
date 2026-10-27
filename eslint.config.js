@@ -32,6 +32,7 @@ const browserGlobals = Object.fromEntries(
     'innerHeight',
     'requestAnimationFrame',
     'console',
+    'AbortController',
   ].map((name) => [name, 'readonly']),
 );
 const nodeGlobals = {

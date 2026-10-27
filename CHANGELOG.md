@@ -14,6 +14,10 @@
   show on an empty box (none preselected, so `Enter` on an empty box still does nothing). `Shift + Delete` forgets
   the highlighted one. Kept only in this browser; Settings → General turns them off (which also clears them) or
   clears them.
+- **Online search suggestions** as you type, from Google or DuckDuckGo (whichever is the engine), off by default.
+  Turning them on in Settings → General asks Chrome for access to those two sites (an optional permission, so
+  installing Atrio still shows no warning); turning them off gives it back. Requests wait for a pause in typing, carry
+  no cookies and are cancelled by the next keystroke.
 - A **×** in the search box clears it and keeps the cursor there; it shows only while there is text.
 - **Developer tools in the search box**, local, `Enter` copies the result: calculator (`= …` or plain arithmetic,
   with hex/binary), timestamps both ways (`ts`), `uuid`, passwords (`pw`), Base64 (`b64` / `b64d`), URL encoding

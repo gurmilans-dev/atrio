@@ -751,6 +751,52 @@ try {
     );
   });
 
+  await check('online suggestions: off by default, then from the engine, never for prefixes', async () => {
+    // The engine is faked: the test must not depend on the network.
+    await a.eval(`
+      window.__requests = [];
+      window.fetch = async (url, options) => {
+        window.__requests.push({ url: String(url), credentials: options?.credentials });
+        return new Response(JSON.stringify(['rea', ['Rea', 'react', 'react hooks', 'readme']]));
+      };`);
+    const rowsFor = async (text) => {
+      await a.eval(clearSearch);
+      await blur();
+      await a.press('/');
+      await a.type(text);
+      await sleep(450); // past the pause in typing
+      return a.eval(labels('#search-results .result-label'));
+    };
+    const off = await rowsFor('rea');
+    const requestsOff = await a.eval('window.__requests.length');
+    await a.eval(settings(`document.getElementById('suggest-toggle').click()`));
+    const on = await rowsFor('rea');
+    const prefixed = await rowsFor('yt rea');
+    const requests = await a.eval('window.__requests');
+    await a.eval(clearSearch);
+    await a.eval(settings(`document.getElementById('suggest-toggle').click()`)); // back off
+    assert.deepEqual(
+      {
+        off: off.includes('react hooks'),
+        requestsOff,
+        on: on.slice(0, 4),
+        requests: requests.length,
+        url: requests[0]?.url,
+        credentials: requests[0]?.credentials,
+        prefixed: prefixed.includes('react hooks'),
+      },
+      {
+        off: false,
+        requestsOff: 0,
+        on: ['rea', 'react', 'react hooks', 'readme'],
+        requests: 1,
+        url: 'https://suggestqueries.google.com/complete/search?client=chrome&ie=utf-8&oe=utf-8&hl=it&q=rea',
+        credentials: 'omit',
+        prefixed: false,
+      },
+    );
+  });
+
   await check('recent searches: remembered, offered on an empty box, Shift+Delete forgets', async () => {
     // A personal prefix pointing back to this page runs a real search without leaving the test server.
     const origin = await a.eval('location.origin');

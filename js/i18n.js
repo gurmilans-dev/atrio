@@ -173,6 +173,10 @@ const it = {
   'settings.engineHint': '(i prefissi come gh o yt restano attivi)',
   'settings.recent': 'Ricorda le ricerche recenti (solo su questo computer)',
   'settings.clearRecent': 'Cancella le ricerche recenti',
+  'settings.suggest': 'Suggerimenti di ricerca online mentre scrivi',
+  'settings.suggestNote':
+    'Quello che scrivi nella ricerca viene inviato a Google o DuckDuckGo (il motore scelto), senza cookie, come fa la barra degli indirizzi. Chrome chiede il permesso quando lo attivi.',
+  'suggest.denied': 'Permesso non concesso: i suggerimenti online restano spenti.',
   'settings.showApps': 'Mostra il pulsante delle app Google',
   'settings.mouseEffects': 'Effetti del mouse: bordi luminosi e profondità dello sfondo',
   'settings.wallpaper': 'Sfondo',
@@ -451,6 +455,10 @@ const en = {
   'settings.engineHint': '(prefixes such as gh or yt keep working)',
   'settings.recent': 'Remember recent searches (on this computer only)',
   'settings.clearRecent': 'Clear recent searches',
+  'settings.suggest': 'Online search suggestions as you type',
+  'settings.suggestNote':
+    'What you type in the search box is sent to Google or DuckDuckGo (your engine), without cookies, as the address bar does. Chrome asks for permission when you turn it on.',
+  'suggest.denied': 'Permission not granted: online suggestions stay off.',
   'settings.showApps': 'Show the Google apps button',
   'settings.mouseEffects': 'Mouse effects: glowing borders and wallpaper depth',
   'settings.wallpaper': 'Wallpaper',

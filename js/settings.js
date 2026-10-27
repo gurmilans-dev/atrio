@@ -10,12 +10,13 @@ import {
 } from './config.js';
 import { $, $$, announce, button, el } from './dom.js';
 import { LANGUAGES, numberFormat, t, themeName, wallpaperName } from './i18n.js';
-import { appVersion } from './platform.js';
+import { appVersion, hasOrigins, removeOrigins, requestOrigins } from './platform.js';
 import { loadCustomWallpaper, previewBlur, previewShade } from './appearance.js';
 import { applyPreset, syncAlarm } from './focus.js';
 import { createDefaultState, normalizeState } from './state.js';
 import { dayKey } from './stats.js';
 import { getState, replaceState, subscribe, update } from './store.js';
+import { SUGGEST_ORIGINS } from './suggest.js';
 import { readyTimer } from './timer.js';
 import {
   blobToDataURL,
@@ -126,6 +127,7 @@ function render(state) {
   $('mouse-effects-toggle').checked = state.mouseEffects;
   $('apps-toggle').checked = state.apps.visible;
   $('recent-toggle').checked = state.rememberSearches;
+  $('suggest-toggle').checked = state.suggest;
   $('clear-recent').hidden = state.recent.length === 0;
   $('language-select').value = state.lang;
   if (document.activeElement !== $('name-input')) $('name-input').value = state.name;
@@ -344,6 +346,29 @@ export function initSettings() {
       state.lang = event.target.value;
     });
   });
+  // Host access is asked inside the click (a user gesture); turning the switch off gives it back.
+  $('suggest-toggle').addEventListener('change', async (event) => {
+    const on = event.target.checked;
+    const granted = on ? await requestOrigins(SUGGEST_ORIGINS).catch(() => false) : true;
+    if (!granted) {
+      event.target.checked = false;
+      announce(t('suggest.denied'));
+      return;
+    }
+    if (!on) removeOrigins(SUGGEST_ORIGINS).catch(() => {});
+    update((state) => {
+      state.suggest = on;
+    });
+  });
+  // Access removed from Chrome's extension settings, or a backup from another computer: switch off.
+  if (getState().suggest) {
+    hasOrigins(SUGGEST_ORIGINS).then((granted) => {
+      if (granted) return;
+      update((state) => {
+        state.suggest = false;
+      });
+    });
+  }
   $('recent-toggle').addEventListener('change', (event) => {
     update((state) => {
       state.rememberSearches = event.target.checked;

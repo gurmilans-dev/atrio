@@ -749,6 +749,12 @@ kbd {
   margin-left: 24px;
   padding-bottom: 0;
 }
+.toggle-note {
+  margin: 5px 0 0 24px;
+  color: var(--text-muted);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
 .links-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

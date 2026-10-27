@@ -35,6 +35,18 @@ export async function ensureTimerAlarm(timer, enabled) {
   if (!(await ext.alarms.get(alarmName(timer.mode)))) await syncTimerAlarm(timer, enabled);
 }
 
+// Optional host access, for online search suggestions. request() must run inside the click that
+// asked for it. Outside the extension there is nothing to ask.
+export async function hasOrigins(origins) {
+  return ext?.permissions ? ext.permissions.contains({ origins }) : true;
+}
+export async function requestOrigins(origins) {
+  return ext?.permissions ? ext.permissions.request({ origins }) : true;
+}
+export async function removeOrigins(origins) {
+  if (ext?.permissions) await ext.permissions.remove({ origins });
+}
+
 // Pages cannot navigate to chrome:// URLs themselves, the tabs API can (no permission needed).
 export async function openBrowserPage(url) {
   if (!ext?.tabs) return false;
