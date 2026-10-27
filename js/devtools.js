@@ -1,14 +1,15 @@
 // Developer tools for the command palette: calculator, timestamps, UUIDs, Base64, URL encoding,
-// JWT decoding, SHA-256, JSON, naming styles, HTTP status codes, colors and passwords. Pure
-// functions, everything local; see tests/devtools.test.js.
+// JWT decoding, SHA-256, JSON, naming styles, HTTP status codes, cron expressions, colors and
+// passwords. Pure functions, everything local; see tests/devtools.test.js.
 // Each result row is { tool, value, detail, first, color?, error? }: Enter copies `value`;
 // `first` puts the rows above the web search (an explicit tool keyword or an obvious match).
 import { hslToHex, rgbToHsl } from './color.js';
+import { CRON_MACROS, describeCron, nextRuns, parseCron } from './cron.js';
 import { fuzzyScore } from './fuzzy.js';
 import { HTTP_STATUS } from './http-status.js';
 import { dateFormat, getLanguage, relativeFormat, t } from './i18n.js';
 
-/** calc, ts, uuid, b64, url, jwt, hash, json, case, http, color, pw */
+/** calc, ts, uuid, b64, url, jwt, hash, json, case, http, cron, color, pw */
 export const toolName = (tool) => t(`tool.${tool}`);
 
 const row = (tool, value, detail, extra = {}) => ({
@@ -392,6 +393,42 @@ function httpRows(query) {
     : [errorRow('http', t('tool.httpNone'))];
 }
 
+// ---------- Cron ----------
+
+const CRON_FIELD_ERRORS = { fields: 'tool.cronFields', reboot: 'tool.cronReboot' };
+
+// The description first (Enter copies it), then the next three runs.
+function cronRows(text, now, explicit) {
+  const cron = parseCron(text);
+  if (cron.error) {
+    if (!explicit) return [];
+    const key = CRON_FIELD_ERRORS[cron.error];
+    return [errorRow('cron', key ? t(key) : t('tool.cronField', { field: t(`cron.field.${cron.error}`) }))];
+  }
+  const runs = nextRuns(cron, now);
+  const format = dateFormat({
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  });
+  return [
+    row('cron', describeCron(cron), t('tool.cronSummary')),
+    ...runs.map((run) =>
+      row('cron', format.format(run), t('tool.cronNext', { when: relative(run.getTime(), now) })),
+    ),
+    ...(runs.length ? [] : [errorRow('cron', t('tool.cronNever'))]),
+  ];
+}
+
+// "*/5 * * * *" or "@daily" typed alone: five fields with a "*" one, or a macro.
+const looksLikeCron = (text) =>
+  CRON_MACROS.includes(text.toLowerCase()) ||
+  (/^\S+(?:\s+\S+){4}$/.test(text) && /(?:^|\s)\*(?:\/\d+)?(?=\s|$)/.test(text));
+
 // ---------- Colors ----------
 
 const toHex = (r, g, b) => `#${[r, g, b].map((value) => value.toString(16).padStart(2, '0')).join('')}`;
@@ -507,6 +544,8 @@ export function runTools(raw, now = Date.now()) {
       return caseRows(argument);
     case 'http':
       return httpRows(argument);
+    case 'cron':
+      return argument ? cronRows(argument, now, true) : [];
     default:
       break;
   }
@@ -522,7 +561,12 @@ export function runTools(raw, now = Date.now()) {
 
   const color = colorRows(text);
   if (color) return color;
-  if (looksLikeMath(text)) return calculator(text, false);
+  // Arithmetic first, so "1 * 2 * 3" stays a calculation; "*/5 * * * *" is no valid sum.
+  if (looksLikeMath(text)) {
+    const result = calculator(text, false);
+    if (result.length) return result;
+  }
+  if (looksLikeCron(text)) return cronRows(text, now, false);
   // A bare 10 or 13 digit number is probably a timestamp, but it may also be a search: shown below it.
   if (/^\d{10}$|^\d{13}$/.test(text)) {
     return timestamp(text, now).map((result) => ({ ...result, first: false }));

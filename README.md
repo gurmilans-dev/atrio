@@ -48,6 +48,7 @@ network requests unless you turn on online search suggestions.
   - `case user profile id` gives `userProfileId`, `UserProfileId`, `user_profile_id`, `user-profile-id`,
     `USER_PROFILE_ID` and a URL slug, from text written in any of those styles;
   - `http 429` explains a status code; `http 40` lists 400–409, `http too many` searches them;
+  - `cron */15 9-18 * * 1-5` (or just the expression, or `@daily`) in words, with the next three runs;
   - colors: `#7aa2f7`, `rgb(…)` or `hsl(…)` converted to the other formats, with a swatch.
 - **Focus timer.** 25/5 or 50/10 sessions, a system notification when a session ends (even with no tab open), the
   countdown in the tab title, a 20-week heatmap and your current streak.

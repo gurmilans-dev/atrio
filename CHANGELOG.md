@@ -23,7 +23,7 @@
   with hex/binary), timestamps both ways (`ts`), `uuid`, passwords (`pw`), Base64 (`b64` / `b64d`), URL encoding
   (`url` / `urld`), JWT decoding (`jwt <token>` or a pasted token: payload, header, expiry), SHA-256 (`sha256`), JSON check and formatting (`json` or pasted JSON: formatted, minified, or where it breaks), naming styles (`case`: camelCase,
   PascalCase, snake_case, kebab-case, CONSTANT_CASE, URL slug), HTTP status codes explained (`http 429`,
-  `http 40`, `http too many`),
+  `http 40`, `http too many`), cron expressions in words with the next runs (`cron`, or the expression alone),
   color conversion (`#hex`, `rgb()`, `hsl()`). Hovering a result shows it in full when it is too long for the row.
 
 ### Changed

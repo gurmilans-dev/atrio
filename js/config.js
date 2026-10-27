@@ -58,6 +58,7 @@ export const TOOL_KEYWORDS = [
   'json',
   'case',
   'http',
+  'cron',
 ];
 
 export const PRESETS = [
