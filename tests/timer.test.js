@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
+import { normalizeState } from '../js/state.js';
 import { dayKey, sessionsToday } from '../js/stats.js';
 import {
   completeSession,
@@ -8,6 +9,7 @@ import {
   msUntilNextMinute,
   msUntilNextSecond,
   pauseTimer,
+  presetOf,
   progressOf,
   readyTimer,
   remainingSeconds,
@@ -91,5 +93,32 @@ describe('timer', () => {
     assert.equal(formatClock(1500), '25:00');
     assert.equal(formatClock(61), '01:01');
     assert.equal(formatClock(0), '00:00');
+  });
+});
+
+describe('custom preset', () => {
+  test('durations come from the custom preset when it is chosen', () => {
+    const state = normalizeState({ preset: 'custom', customPreset: { focus: 90, break: 15 } });
+    assert.deepEqual(presetOf(state), { focus: 90, break: 15 });
+    assert.equal(readyTimer('focus', presetOf(state)).total, 5400);
+    assert.equal(readyTimer('break', presetOf(state)).total, 900);
+    assert.equal(state.timer.total, 5400); // a fresh timer already has the custom length
+    assert.deepEqual(presetOf(normalizeState({ preset: 50 })), { id: 50, focus: 50, break: 10 });
+  });
+
+  test('saved durations are clamped, defaults when missing', () => {
+    assert.deepEqual(normalizeState({}).customPreset, { focus: 45, break: 10 });
+    assert.deepEqual(normalizeState({ customPreset: { focus: 999, break: 0 } }).customPreset, {
+      focus: 180,
+      break: 1,
+    });
+    assert.equal(normalizeState({ preset: 'other' }).preset, 25);
+  });
+
+  test('a finished custom session readies the custom break', () => {
+    const state = normalizeState({ preset: 'custom', customPreset: { focus: 90, break: 15 } });
+    const timer = { ...readyTimer('focus', presetOf(state)), running: true, endAt: NOW };
+    const result = completeSession({ timer, stats: state.stats, preset: presetOf(state) });
+    assert.equal(result.timer.total, 900);
   });
 });

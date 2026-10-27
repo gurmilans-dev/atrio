@@ -1,5 +1,7 @@
 // Settings drawer: a native modal <dialog> (focus trap, Esc and inert background for free).
 import {
+  CUSTOM_PRESET,
+  CUSTOM_PRESET_LIMITS,
   CUSTOM_THEME,
   CUSTOM_WALLPAPER,
   IMAGE_TYPES,
@@ -20,7 +22,7 @@ import { createDefaultState, normalizeState } from './state.js';
 import { dayKey } from './stats.js';
 import { getState, replaceState, subscribe, update } from './store.js';
 import { SUGGEST_ORIGINS } from './suggest.js';
-import { readyTimer } from './timer.js';
+import { presetOf, readyTimer } from './timer.js';
 import {
   blobToDataURL,
   dataURLToBlob,
@@ -94,13 +96,20 @@ function buildPicks() {
     }),
   );
 
+  const customPreset = pickButton('preset-pick', 'preset', CUSTOM_PRESET);
+  customPreset.textContent = t('preset.custom');
   $('preset-picks').replaceChildren(
     ...PRESETS.map((preset) => {
       const node = pickButton('preset-pick', 'preset', String(preset.id));
       node.textContent = t('preset.label', { focus: preset.focus, pause: preset.break });
       return node;
     }),
+    customPreset,
   );
+  for (const key of ['focus', 'break']) {
+    const input = $(`custom-${key}`);
+    [input.min, input.max] = CUSTOM_PRESET_LIMITS[key].map(String);
+  }
 
   // Settings → Page: one switch per part of the page; the heatmap lives inside the focus panel.
   $('show-toggles').replaceChildren(
@@ -145,6 +154,12 @@ function render(state) {
   for (const input of $$('[data-show]')) {
     input.checked = state.show[input.dataset.show];
     if (input.dataset.show === 'heatmap') input.disabled = !state.show.focus;
+  }
+  $('custom-preset').hidden = state.preset !== CUSTOM_PRESET;
+  for (const key of ['focus', 'break']) {
+    if (document.activeElement !== $(`custom-${key}`)) {
+      $(`custom-${key}`).value = String(state.customPreset[key]);
+    }
   }
   $('clock-format').value = state.clock.hour12 ? '12' : '24';
   $('seconds-toggle').checked = state.clock.seconds;
@@ -256,7 +271,7 @@ async function importData(file) {
   if (!confirm(t('backup.confirmImport'))) return;
 
   const next = normalizeState(raw);
-  next.timer = readyTimer('focus', next.preset);
+  next.timer = readyTimer('focus', presetOf(next));
   let imageFailed = false;
   if (typeof payload.wallpaperImage === 'string' && payload.wallpaperImage.startsWith('data:image/')) {
     try {
@@ -336,8 +351,23 @@ export function initSettings() {
   });
   $('preset-picks').addEventListener('click', (event) => {
     const pick = event.target.closest('[data-preset]');
-    if (pick) applyPreset(Number(pick.dataset.preset));
+    if (!pick) return;
+    const { preset } = pick.dataset;
+    applyPreset(preset === CUSTOM_PRESET ? CUSTOM_PRESET : Number(preset));
   });
+  // Custom durations are clamped to their limits and applied when a field is left or confirmed.
+  for (const key of ['focus', 'break']) {
+    $(`custom-${key}`).addEventListener('change', () => {
+      const minutes = (name) => {
+        const [min, max] = CUSTOM_PRESET_LIMITS[name];
+        const value = Math.round(Number($(`custom-${name}`).value));
+        return Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : getState().customPreset[name];
+      };
+      const custom = { focus: minutes('focus'), break: minutes('break') };
+      $(`custom-${key}`).value = String(custom[key]);
+      applyPreset(CUSTOM_PRESET, custom);
+    });
+  }
 
   // Live preview while the picker moves, saved when it closes.
   const accentInput = $('accent-input');

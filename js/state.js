@@ -2,8 +2,11 @@
 // so a single corrupted entry is dropped instead of resetting everything.
 import {
   BANGS,
+  CUSTOM_PRESET,
+  CUSTOM_PRESET_LIMITS,
   CUSTOM_WALLPAPER,
   DEFAULT_CUSTOM_ACCENT,
+  DEFAULT_CUSTOM_PRESET,
   DEFAULT_LINKS,
   ENGINES,
   LIMITS,
@@ -20,7 +23,7 @@ import { DEFAULT_APP_FAVORITES, GOOGLE_APPS } from './google-apps.js';
 import { LANGUAGES } from './i18n.js';
 import { normalizeRecent } from './recent.js';
 import { HISTORY_DAYS } from './stats.js';
-import { durationFor, readyTimer } from './timer.js';
+import { durationFor, presetOf, readyTimer } from './timer.js';
 
 const isObject = (value) => typeof value === 'object' && value !== null && !Array.isArray(value);
 const newId = () => crypto.randomUUID();
@@ -59,6 +62,7 @@ export function createDefaultState() {
     customAccent: normalizeCustomAccent(null),
     name: '',
     preset: 25,
+    customPreset: { ...DEFAULT_CUSTOM_PRESET },
     engine: 'google',
     showFavicons: true,
     notify: true,
@@ -197,6 +201,11 @@ function normalizeStats(input) {
   };
 }
 
+function normalizeCustomPreset(value) {
+  const minutes = (key) => toInt(value?.[key], ...CUSTOM_PRESET_LIMITS[key], DEFAULT_CUSTOM_PRESET[key]);
+  return { focus: minutes('focus'), break: minutes('break') };
+}
+
 function normalizeTimer(timer, preset) {
   const input = isObject(timer) ? timer : {};
   const mode = input.mode === 'break' ? 'break' : 'focus';
@@ -215,11 +224,15 @@ export function normalizeState(raw) {
   const input = isObject(raw) ? raw : {};
   const base = createDefaultState();
   const bool = (value, fallback) => (typeof value === 'boolean' ? value : fallback);
-  const preset = pick(
-    Number(input.preset),
-    PRESETS.map((item) => item.id),
-    base.preset,
-  );
+  const preset =
+    input.preset === CUSTOM_PRESET
+      ? CUSTOM_PRESET
+      : pick(
+          Number(input.preset),
+          PRESETS.map((item) => item.id),
+          base.preset,
+        );
+  const customPreset = normalizeCustomPreset(input.customPreset);
   return {
     schema: SCHEMA_VERSION,
     lang: pick(input.lang, LANGUAGES, base.lang),
@@ -236,6 +249,7 @@ export function normalizeState(raw) {
     customAccent: normalizeCustomAccent(input.customAccent),
     name: cleanText(input.name, LIMITS.name),
     preset,
+    customPreset,
     engine: pick(input.engine, Object.keys(ENGINES), base.engine),
     showFavicons: bool(input.showFavicons, base.showFavicons),
     notify: bool(input.notify, base.notify),
@@ -249,7 +263,7 @@ export function normalizeState(raw) {
     panelTab: input.panelTab === 'notes' ? 'notes' : 'tasks',
     apps: normalizeApps(input.apps),
     stats: normalizeStats(input),
-    timer: normalizeTimer(input.timer, preset),
+    timer: normalizeTimer(input.timer, presetOf({ preset, customPreset })),
   };
 }
 

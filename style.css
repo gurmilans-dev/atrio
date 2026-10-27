@@ -783,6 +783,27 @@ kbd {
   margin-left: 24px;
   padding-bottom: 0;
 }
+.custom-preset {
+  display: flex;
+  gap: 18px;
+  margin-top: 14px;
+}
+.custom-preset label {
+  display: grid;
+  gap: 6px;
+  font: 11px var(--mono);
+  color: var(--text-secondary);
+}
+.custom-preset input {
+  width: 86px;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--field);
+  color: var(--text);
+  font: 13px var(--mono);
+}
 .accent-field {
   display: flex;
   align-items: center;

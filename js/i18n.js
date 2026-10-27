@@ -224,6 +224,9 @@ const it = {
   'settings.accentNote':
     'Un colore molto scuro o molto chiaro viene regolato quanto basta per restare leggibile sul tema scuro.',
   'preset.label': '{focus} / {pause} min',
+  'preset.custom': 'Personalizzato',
+  'settings.focusMinutes': 'Focus, minuti',
+  'settings.breakMinutes': 'Pausa, minuti',
   'wallpaper.unsupported': 'Formato non supportato: usa JPG, PNG, WEBP o AVIF.',
   'wallpaper.tooBig': 'Immagine troppo grande: massimo {size}.',
   'wallpaper.optimizing': 'Ottimizzo l’immagine…',
@@ -571,6 +574,9 @@ const en = {
   'settings.accentNote':
     'A very dark or very light color is adjusted just enough to stay readable on the dark theme.',
   'preset.label': '{focus} / {pause} min',
+  'preset.custom': 'Custom',
+  'settings.focusMinutes': 'Focus, minutes',
+  'settings.breakMinutes': 'Break, minutes',
   'wallpaper.unsupported': 'Unsupported format: use JPG, PNG, WEBP or AVIF.',
   'wallpaper.tooBig': 'Image too large: up to {size}.',
   'wallpaper.optimizing': 'Optimizing the image…',

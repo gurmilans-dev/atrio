@@ -71,6 +71,10 @@ export const PRESETS = [
   { id: 25, focus: 25, break: 5 },
   { id: 50, focus: 50, break: 10 },
 ];
+// The custom preset keeps its own durations (state.customPreset), in minutes.
+export const CUSTOM_PRESET = 'custom';
+export const CUSTOM_PRESET_LIMITS = { focus: [1, 180], break: [1, 60] };
+export const DEFAULT_CUSTOM_PRESET = { focus: 45, break: 10 };
 
 export const LIMITS = {
   blur: 24, // px; boot.js repeats it

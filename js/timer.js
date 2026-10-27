@@ -1,17 +1,23 @@
 // Pure timer logic: no DOM, no storage, easy to test with node --test.
 // The timer stores an absolute end timestamp, so throttled or closed tabs stay accurate.
-import { PRESETS } from './config.js';
+import { CUSTOM_PRESET, PRESETS } from './config.js';
 import { recordSession } from './stats.js';
 
 export const presetById = (id) => PRESETS.find((preset) => preset.id === id) ?? PRESETS[0];
 
-export const durationFor = (mode, presetId) =>
-  presetById(presetId)[mode === 'break' ? 'break' : 'focus'] * 60;
+/** The durations chosen in the state: a fixed preset or the custom one ({ focus, break } in minutes). */
+export const presetOf = (state) =>
+  state.preset === CUSTOM_PRESET ? state.customPreset : presetById(state.preset);
+
+// A preset is a PRESETS id (25, 50) or durations { focus, break } in minutes, as presetOf returns.
+const durationsOf = (preset) => (typeof preset === 'object' && preset !== null ? preset : presetById(preset));
+
+export const durationFor = (mode, preset) => durationsOf(preset)[mode === 'break' ? 'break' : 'focus'] * 60;
 
 export const nextMode = (mode) => (mode === 'focus' ? 'break' : 'focus');
 
-export function readyTimer(mode, presetId) {
-  const total = durationFor(mode, presetId);
+export function readyTimer(mode, preset) {
+  const total = durationFor(mode, preset);
   return { mode, running: false, remaining: total, total, endAt: null };
 }
 

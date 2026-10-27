@@ -50,7 +50,7 @@ network requests unless you turn on online search suggestions.
   - `http 429` explains a status code; `http 40` lists 400–409, `http too many` searches them;
   - `cron */15 9-18 * * 1-5` (or just the expression, or `@daily`) in words, with the next three runs;
   - colors: `#7aa2f7`, `rgb(…)` or `hsl(…)` converted to the other formats, with a swatch.
-- **Focus timer.** 25/5 or 50/10 sessions, a system notification when a session ends (even with no tab open), the
+- **Focus timer.** 25/5, 50/10 or your own durations, a system notification when a session ends (even with no tab open), the
   countdown in the tab title, a 20-week heatmap and your current streak.
 - **Tasks and notes.** Undo for deletions; a plain-text scratchpad that saves while you type.
 - **Google apps launcher.** 24 apps with editable favorites (drag, or `Ctrl + ←/→`), and a switch for people signed in

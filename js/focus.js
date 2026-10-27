@@ -12,7 +12,7 @@ import {
   msUntilNextMinute,
   msUntilNextSecond,
   pauseTimer,
-  presetById,
+  presetOf,
   progressOf,
   readyTimer,
   remainingSeconds,
@@ -76,7 +76,7 @@ function render(state) {
     node.setAttribute('aria-pressed', String(timer.mode === mode));
   }
 
-  const preset = presetById(state.preset);
+  const preset = presetOf(state);
   $('preset-caption').textContent = `${preset.focus} / ${preset.break}`;
   const total = state.stats.total;
   $('focus-count').textContent = t('focus.today', { n: sessionsToday(state.stats, now) });
@@ -106,7 +106,7 @@ function finish() {
   let finishedFocus = false;
   update((state) => {
     if (!isExpired(state.timer, Date.now())) return;
-    const result = completeSession(state);
+    const result = completeSession({ timer: state.timer, stats: state.stats, preset: presetOf(state) });
     finishedFocus = result.finishedFocus;
     state.stats = result.stats;
     state.timer = result.timer;
@@ -148,7 +148,7 @@ export function toggleTimer() {
 
 export function resetTimer() {
   update((state) => {
-    state.timer = readyTimer(state.timer.mode, state.preset);
+    state.timer = readyTimer(state.timer.mode, presetOf(state));
   });
   syncAlarm();
 }
@@ -156,19 +156,22 @@ export function resetTimer() {
 function setMode(mode) {
   if (getState().timer.mode === mode) return;
   update((state) => {
-    state.timer = readyTimer(mode, state.preset);
+    state.timer = readyTimer(mode, presetOf(state));
   });
   syncAlarm();
 }
 
 // A session already started keeps its length; the new preset applies from the next one.
-export function applyPreset(presetId) {
-  const { timer, preset } = getState();
-  if (preset === presetId) return;
+// `custom` carries new durations for the custom preset.
+export function applyPreset(presetId, custom) {
+  const { timer, preset, customPreset } = getState();
+  const sameCustom = !custom || (custom.focus === customPreset.focus && custom.break === customPreset.break);
+  if (preset === presetId && sameCustom) return;
   const untouched = !timer.running && timer.remaining === timer.total;
   update((state) => {
     state.preset = presetId;
-    if (untouched) state.timer = readyTimer(state.timer.mode, presetId);
+    if (custom) state.customPreset = custom;
+    if (untouched) state.timer = readyTimer(state.timer.mode, presetOf(state));
   });
   if (!untouched) announce(t('timer.presetLater'));
 }

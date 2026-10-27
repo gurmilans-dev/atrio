@@ -875,6 +875,48 @@ try {
     );
   });
 
+  await check('custom timer durations: chosen, clamped, used by both modes', async () => {
+    const read = () =>
+      a.eval(`({
+        timer: document.getElementById('timer').textContent,
+        caption: document.getElementById('preset-caption').textContent,
+        fields: document.getElementById('custom-preset').hidden ? null : [
+          document.getElementById('custom-focus').value,
+          document.getElementById('custom-break').value,
+        ],
+      })`);
+    const setMinutes = (key, value) =>
+      a.eval(
+        settings(`
+          const input = document.getElementById('custom-${key}');
+          input.value = '${value}';
+          input.dispatchEvent(new Event('change'));`),
+      );
+    await a.eval(`document.getElementById('focus-mode').click()`); // earlier checks may leave the break ready
+    await a.eval(settings(`document.querySelector('[data-preset="custom"]').click()`));
+    const chosen = await read();
+    await setMinutes('focus', 90);
+    await setMinutes('break', 15);
+    const set = await read();
+    await setMinutes('focus', 999);
+    const clamped = await read();
+    await a.eval(`document.getElementById('break-mode').click()`);
+    const breakMode = await read();
+    await a.eval(`document.getElementById('focus-mode').click()`);
+    await a.eval(settings(`document.querySelector('[data-preset="25"]').click()`));
+    const back = await read();
+    assert.deepEqual(
+      { chosen, set, clamped, breakMode, back },
+      {
+        chosen: { timer: '45:00', caption: '45 / 10', fields: ['45', '10'] },
+        set: { timer: '90:00', caption: '90 / 15', fields: ['90', '15'] },
+        clamped: { timer: '180:00', caption: '180 / 15', fields: ['180', '15'] },
+        breakMode: { timer: '15:00', caption: '180 / 15', fields: ['180', '15'] },
+        back: { timer: '25:00', caption: '25 / 5', fields: null },
+      },
+    );
+  });
+
   await check('clock options: 12-hour with AM/PM, seconds ticking, date hidden', async () => {
     const read = () =>
       a.eval(`({
