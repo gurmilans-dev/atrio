@@ -1,7 +1,7 @@
 // Turns what the user typed into a destination. Pure function, covered by tests/search.test.js.
 // Dotted code such as "console.log", "next.js" or "README.md" must stay a search:
 // only real-looking hosts become URLs.
-import { BANGS, ENGINES } from './config.js';
+import { BANGS, CHROME_ENGINE, ENGINES } from './config.js';
 import { validTemplate, validURL } from './state.js';
 
 // Common TLDs. Left out on purpose because they collide with file extensions:
@@ -20,6 +20,8 @@ const HOST_LABELS = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+([a-z]{2,63})$/
 const IPV4 = /^(?:\d{1,3}\.){3}\d{1,3}$/;
 
 function searchTarget(query, target) {
+  // Chrome's own provider: no URL here, js/search-ui.js hands the text to the Search API.
+  if (!target.url) return { kind: 'search', url: null, chrome: true, label: target.label, query };
   const encoded = encodeURIComponent(query);
   // Built-in targets end where the query goes; personal prefixes mark the place with %s.
   const url = target.url.includes('%s') ? target.url.replaceAll('%s', encoded) : target.url + encoded;
@@ -56,12 +58,13 @@ function schemeFor(input) {
  * @param {string} engine key of ENGINES used for plain searches
  * @param {{force?: boolean, prefixes?: Object<string, {label: string, url: string}>}} options
  *   force=true always searches (Shift+Enter); prefixes are the user's own, url with %s
- * @returns {{kind: 'url'|'browser'|'search', url: string, label?: string, query?: string} | null}
+ * @returns {{kind: 'url'|'browser'|'search', url: string|null, chrome?: boolean, label?: string|null,
+ *   query?: string} | null} chrome: search with Chrome's default provider (url is null)
  */
 export function resolveInput(raw, engine, { force = false, prefixes = {} } = {}) {
   const input = String(raw ?? '').trim();
   if (!input) return null;
-  const defaultTarget = ENGINES[engine] ?? ENGINES.google;
+  const defaultTarget = lookup(ENGINES, engine) ?? ENGINES[CHROME_ENGINE];
   if (force) return searchTarget(input, defaultTarget);
 
   if (/^chrome:\/\/\S+$/i.test(input)) return { kind: 'browser', url: input };

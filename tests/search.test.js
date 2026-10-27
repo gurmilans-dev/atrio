@@ -118,9 +118,24 @@ describe('resolveInput', () => {
     assert.equal(resolve('npm zod', { force: true }).url, searchOf('npm zod'));
   });
 
+  test("Chrome's own engine: no URL, the text goes to the Search API", () => {
+    assert.deepEqual(resolveInput('react hooks', 'chrome'), {
+      kind: 'search',
+      url: null,
+      chrome: true,
+      label: null,
+      query: 'react hooks',
+    });
+    assert.equal(resolveInput('github.com', 'chrome', { force: true }).chrome, true); // Shift+Enter
+    assert.equal(resolveInput('rust', 'unknown').chrome, true);
+    // Prefixes stay vertical searches with their own address.
+    assert.equal(resolveInput('npm zod', 'chrome').url, 'https://www.npmjs.com/search?q=zod');
+    assert.equal(resolveInput('yt', 'chrome').url, 'https://www.youtube.com/');
+  });
+
   test('engine choice and empty input', () => {
     assert.equal(resolveInput('rust', 'ddg').url, 'https://duckduckgo.com/?q=rust');
-    assert.equal(resolveInput('rust', 'unknown').label, 'Google');
+    assert.equal(resolveInput('rust', 'constructor').chrome, true);
     assert.equal(resolve('   '), null);
   });
 });

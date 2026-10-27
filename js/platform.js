@@ -47,6 +47,14 @@ export async function removeOrigins(origins) {
   if (ext?.permissions) await ext.permissions.remove({ origins });
 }
 
+// Searches with the provider set in Chrome, in this tab (Search API; "search" permission). Returns
+// false outside the extension, where the caller falls back to a search URL.
+export async function searchWithChrome(text) {
+  if (!ext?.search) return false;
+  await ext.search.query({ text, disposition: 'CURRENT_TAB' });
+  return true;
+}
+
 // Pages cannot navigate to chrome:// URLs themselves, the tabs API can (no permission needed).
 export async function openBrowserPage(url) {
   if (!ext?.tabs) return false;

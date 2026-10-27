@@ -57,7 +57,7 @@ describe('normalizeState', () => {
     const state = normalizeState({ shade: 400, preset: '50', engine: 'bing', junk: true, theme: 'x' });
     assert.equal(state.shade, 75);
     assert.equal(state.preset, 50);
-    assert.equal(state.engine, 'google');
+    assert.equal(state.engine, 'chrome');
     assert.equal(state.theme, 'tokyo');
     assert.equal('junk' in state, false);
   });
@@ -159,6 +159,15 @@ test('custom CSS is a string, capped', () => {
   assert.equal(normalizeState({}).customCSS, '');
   assert.equal(normalizeState({ customCSS: 42 }).customCSS, '');
   assert.equal(normalizeState({ customCSS: 'x'.repeat(30000) }).customCSS.length, LIMITS.css);
+});
+
+test("search engine: Chrome's by default; the old implicit Google default migrates, explicit choices stay", () => {
+  assert.equal(normalizeState({}).engine, 'chrome');
+  assert.equal(normalizeState({ schema: 5, engine: 'google' }).engine, 'chrome');
+  assert.equal(normalizeState({ engine: 'google' }).engine, 'chrome'); // no schema: an old save
+  assert.equal(normalizeState({ schema: 5, engine: 'ddg' }).engine, 'ddg');
+  assert.equal(normalizeState({ schema: 6, engine: 'google' }).engine, 'google'); // chosen after the change
+  assert.equal(normalizeState({ schema: 6, engine: 'bing' }).engine, 'chrome');
 });
 
 describe('visible parts of the page', () => {

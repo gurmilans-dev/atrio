@@ -43,7 +43,7 @@ try {
     })`);
     assert.deepEqual(
       { ...info, clock: info.clock !== '--:--' },
-      { links: 6, engines: 3, tips: 19, clock: true, saved: true },
+      { links: 6, engines: 4, tips: 19, clock: true, saved: true },
     );
     assert.ok((await a.eval(pageScroll)) <= 0, 'the page scrolls at 1440×900');
   });
@@ -582,7 +582,7 @@ try {
     const engine = await a.eval(`${STATE}.engine`);
     await a.eval(
       settings(
-        `const s = document.getElementById('search-engine'); s.value = 'google'; s.dispatchEvent(new Event('change'))`,
+        `const s = document.getElementById('search-engine'); s.value = 'chrome'; s.dispatchEvent(new Event('change'))`,
       ),
     );
     assert.deepEqual(
@@ -783,6 +783,15 @@ try {
   });
 
   await check('online suggestions: off by default, then from the engine, never for prefixes', async () => {
+    const chooseEngine = (engine) =>
+      a.eval(
+        settings(
+          `const s = document.getElementById('search-engine'); s.value = '${engine}'; s.dispatchEvent(new Event('change'))`,
+        ),
+      );
+    // With Chrome's own engine (the default) the switch is off limits: Atrio does not know its provider.
+    const disabledForChrome = await a.eval(`document.getElementById('suggest-toggle').disabled`);
+    await chooseEngine('google');
     // The engine is faked: the test must not depend on the network.
     await a.eval(`
       window.__requests = [];
@@ -806,6 +815,7 @@ try {
     const requests = await a.eval('window.__requests');
     await a.eval(clearSearch);
     await a.eval(settings(`document.getElementById('suggest-toggle').click()`)); // back off
+    await chooseEngine('chrome');
     assert.deepEqual(
       {
         off: off.includes('react hooks'),
@@ -815,6 +825,7 @@ try {
         url: requests[0]?.url,
         credentials: requests[0]?.credentials,
         prefixed: prefixed.includes('react hooks'),
+        disabledForChrome,
       },
       {
         off: false,
@@ -824,6 +835,7 @@ try {
         url: 'https://suggestqueries.google.com/complete/search?client=chrome&ie=utf-8&oe=utf-8&hl=it&q=rea',
         credentials: 'omit',
         prefixed: false,
+        disabledForChrome: true,
       },
     );
   });

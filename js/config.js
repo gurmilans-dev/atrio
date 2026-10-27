@@ -5,7 +5,7 @@
 export const STORAGE_KEY = 'workspace.newtab.v2';
 // Per-tab counter for the wallpaper rotation, outside the state so other tabs keep their image.
 export const ROTATION_KEY = 'workspace.newtab.v2.rotation';
-export const SCHEMA_VERSION = 5;
+export const SCHEMA_VERSION = 6;
 
 // "auto" takes its accent from the wallpaper (js/color.js), "custom" from a color picker; their
 // swatches are computed. Themes without a label have their name translated (themeName in js/i18n.js).
@@ -33,11 +33,20 @@ export const WALLPAPERS = ['workstation', 'city'];
 export const CUSTOM_WALLPAPER = 'custom';
 export const wallpaperSrc = (id) => `assets/${id}.webp`;
 
+// Web search engines. "chrome" is the default: it searches with the provider set in Chrome, through
+// the Search API, as the Chrome Web Store requires for a new tab page. Its label is translated
+// (engine.chrome). The others are explicit alternatives; the prefixes below are vertical searches.
+export const CHROME_ENGINE = 'chrome';
 export const ENGINES = {
+  [CHROME_ENGINE]: { label: null, url: null },
   google: { label: 'Google', url: 'https://www.google.com/search?q=' },
   ddg: { label: 'DuckDuckGo', url: 'https://duckduckgo.com/?q=' },
   github: { label: 'GitHub', url: 'https://github.com/search?q=' },
 };
+
+// Outside the extension (development server, HTTP tests) there is no Search API: Chrome-engine
+// searches fall back to this address.
+export const FALLBACK_SEARCH_URL = 'https://www.google.com/search?q=';
 
 // Search prefixes: "npm zod" searches npm, "!npm zod" works too.
 export const BANGS = {

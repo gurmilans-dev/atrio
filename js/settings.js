@@ -22,7 +22,7 @@ import { applyPreset, syncAlarm } from './focus.js';
 import { createDefaultState, normalizeState } from './state.js';
 import { dayKey } from './stats.js';
 import { getState, replaceState, subscribe, update } from './store.js';
-import { SUGGEST_ORIGINS } from './suggest.js';
+import { SUGGEST_ORIGINS, hasSuggestions } from './suggest.js';
 import { presetOf, readyTimer } from './timer.js';
 import {
   blobToDataURL,
@@ -214,6 +214,9 @@ function render(state) {
   $('seconds-toggle').disabled = !state.show.clock;
   $('recent-toggle').checked = state.rememberSearches;
   $('suggest-toggle').checked = state.suggest;
+  // Suggestions come from Google or DuckDuckGo: not offered for Chrome's own engine, whose provider
+  // Atrio does not know.
+  $('suggest-toggle').disabled = !hasSuggestions(state.engine);
   $('clear-recent').hidden = state.recent.length === 0;
   $('language-select').value = state.lang;
   if (document.activeElement !== $('name-input')) $('name-input').value = state.name;

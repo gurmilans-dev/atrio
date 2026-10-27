@@ -5,14 +5,14 @@
 // after a short pause in typing.
 import { appIcon } from './apps.js';
 import { getCommands } from './commands.js';
-import { BANGS, ENGINES } from './config.js';
+import { BANGS, ENGINES, FALLBACK_SEARCH_URL } from './config.js';
 import { runTools, toolName } from './devtools.js';
 import { $, announce, el } from './dom.js';
 import { fuzzyScore } from './fuzzy.js';
 import { GOOGLE_APPS, appName, appURL } from './google-apps.js';
 import { getLanguage, t } from './i18n.js';
 import { hostOf, linkIcon } from './links.js';
-import { hasOrigins, openBrowserPage } from './platform.js';
+import { hasOrigins, openBrowserPage, searchWithChrome } from './platform.js';
 import { prefixTargets } from './prefixes.js';
 import { addRecent, matchRecent } from './recent.js';
 import { resolveInput } from './search.js';
@@ -66,6 +66,11 @@ export function openCommandPalette() {
 }
 
 async function navigate(result) {
+  if (result.kind === 'search' && result.chrome) {
+    if (await searchWithChrome(result.query).catch(() => false)) return;
+    window.location.assign(FALLBACK_SEARCH_URL + encodeURIComponent(result.query));
+    return;
+  }
   if (result.kind !== 'browser') {
     window.location.assign(result.url);
     return;
@@ -147,13 +152,16 @@ const commandItem = (command) => ({
   run: command.run,
 });
 
+// "Search the web" for Chrome's own provider (Atrio does not know its name), "Search Google" otherwise.
+const searchDetail = (label) => (label ? t('result.searchOn', { target: label }) : t('result.searchWeb'));
+
 function primaryItem(result, text) {
   const run = () => runText(text);
   if (result.kind === 'search') {
     return {
       kind: 'search',
       label: result.query,
-      detail: t('result.searchOn', { target: result.label }),
+      detail: searchDetail(result.label),
       run,
     };
   }
@@ -176,7 +184,7 @@ const recentItem = (text) => ({
 const suggestionItem = (text) => ({
   kind: 'search',
   label: text,
-  detail: t('result.searchOn', { target: ENGINES[getState().engine].label }),
+  detail: searchDetail(ENGINES[getState().engine].label),
   run: () => runText(text, true),
 });
 
@@ -428,7 +436,7 @@ export function initSearch() {
   const select = $('search-engine');
   select.replaceChildren(
     ...Object.entries(ENGINES).map(([id, engine]) => {
-      const option = el('option', '', engine.label);
+      const option = el('option', '', engine.label ?? t(`engine.${id}`));
       option.value = id;
       return option;
     }),

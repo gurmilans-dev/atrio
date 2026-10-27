@@ -52,6 +52,11 @@
 
 ### Changed
 
+- **Web searches use the search engine set in Chrome** by default, through Chrome's Search API (new `search`
+  permission, no install warning), as the Chrome Web Store requires for a new tab page. Google, DuckDuckGo and
+  GitHub stay available as explicit choices in Settings → Search; saves that used Google as the old implicit default
+  switch to Chrome's engine. Prefixes (`yt`, `npm`, your own…) are unchanged. Online suggestions need Google or
+  DuckDuckGo as the engine, since Atrio does not know which provider Chrome uses.
 - Chrome 118 or later is required (was 117), for the `@scope` that keeps custom CSS away from the settings.
 
 - A search prefix typed alone opens its site: `yt` → YouTube, `gh` → GitHub, `npm` → npmjs.com. Previously it was

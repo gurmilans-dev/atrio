@@ -4,6 +4,7 @@ import {
   BANGS,
   CUSTOM_PRESET,
   CUSTOM_PRESET_LIMITS,
+  CHROME_ENGINE,
   CUSTOM_WALLPAPER,
   DEFAULT_CUSTOM_ACCENT,
   DEFAULT_CUSTOM_PRESET,
@@ -67,7 +68,7 @@ export function createDefaultState() {
     name: '',
     preset: 25,
     customPreset: { ...DEFAULT_CUSTOM_PRESET },
-    engine: 'google',
+    engine: CHROME_ENGINE,
     showFavicons: true,
     notify: true,
     links: DEFAULT_LINKS.map((link) => ({ id: newId(), ...link })),
@@ -288,7 +289,12 @@ export function normalizeState(raw) {
     name: cleanText(input.name, LIMITS.name),
     preset,
     customPreset,
-    engine: pick(input.engine, Object.keys(ENGINES), base.engine),
+    // Before schema 6 Google was the implicit default: such saves now follow Chrome's own engine.
+    // DuckDuckGo and GitHub were explicit choices and stay.
+    engine:
+      !(Number(input.schema) >= 6) && input.engine === 'google'
+        ? CHROME_ENGINE
+        : pick(input.engine, Object.keys(ENGINES), base.engine),
     showFavicons: bool(input.showFavicons, base.showFavicons),
     notify: bool(input.notify, base.notify),
     links: Array.isArray(input.links) ? normalizeLinks(input.links) : base.links,

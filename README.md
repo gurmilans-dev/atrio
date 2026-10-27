@@ -27,7 +27,9 @@ network requests unless you turn on online search suggestions.
 
 ## Features
 
-- **Search that knows code from URLs.** `console.log`, `next.js` or `README.md` are searched, not opened as domains.
+- **Search that knows code from URLs.** Web searches go to the search engine set in Chrome (through Chrome's Search
+  API), unless you pick Google, DuckDuckGo or GitHub in the settings. `console.log`, `next.js` or `README.md` are
+  searched, not opened as domains.
   `localhost:5173`, LAN IPs, `[::1]` and `*.test` open over `http://`. Prefixes search a site directly (`yt lofi`,
   `npm zod`; also `gh`, `mdn`, `so`, `py`, `ciu`, `dd`) and, typed alone, open it (`yt` → YouTube). Add your own
   in Settings with `%s` where the text goes: `jira 123` → your Jira ticket, `pr 42` → a pull request of your repo.
@@ -108,6 +110,7 @@ your engine, without cookies, as Chrome's address bar does.
 
 | Permission                                              | Why                                                                    |
 | ------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `search`                                                | Search with the engine set in Chrome (Chrome's Search API)             |
 | `alarms`                                                | Schedule the end of a focus session, even when no tab is open          |
 | `notifications`                                         | Tell you when the session is over                                      |
 | `favicon`                                               | Show site icons for quick links from Chrome's local cache (no network) |
