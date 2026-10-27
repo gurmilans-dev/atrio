@@ -3,6 +3,7 @@
 import {
   BANGS,
   CUSTOM_WALLPAPER,
+  DEFAULT_CUSTOM_ACCENT,
   DEFAULT_LINKS,
   ENGINES,
   LIMITS,
@@ -14,6 +15,7 @@ import {
   TOOL_KEYWORDS,
   WALLPAPERS,
 } from './config.js';
+import { readableAccent } from './color.js';
 import { DEFAULT_APP_FAVORITES, GOOGLE_APPS } from './google-apps.js';
 import { LANGUAGES } from './i18n.js';
 import { normalizeRecent } from './recent.js';
@@ -53,6 +55,7 @@ export function createDefaultState() {
     mouseEffects: false,
     show: Object.fromEntries(SECTIONS.map((section) => [section, true])),
     autoAccent: null,
+    customAccent: normalizeCustomAccent(null),
     name: '',
     preset: 25,
     engine: 'google',
@@ -90,6 +93,12 @@ function normalizeApps(value) {
 function normalizeAccent(value) {
   if (!isObject(value) || typeof value.key !== 'string' || value.key.length > 64) return null;
   return /^#[0-9a-f]{6}$/i.test(value.color) ? { key: value.key, color: value.color.toLowerCase() } : null;
+}
+
+// Color picked for the custom theme, and the readable version actually applied (boot.js uses it).
+function normalizeCustomAccent(value) {
+  const picked = /^#[0-9a-f]{6}$/i.test(value?.picked) ? value.picked.toLowerCase() : DEFAULT_CUSTOM_ACCENT;
+  return { picked, color: readableAccent(picked) };
 }
 
 function normalizeHistory(value) {
@@ -222,6 +231,7 @@ export function normalizeState(raw) {
     mouseEffects: Number(input.schema) >= 5 ? bool(input.mouseEffects, base.mouseEffects) : false,
     show: Object.fromEntries(SECTIONS.map((section) => [section, bool(input.show?.[section], true)])),
     autoAccent: normalizeAccent(input.autoAccent),
+    customAccent: normalizeCustomAccent(input.customAccent),
     name: cleanText(input.name, LIMITS.name),
     preset,
     engine: pick(input.engine, Object.keys(ENGINES), base.engine),

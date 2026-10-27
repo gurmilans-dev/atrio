@@ -1,5 +1,6 @@
 // Settings drawer: a native modal <dialog> (focus trap, Esc and inert background for free).
 import {
+  CUSTOM_THEME,
   CUSTOM_WALLPAPER,
   IMAGE_TYPES,
   LIMITS,
@@ -9,10 +10,11 @@ import {
   WALLPAPERS,
   wallpaperSrc,
 } from './config.js';
+import { readableAccent } from './color.js';
 import { $, $$, announce, button, el } from './dom.js';
 import { LANGUAGES, numberFormat, t, themeName, wallpaperName } from './i18n.js';
 import { appVersion, hasOrigins, removeOrigins, requestOrigins } from './platform.js';
-import { loadCustomWallpaper, previewBlur, previewShade } from './appearance.js';
+import { loadCustomWallpaper, previewAccent, previewBlur, previewShade } from './appearance.js';
 import { applyPreset, syncAlarm } from './focus.js';
 import { createDefaultState, normalizeState } from './state.js';
 import { dayKey } from './stats.js';
@@ -84,9 +86,9 @@ function buildPicks() {
     ...Object.entries(THEMES).map(([id, theme]) => {
       const node = pickButton('theme-pick', 'themeChoice', id);
       const swatch = el('span', 'swatch');
-      // The automatic theme shows the color extracted from the current wallpaper (see render).
+      // The automatic and custom themes show their current color (see render).
       if (theme.swatch) swatch.style.setProperty('--sample', theme.swatch);
-      else swatch.id = 'auto-swatch';
+      else swatch.id = `${id}-swatch`;
       node.append(swatch, themeName(id));
       return node;
     }),
@@ -152,6 +154,9 @@ function render(state) {
   const swatch = $('auto-swatch');
   if (state.autoAccent) swatch.style.setProperty('--sample', state.autoAccent.color);
   else swatch.style.removeProperty('--sample');
+  $('custom-swatch').style.setProperty('--sample', state.customAccent.color);
+  $('accent-row').hidden = state.theme !== CUSTOM_THEME;
+  if (document.activeElement !== $('accent-input')) $('accent-input').value = state.customAccent.picked;
   if (dialog().open) refreshCustomPick();
 }
 
@@ -328,6 +333,15 @@ export function initSettings() {
   $('preset-picks').addEventListener('click', (event) => {
     const pick = event.target.closest('[data-preset]');
     if (pick) applyPreset(Number(pick.dataset.preset));
+  });
+
+  // Live preview while the picker moves, saved when it closes.
+  const accentInput = $('accent-input');
+  accentInput.addEventListener('input', () => previewAccent(readableAccent(accentInput.value)));
+  accentInput.addEventListener('change', () => {
+    update((state) => {
+      state.customAccent = { picked: accentInput.value, color: readableAccent(accentInput.value) };
+    });
   });
 
   $('upload-wallpaper').addEventListener('click', chooseWallpaper);

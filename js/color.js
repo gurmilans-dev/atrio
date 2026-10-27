@@ -32,6 +32,33 @@ export function hslToHex(hue, saturation, lightness) {
   return `#${channel(0)}${channel(8)}${channel(4)}`;
 }
 
+const channels = (hex) => [1, 3, 5].map((offset) => parseInt(hex.slice(offset, offset + 2), 16));
+const linear = (value) => {
+  const channel = value / 255;
+  return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+};
+/** Relative luminance (WCAG), 0 for black to 1 for white. */
+export function luminance(hex) {
+  const [r, g, b] = channels(hex).map(linear);
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/**
+ * A chosen accent made readable on the dark themes: hue and saturation are kept, lightness is
+ * moved into a range where the accent reads as text on dark panels and dark text reads on it.
+ * Saturated blues and purples look light but are dark, so luminance decides, not lightness alone.
+ */
+export function readableAccent(hex) {
+  const [hue, saturation, lightness] = rgbToHsl(...channels(hex));
+  let level = Math.min(0.85, Math.max(0.6, lightness));
+  let color = hslToHex(hue, saturation, level);
+  while (luminance(color) < 0.3 && level < 0.9) {
+    level += 0.02;
+    color = hslToHex(hue, saturation, level);
+  }
+  return color;
+}
+
 /** @param {Uint8ClampedArray} data RGBA pixels, e.g. from getImageData on a small thumbnail */
 export function pickAccent(data) {
   const buckets = Array.from({ length: BUCKETS }, () => ({ weight: 0, x: 0, y: 0, saturation: 0 }));

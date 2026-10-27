@@ -10,6 +10,9 @@
 - **Personal search prefixes** (Settings → Search prefixes): an address with `%s` where the text goes, so
   `jira 123` opens your Jira ticket and `pr 42` a pull request of your repo. Typed alone, the prefix opens the site,
   like the built-in ones. Names already used by Atrio (`gh`, `yt`, `uuid`…) are refused.
+- **Custom theme with any accent color** (Settings → Appearance), with a live preview while the picker moves. Hue and
+  saturation are kept; a color too dark or too light for the dark theme is adjusted, by perceived luminance, just
+  enough for text in it and dark text on it to stay readable. Applied before the first paint.
 - **Show or hide each part of the page** (Settings → Page): greeting, clock, links, focus panel, its heatmap, tasks and
   notes. With both side panels off the page becomes a single centered column. Applied before the first paint; the
   shortcuts and commands of a hidden part do nothing.

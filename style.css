@@ -65,9 +65,10 @@
   --shade-rgb: 2 6 4;
 }
 
-/* "Dallo sfondo": neutral surfaces lightly tinted by the accent extracted from the wallpaper,
-   which js/boot.js and js/appearance.js set inline as --accent. */
-:root[data-theme='auto'] {
+/* Automatic and custom themes: neutral surfaces lightly tinted by an accent that js/boot.js and
+   js/appearance.js set inline as --accent (extracted from the wallpaper, or picked). */
+:root[data-theme='auto'],
+:root[data-theme='custom'] {
   --accent: #a9b1d6;
   --on-accent: #0d0f14;
   --bg: #0b0c10;
@@ -767,6 +768,23 @@ kbd {
   display: block;
   margin-left: 24px;
   padding-bottom: 0;
+}
+.accent-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  font: 11px var(--mono);
+  color: var(--text-secondary);
+}
+.accent-field input {
+  width: 46px;
+  height: 30px;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--field);
+  cursor: pointer;
 }
 .toggle-heading {
   margin: 0 0 -4px;

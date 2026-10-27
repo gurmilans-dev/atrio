@@ -1,8 +1,8 @@
 // Theme, wallpaper, shade and blur. boot.js already applied the saved values before the
-// first paint; this module keeps them in sync, loads the custom image and, for the
-// "Dallo sfondo" theme, extracts the accent color from the wallpaper.
+// first paint; this module keeps them in sync, loads the custom image and sets the accent of the
+// automatic theme (extracted from the wallpaper) and of the custom one (picked by the user).
 import { FALLBACK_ACCENT, pickAccent } from './color.js';
-import { AUTO_THEME, CUSTOM_WALLPAPER, SECTIONS, wallpaperSrc } from './config.js';
+import { AUTO_THEME, CUSTOM_THEME, CUSTOM_WALLPAPER, SECTIONS, wallpaperSrc } from './config.js';
 import { getState, subscribe, update } from './store.js';
 import { getImage } from './wallpaper.js';
 
@@ -36,6 +36,10 @@ async function sampleWallpaper(state) {
 }
 
 function applyAccent(state) {
+  if (state.theme === CUSTOM_THEME) {
+    root.style.setProperty('--accent', state.customAccent.color);
+    return;
+  }
   if (state.theme !== AUTO_THEME) {
     root.style.removeProperty('--accent');
     return;
@@ -81,6 +85,11 @@ export function loadCustomWallpaper() {
 
 export function previewShade(value) {
   root.style.setProperty('--shade', String(value / 100));
+}
+
+/** Live preview while the color picker moves; the color is saved when it closes. */
+export function previewAccent(color) {
+  root.style.setProperty('--accent', color);
 }
 
 // At 0 no filter is set at all, so the unblurred wallpaper costs nothing extra.

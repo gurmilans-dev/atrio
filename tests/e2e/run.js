@@ -875,6 +875,44 @@ try {
     );
   });
 
+  await check('custom accent: picked, made readable, live preview, applied before paint', async () => {
+    const before = await a.eval(`document.getElementById('accent-row').hidden`);
+    await a.eval(settings(`document.querySelector('[data-theme-choice="custom"]').click()`));
+    const rowShown = await a.eval(`!document.getElementById('accent-row').hidden`);
+    const accent = () =>
+      a.eval(`getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()`);
+    await a.eval(
+      settings(`
+        const input = document.getElementById('accent-input');
+        input.value = '#003366';
+        input.dispatchEvent(new Event('input'));`),
+    );
+    const preview = await accent();
+    const savedBeforeChange = await a.eval(`${STATE}.customAccent.picked`);
+    await a.eval(settings(`document.getElementById('accent-input').dispatchEvent(new Event('change'))`));
+    const saved = await a.eval(`${STATE}.customAccent`);
+    await a.goto();
+    const afterReload = await a.eval(`({
+      theme: document.documentElement.dataset.theme,
+      inline: document.documentElement.style.getPropertyValue('--accent'),
+    })`);
+    await a.eval(settings(`document.querySelector('[data-theme-choice="tokyo"]').click()`));
+    const back = await accent();
+    assert.deepEqual(
+      { before, rowShown, preview, savedBeforeChange, saved, afterReload, back },
+      {
+        before: true,
+        rowShown: true,
+        preview: saved.color,
+        savedBeforeChange: '#7aa2f7',
+        saved: { picked: '#003366', color: saved.color },
+        afterReload: { theme: 'custom', inline: saved.color },
+        back: '#7aa2f7',
+      },
+    );
+    assert.notEqual(saved.color, '#003366'); // too dark for the dark theme: lifted
+  });
+
   await check(
     'page parts: hidden from the settings, one column, inactive shortcuts, before paint',
     async () => {
