@@ -322,30 +322,16 @@
                 data-i18n-placeholder="settings.namePlaceholder"
               />
             </div>
-            <div class="field">
-              <label for="search-engine"
-                ><span data-i18n="settings.engine"></span> <span data-i18n="settings.engineHint"></span
-              ></label>
-              <select id="search-engine"></select>
-            </div>
-            <label class="toggle"
-              ><input type="checkbox" id="recent-toggle" /> <span data-i18n="settings.recent"></span
-            ></label>
-            <button
-              type="button"
-              class="subtle-action clear-recent"
-              id="clear-recent"
-              data-i18n="settings.clearRecent"
-              hidden
-            ></button>
-            <label class="toggle"
-              ><input type="checkbox" id="suggest-toggle" aria-describedby="suggest-note" />
-              <span data-i18n="settings.suggest"></span
-            ></label>
-            <p class="toggle-note" id="suggest-note" data-i18n="settings.suggestNote"></p>
-            <label class="toggle"
-              ><input type="checkbox" id="apps-toggle" /> <span data-i18n="settings.showApps"></span
-            ></label>
+          </section>
+
+          <section class="settings-section" aria-labelledby="appearance-title">
+            <h3 id="appearance-title" data-i18n="settings.appearance">Aspetto</h3>
+            <div
+              class="theme-picks"
+              id="theme-picks"
+              role="group"
+              data-i18n-aria-label="settings.theme"
+            ></div>
             <label class="toggle"
               ><input type="checkbox" id="mouse-effects-toggle" />
               <span data-i18n="settings.mouseEffects"></span
@@ -390,27 +376,82 @@
             <input id="blur-range" class="range" type="range" min="0" max="24" value="0" />
           </section>
 
-          <section class="settings-section" aria-labelledby="theme-title">
-            <h3 id="theme-title" data-i18n="settings.colors">Colori</h3>
-            <div
-              class="theme-picks"
-              id="theme-picks"
-              role="group"
-              data-i18n-aria-label="settings.theme"
-            ></div>
+          <section class="settings-section" id="page-section" aria-labelledby="page-title">
+            <h3 id="page-title" data-i18n="settings.page">Pagina</h3>
+            <label class="toggle"
+              ><input type="checkbox" id="apps-toggle" /> <span data-i18n="settings.showApps"></span
+            ></label>
           </section>
 
-          <section class="settings-section" aria-labelledby="timer-title">
-            <h3 id="timer-title" data-i18n="settings.timer">Timer</h3>
-            <div
-              class="preset-picks"
-              id="preset-picks"
-              role="group"
-              data-i18n-aria-label="settings.durations"
-            ></div>
+          <section class="settings-section" aria-labelledby="search-title">
+            <h3 id="search-title" data-i18n="settings.search">Ricerca</h3>
+            <div class="field">
+              <label for="search-engine"
+                ><span data-i18n="settings.engine"></span> <span data-i18n="settings.engineHint"></span
+              ></label>
+              <select id="search-engine"></select>
+            </div>
             <label class="toggle"
-              ><input type="checkbox" id="notify-toggle" /> <span data-i18n="settings.notify"></span
+              ><input type="checkbox" id="suggest-toggle" aria-describedby="suggest-note" />
+              <span data-i18n="settings.suggest"></span
             ></label>
+            <p class="toggle-note" id="suggest-note" data-i18n="settings.suggestNote"></p>
+            <label class="toggle"
+              ><input type="checkbox" id="recent-toggle" /> <span data-i18n="settings.recent"></span
+            ></label>
+            <button
+              type="button"
+              class="subtle-action clear-recent"
+              id="clear-recent"
+              data-i18n="settings.clearRecent"
+              hidden
+            ></button>
+          </section>
+
+          <section class="settings-section" id="prefixes-section" aria-labelledby="prefixes-title">
+            <h3 id="prefixes-title" data-i18n="prefixes.title">Prefissi di ricerca</h3>
+            <p class="settings-note" data-i18n="prefixes.note"></p>
+            <div id="settings-prefixes" class="settings-links"></div>
+            <form id="prefix-form" class="link-form" autocomplete="off">
+              <label for="prefix-key" data-i18n="prefixes.key"></label>
+              <input
+                id="prefix-key"
+                type="text"
+                maxlength="15"
+                spellcheck="false"
+                autocapitalize="off"
+                data-i18n-placeholder="prefixes.keyPlaceholder"
+                required
+              />
+              <label for="prefix-name"
+                ><span data-i18n="prefixes.name"></span> <span data-i18n="prefixes.nameHint"></span
+              ></label>
+              <input
+                id="prefix-name"
+                type="text"
+                maxlength="30"
+                data-i18n-placeholder="prefixes.namePlaceholder"
+              />
+              <label for="prefix-url" data-i18n="prefixes.url"></label>
+              <input
+                id="prefix-url"
+                type="text"
+                inputmode="url"
+                spellcheck="false"
+                data-i18n-placeholder="prefixes.urlPlaceholder"
+                required
+              />
+              <div class="link-form-actions">
+                <button type="submit" class="main-button" id="prefix-submit"></button>
+                <button
+                  type="button"
+                  class="outline-button"
+                  id="prefix-cancel"
+                  data-i18n="common.cancel"
+                  hidden
+                ></button>
+              </div>
+            </form>
           </section>
 
           <section class="settings-section" id="links-section" aria-labelledby="links-title">
@@ -459,50 +500,17 @@
             </form>
           </section>
 
-          <section class="settings-section" id="prefixes-section" aria-labelledby="prefixes-title">
-            <h3 id="prefixes-title" data-i18n="prefixes.title">Prefissi di ricerca</h3>
-            <p class="settings-note" data-i18n="prefixes.note"></p>
-            <div id="settings-prefixes" class="settings-links"></div>
-            <form id="prefix-form" class="link-form" autocomplete="off">
-              <label for="prefix-key" data-i18n="prefixes.key"></label>
-              <input
-                id="prefix-key"
-                type="text"
-                maxlength="15"
-                spellcheck="false"
-                autocapitalize="off"
-                data-i18n-placeholder="prefixes.keyPlaceholder"
-                required
-              />
-              <label for="prefix-name"
-                ><span data-i18n="prefixes.name"></span> <span data-i18n="prefixes.nameHint"></span
-              ></label>
-              <input
-                id="prefix-name"
-                type="text"
-                maxlength="30"
-                data-i18n-placeholder="prefixes.namePlaceholder"
-              />
-              <label for="prefix-url" data-i18n="prefixes.url"></label>
-              <input
-                id="prefix-url"
-                type="text"
-                inputmode="url"
-                spellcheck="false"
-                data-i18n-placeholder="prefixes.urlPlaceholder"
-                required
-              />
-              <div class="link-form-actions">
-                <button type="submit" class="main-button" id="prefix-submit"></button>
-                <button
-                  type="button"
-                  class="outline-button"
-                  id="prefix-cancel"
-                  data-i18n="common.cancel"
-                  hidden
-                ></button>
-              </div>
-            </form>
+          <section class="settings-section" aria-labelledby="timer-title">
+            <h3 id="timer-title" data-i18n="settings.timer">Timer</h3>
+            <div
+              class="preset-picks"
+              id="preset-picks"
+              role="group"
+              data-i18n-aria-label="settings.durations"
+            ></div>
+            <label class="toggle"
+              ><input type="checkbox" id="notify-toggle" /> <span data-i18n="settings.notify"></span
+            ></label>
           </section>
 
           <section class="settings-section" id="shortcuts-section" aria-labelledby="shortcuts-title">
