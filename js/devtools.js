@@ -1,12 +1,12 @@
 // Developer tools for the command palette: calculator, timestamps, UUIDs, Base64, URL encoding,
-// JWT decoding, SHA-256, JSON, colors and passwords. Pure functions, everything local; see
+// JWT decoding, SHA-256, JSON, naming styles, colors and passwords. Pure functions, everything local; see
 // tests/devtools.test.js.
 // Each result row is { tool, value, detail, first, color?, error? }: Enter copies `value`;
 // `first` puts the rows above the web search (an explicit tool keyword or an obvious match).
 import { hslToHex, rgbToHsl } from './color.js';
 import { dateFormat, relativeFormat, t } from './i18n.js';
 
-/** calc, ts, uuid, b64, url, jwt, hash, json, color, pw */
+/** calc, ts, uuid, b64, url, jwt, hash, json, case, color, pw */
 export const toolName = (tool) => t(`tool.${tool}`);
 
 const row = (tool, value, detail, extra = {}) => ({
@@ -323,6 +323,41 @@ function jsonRows(text, explicit) {
   ];
 }
 
+// ---------- Naming styles ----------
+
+/** Words of a name written in any style: "userProfile_ID-v2", "XMLHttpRequest", "user profile id". */
+export function splitWords(text) {
+  return text
+    .replace(/(\p{Ll}|\d)(\p{Lu})/gu, '$1 $2') // camelCase -> camel Case
+    .replace(/(\p{Lu}+)(\p{Lu}\p{Ll})/gu, '$1 $2') // XMLHttp -> XML Http
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter(Boolean)
+    .map((word) => word.toLowerCase());
+}
+
+const capitalize = (word) => word.charAt(0).toUpperCase() + word.slice(1);
+
+function caseRows(text) {
+  const words = splitWords(text);
+  if (!words.length) return [];
+  // The slug is for URLs: accents dropped, ASCII letters, digits and dashes only.
+  const slug = words
+    .join('-')
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-{2,}/g, '-')
+    .replace(/^-|-$/g, '');
+  return [
+    row('case', words[0] + words.slice(1).map(capitalize).join(''), 'camelCase'),
+    row('case', words.map(capitalize).join(''), 'PascalCase'),
+    row('case', words.join('_'), 'snake_case'),
+    row('case', words.join('-'), 'kebab-case'),
+    row('case', words.join('_').toUpperCase(), 'CONSTANT_CASE'),
+    ...(slug ? [row('case', slug, t('tool.slug'))] : []),
+  ];
+}
+
 // ---------- Colors ----------
 
 const toHex = (r, g, b) => `#${[r, g, b].map((value) => value.toString(16).padStart(2, '0')).join('')}`;
@@ -434,6 +469,8 @@ export function runTools(raw, now = Date.now()) {
       return argument ? [row('hash', sha256(argument), t('tool.sha256'))] : [];
     case 'json':
       return argument ? jsonRows(argument, true) : [];
+    case 'case':
+      return caseRows(argument);
     default:
       break;
   }

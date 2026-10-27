@@ -533,7 +533,7 @@ try {
     assert.equal(search.hint, '');
   });
 
-  await check('more developer tools: json', async () => {
+  await check('more developer tools: json, case', async () => {
     const firstRow = async (text) => {
       await a.eval(clearSearch);
       await blur();
@@ -547,12 +547,14 @@ try {
     const results = {
       json: await firstRow('{"a":1,"b":[2,3]}'),
       jsonError: await firstRow('json {"a":1,}'),
+      case: await firstRow('case user profile id'),
     };
     await a.press('Escape');
     await a.eval(clearSearch);
     assert.deepEqual(results, {
       json: { label: '{\n  "a": 1,\n  "b": [\n    2,\n    3\n  ]\n}', hint: '⧉ JSON' },
       jsonError: { label: 'JSON non valido al carattere 8, vicino a “{"a":1,}”', hint: '⧉ JSON' },
+      case: { label: 'userProfileId', hint: '⧉ Stile dei nomi' },
     });
   });
 

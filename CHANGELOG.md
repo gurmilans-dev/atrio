@@ -21,7 +21,8 @@
 - A **×** in the search box clears it and keeps the cursor there; it shows only while there is text.
 - **Developer tools in the search box**, local, `Enter` copies the result: calculator (`= …` or plain arithmetic,
   with hex/binary), timestamps both ways (`ts`), `uuid`, passwords (`pw`), Base64 (`b64` / `b64d`), URL encoding
-  (`url` / `urld`), JWT decoding (`jwt <token>` or a pasted token: payload, header, expiry), SHA-256 (`sha256`), JSON check and formatting (`json` or pasted JSON: formatted, minified, or where it breaks),
+  (`url` / `urld`), JWT decoding (`jwt <token>` or a pasted token: payload, header, expiry), SHA-256 (`sha256`), JSON check and formatting (`json` or pasted JSON: formatted, minified, or where it breaks), naming styles (`case`: camelCase,
+  PascalCase, snake_case, kebab-case, CONSTANT_CASE, URL slug),
   color conversion (`#hex`, `rgb()`, `hsl()`). Hovering a result shows it in full when it is too long for the row.
 
 ### Changed

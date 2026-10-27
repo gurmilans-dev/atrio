@@ -231,7 +231,7 @@ const it = {
   'shortcuts.alwaysSearch': 'Cerca sempre, anche se sembra un URL',
   'shortcuts.removeRecent': 'Togli la ricerca recente evidenziata dai suggerimenti',
   'shortcuts.tools':
-    'Strumenti nella ricerca: calcoli, timestamp, UUID, Base64, URL, JWT, SHA-256, JSON, password, colori. Invio copia il risultato.',
+    'Strumenti nella ricerca: calcoli, timestamp, UUID, Base64, URL, JWT, SHA-256, JSON, stili dei nomi, password, colori. Invio copia il risultato.',
   'shortcuts.openLink': 'Apri il collegamento',
   'shortcuts.newTask': 'Nuova attività',
   'shortcuts.apps': 'App Google',
@@ -296,6 +296,8 @@ const it = {
   'tool.jsonError': 'JSON non valido al carattere {n}, vicino a “{near}”',
   'tool.jsonEnd': 'JSON non valido: finisce prima del previsto',
   'tool.jsonInvalid': 'JSON non valido',
+  'tool.case': 'Stile dei nomi',
+  'tool.slug': 'Slug per URL',
 };
 
 const en = {
@@ -522,7 +524,7 @@ const en = {
   'shortcuts.alwaysSearch': 'Search even if it looks like a URL',
   'shortcuts.removeRecent': 'Remove the highlighted recent search from the suggestions',
   'shortcuts.tools':
-    'Tools in the search box: math, timestamps, UUIDs, Base64, URLs, JWTs, SHA-256, JSON, passwords, colors. Enter copies the result.',
+    'Tools in the search box: math, timestamps, UUIDs, Base64, URLs, JWTs, SHA-256, JSON, naming styles, passwords, colors. Enter copies the result.',
   'shortcuts.openLink': 'Open the link',
   'shortcuts.newTask': 'New task',
   'shortcuts.apps': 'Google apps',
@@ -587,6 +589,8 @@ const en = {
   'tool.jsonError': 'Invalid JSON at character {n}, near “{near}”',
   'tool.jsonEnd': 'Invalid JSON: it ends too early',
   'tool.jsonInvalid': 'Invalid JSON',
+  'tool.case': 'Naming style',
+  'tool.slug': 'URL slug',
 };
 
 export const STRINGS = { it, en };

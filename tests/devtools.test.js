@@ -2,7 +2,15 @@ import assert from 'node:assert/strict';
 import { afterEach, describe, test } from 'node:test';
 import { createHash } from 'node:crypto';
 import { TOOL_KEYWORDS } from '../js/config.js';
-import { decodeBase64, encodeBase64, evaluate, password, runTools, sha256 } from '../js/devtools.js';
+import {
+  decodeBase64,
+  encodeBase64,
+  evaluate,
+  password,
+  runTools,
+  sha256,
+  splitWords,
+} from '../js/devtools.js';
 import { setLanguage } from '../js/i18n.js';
 
 // Labels and dates follow the interface language: pin it, whatever the machine's locale.
@@ -236,6 +244,35 @@ describe('JSON', () => {
     assert.deepEqual(tools('{"ok":true}'), ['json', 'json']);
     assert.deepEqual(tools('[1, 2]'), ['json', 'json']);
     assert.deepEqual(values('{not json}'), []);
+  });
+});
+
+describe('naming styles', () => {
+  test('words come out of any style', () => {
+    assert.deepEqual(splitWords('user profile id'), ['user', 'profile', 'id']);
+    assert.deepEqual(splitWords('userProfileId'), ['user', 'profile', 'id']);
+    assert.deepEqual(splitWords('XMLHttpRequest'), ['xml', 'http', 'request']);
+    assert.deepEqual(splitWords('user_profile-ID.v2'), ['user', 'profile', 'id', 'v2']);
+    assert.deepEqual(splitWords('apiV2Client'), ['api', 'v2', 'client']);
+    assert.deepEqual(splitWords('  --  '), []);
+  });
+
+  test('every style, plus a slug without accents', () => {
+    assert.deepEqual(values('case Città di Roma'), [
+      'cittàDiRoma',
+      'CittàDiRoma',
+      'città_di_roma',
+      'città-di-roma',
+      'CITTÀ_DI_ROMA',
+      'citta-di-roma',
+    ]);
+    assert.deepEqual(
+      runTools('case getHTTPResponse', NOW).map((result) => result.detail),
+      ['camelCase', 'PascalCase', 'snake_case', 'kebab-case', 'CONSTANT_CASE', 'URL slug'],
+    );
+    assert.equal(values('case getHTTPResponse')[2], 'get_http_response');
+    assert.deepEqual(values('case'), []);
+    assert.deepEqual(values('case 日本'), ['日本', '日本', '日本', '日本', '日本']); // no slug without ASCII
   });
 });
 
