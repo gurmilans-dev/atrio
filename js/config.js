@@ -45,7 +45,7 @@ export const BANGS = {
 };
 
 // Keywords of the palette tools (js/devtools.js): personal search prefixes cannot use them.
-export const TOOL_KEYWORDS = ['ts', 'uuid', 'pw', 'b64', 'b64d', 'url', 'urld', 'jwt', 'sha256'];
+export const TOOL_KEYWORDS = ['ts', 'uuid', 'pw', 'b64', 'b64d', 'url', 'urld', 'jwt', 'sha256', 'json'];
 
 export const PRESETS = [
   { id: 25, focus: 25, break: 5 },

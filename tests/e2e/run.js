@@ -533,6 +533,29 @@ try {
     assert.equal(search.hint, '');
   });
 
+  await check('more developer tools: json', async () => {
+    const firstRow = async (text) => {
+      await a.eval(clearSearch);
+      await blur();
+      await a.press('/');
+      await a.type(text);
+      return a.eval(`({
+        label: document.querySelector('#search-results .result-label')?.textContent,
+        hint: document.getElementById('search-hint').textContent,
+      })`);
+    };
+    const results = {
+      json: await firstRow('{"a":1,"b":[2,3]}'),
+      jsonError: await firstRow('json {"a":1,}'),
+    };
+    await a.press('Escape');
+    await a.eval(clearSearch);
+    assert.deepEqual(results, {
+      json: { label: '{\n  "a": 1,\n  "b": [\n    2,\n    3\n  ]\n}', hint: '⧉ JSON' },
+      jsonError: { label: 'JSON non valido al carattere 8, vicino a “{"a":1,}”', hint: '⧉ JSON' },
+    });
+  });
+
   await check('search engine lives in the settings', async () => {
     const inSettings = await a.eval(`Boolean(document.querySelector('#settings #search-engine'))`);
     await a.eval(

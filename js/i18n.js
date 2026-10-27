@@ -231,7 +231,7 @@ const it = {
   'shortcuts.alwaysSearch': 'Cerca sempre, anche se sembra un URL',
   'shortcuts.removeRecent': 'Togli la ricerca recente evidenziata dai suggerimenti',
   'shortcuts.tools':
-    'Strumenti nella ricerca: calcoli, timestamp, UUID, Base64, URL, JWT, SHA-256, password, colori. Invio copia il risultato.',
+    'Strumenti nella ricerca: calcoli, timestamp, UUID, Base64, URL, JWT, SHA-256, JSON, password, colori. Invio copia il risultato.',
   'shortcuts.openLink': 'Apri il collegamento',
   'shortcuts.newTask': 'Nuova attività',
   'shortcuts.apps': 'App Google',
@@ -287,6 +287,15 @@ const it = {
   'tool.jwtInvalid': 'JWT non valido',
   'tool.hash': 'SHA-256',
   'tool.sha256': 'SHA-256, esadecimale',
+  'tool.json': 'JSON',
+  'tool.jsonPretty': 'JSON valido, formattato',
+  'tool.jsonMinified': 'JSON compatto',
+  'tool.jsonObject': { one: 'oggetto con 1 chiave', other: 'oggetto con {n} chiavi' },
+  'tool.jsonArray': { one: 'array con 1 elemento', other: 'array con {n} elementi' },
+  'tool.jsonValue': 'valore singolo',
+  'tool.jsonError': 'JSON non valido al carattere {n}, vicino a “{near}”',
+  'tool.jsonEnd': 'JSON non valido: finisce prima del previsto',
+  'tool.jsonInvalid': 'JSON non valido',
 };
 
 const en = {
@@ -513,7 +522,7 @@ const en = {
   'shortcuts.alwaysSearch': 'Search even if it looks like a URL',
   'shortcuts.removeRecent': 'Remove the highlighted recent search from the suggestions',
   'shortcuts.tools':
-    'Tools in the search box: math, timestamps, UUIDs, Base64, URLs, JWTs, SHA-256, passwords, colors. Enter copies the result.',
+    'Tools in the search box: math, timestamps, UUIDs, Base64, URLs, JWTs, SHA-256, JSON, passwords, colors. Enter copies the result.',
   'shortcuts.openLink': 'Open the link',
   'shortcuts.newTask': 'New task',
   'shortcuts.apps': 'Google apps',
@@ -569,6 +578,15 @@ const en = {
   'tool.jwtInvalid': 'Invalid JWT',
   'tool.hash': 'SHA-256',
   'tool.sha256': 'SHA-256, hex',
+  'tool.json': 'JSON',
+  'tool.jsonPretty': 'Valid JSON, formatted',
+  'tool.jsonMinified': 'Minified JSON',
+  'tool.jsonObject': { one: 'object with 1 key', other: 'object with {n} keys' },
+  'tool.jsonArray': { one: 'array with 1 item', other: 'array with {n} items' },
+  'tool.jsonValue': 'single value',
+  'tool.jsonError': 'Invalid JSON at character {n}, near “{near}”',
+  'tool.jsonEnd': 'Invalid JSON: it ends too early',
+  'tool.jsonInvalid': 'Invalid JSON',
 };
 
 export const STRINGS = { it, en };

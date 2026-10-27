@@ -209,6 +209,36 @@ describe('JWT', () => {
   });
 });
 
+describe('JSON', () => {
+  test('valid JSON: formatted first, then minified, with a summary', () => {
+    const results = runTools('json {"a": 1, "b": [2, 3]}', NOW);
+    assert.deepEqual(
+      results.map((result) => result.value),
+      ['{\n  "a": 1,\n  "b": [\n    2,\n    3\n  ]\n}', '{"a":1,"b":[2,3]}'],
+    );
+    assert.deepEqual(
+      results.map((result) => result.detail),
+      ['Valid JSON, formatted · object with 2 keys', 'Minified JSON'],
+    );
+    assert.equal(runTools('json [1]', NOW)[0].detail, 'Valid JSON, formatted · array with 1 item');
+    assert.equal(runTools('json 42', NOW)[0].detail, 'Valid JSON, formatted · single value');
+  });
+
+  test('invalid JSON says where it breaks', () => {
+    const [error] = runTools('json {"a":1,"b":[2,3}', NOW);
+    assert.equal(error.error, true);
+    assert.equal(error.value, 'Invalid JSON at character 16, near “1,"b":[2,3}”');
+    assert.equal(runTools('json {"a":1', NOW)[0].value, 'Invalid JSON: it ends too early');
+    assert.equal(runTools('json [1,2,]', NOW)[0].value, 'Invalid JSON');
+  });
+
+  test('pasted objects and arrays are recognized; broken ones are left to the search', () => {
+    assert.deepEqual(tools('{"ok":true}'), ['json', 'json']);
+    assert.deepEqual(tools('[1, 2]'), ['json', 'json']);
+    assert.deepEqual(values('{not json}'), []);
+  });
+});
+
 describe('SHA-256', () => {
   test('known vectors', () => {
     assert.equal(sha256(''), 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855');

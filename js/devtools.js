@@ -1,12 +1,12 @@
 // Developer tools for the command palette: calculator, timestamps, UUIDs, Base64, URL encoding,
-// JWT decoding, SHA-256, colors and passwords. Pure functions, everything local; see
+// JWT decoding, SHA-256, JSON, colors and passwords. Pure functions, everything local; see
 // tests/devtools.test.js.
 // Each result row is { tool, value, detail, first, color?, error? }: Enter copies `value`;
 // `first` puts the rows above the web search (an explicit tool keyword or an obvious match).
 import { hslToHex, rgbToHsl } from './color.js';
 import { dateFormat, relativeFormat, t } from './i18n.js';
 
-/** calc, ts, uuid, b64, url, jwt, hash, color, pw */
+/** calc, ts, uuid, b64, url, jwt, hash, json, color, pw */
 export const toolName = (tool) => t(`tool.${tool}`);
 
 const row = (tool, value, detail, extra = {}) => ({
@@ -290,6 +290,39 @@ export function sha256(text) {
   return Array.from(hash, (value) => value.toString(16).padStart(8, '0')).join('');
 }
 
+// ---------- JSON ----------
+
+function jsonSummary(value) {
+  if (Array.isArray(value)) return t('tool.jsonArray', { n: value.length });
+  if (value && typeof value === 'object') return t('tool.jsonObject', { n: Object.keys(value).length });
+  return t('tool.jsonValue');
+}
+
+// V8 says where parsing stopped ("… at position 15"): shown as a character number with the text around it.
+function jsonError(text, error) {
+  const position = Number(error.message.match(/at position (\d+)/)?.[1] ?? NaN);
+  if (/end of JSON input/.test(error.message) || position >= text.length) return t('tool.jsonEnd');
+  if (!Number.isInteger(position)) return t('tool.jsonInvalid');
+  return t('tool.jsonError', {
+    n: position + 1,
+    near: text.slice(Math.max(0, position - 10), position + 10),
+  });
+}
+
+// Formatted first (Enter copies it with its line breaks), then minified.
+function jsonRows(text, explicit) {
+  let value;
+  try {
+    value = JSON.parse(text);
+  } catch (error) {
+    return explicit ? [errorRow('json', jsonError(text, error))] : [];
+  }
+  return [
+    row('json', JSON.stringify(value, null, 2), `${t('tool.jsonPretty')} · ${jsonSummary(value)}`),
+    row('json', JSON.stringify(value), t('tool.jsonMinified')),
+  ];
+}
+
 // ---------- Colors ----------
 
 const toHex = (r, g, b) => `#${[r, g, b].map((value) => value.toString(16).padStart(2, '0')).join('')}`;
@@ -399,8 +432,16 @@ export function runTools(raw, now = Date.now()) {
       return argument ? jwtRows(argument, now) : [];
     case 'sha256':
       return argument ? [row('hash', sha256(argument), t('tool.sha256'))] : [];
+    case 'json':
+      return argument ? jsonRows(argument, true) : [];
     default:
       break;
+  }
+
+  // Pasted JSON: an object or array that parses is shown without the keyword.
+  if (/^[[{][\s\S]*[\]}]$/.test(text)) {
+    const json = jsonRows(text, false);
+    if (json.length) return json;
   }
 
   // A pasted token: header and payload are base64url JSON, so both start with "eyJ" ('{"').
