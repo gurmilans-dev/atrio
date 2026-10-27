@@ -13,7 +13,7 @@ import { initPrefixes } from './prefixes.js';
 import { initSearch } from './search-ui.js';
 import { initSettings } from './settings.js';
 import { initShortcuts } from './shortcuts.js';
-import { initStore, reloadFromStorage, subscribe } from './store.js';
+import { getState, initStore, reloadFromStorage, subscribe } from './store.js';
 import { initTasks } from './tasks.js';
 
 // The page stays hidden (style.css) until the static texts are in the right language.
@@ -38,8 +38,13 @@ try {
   document.documentElement.dataset.ready = '';
 }
 
-// A different language, from the settings, a backup, a reset or another tab, reloads the page.
+// A new language choice, from the settings, a backup, a reset or another tab, reloads the page.
+// Only the choice counts: if the browser's own language changes meanwhile (Edge settles it a moment
+// after starting with a new profile), the next new tab follows it, instead of a click reloading this one.
+let languageChoice = getState().lang;
 subscribe((state) => {
+  if (state.lang === languageChoice) return;
+  languageChoice = state.lang;
   if (needsReload(state.lang)) window.location.reload();
 });
 

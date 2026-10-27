@@ -63,7 +63,9 @@
 - A JWT whose `exp` or `iat` no date can hold (such as `1e20`) broke the suggestions, and `Enter` could then run a
   stale row. Those dates are now skipped, and a failing tool can no longer break the search box.
 - Importing a backup or resetting the settings changed the saved language without reloading the page, which stayed
-  in the old one until the next new tab.
+  in the old one until the next new tab. Only a change of the language choice reloads the page: if the browser's own
+  language changes while a tab is open (as Edge does a moment after starting with a new profile), the next new tab
+  follows it, instead of a click reloading the current one.
 - Italian dates had every word capitalized ("26 Ottobre"); only the first letter is now.
 
 ### Removed
