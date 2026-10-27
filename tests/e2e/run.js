@@ -875,6 +875,58 @@ try {
     );
   });
 
+  await check(
+    'page parts: hidden from the settings, one column, inactive shortcuts, before paint',
+    async () => {
+      const toggle = (section) =>
+        a.eval(settings(`document.querySelector('[data-show="${section}"]').click()`));
+      for (const section of ['focus', 'tasks', 'greeting']) await toggle(section);
+      const read = () =>
+        a.eval(`({
+        side: getComputedStyle(document.querySelector('.side')).display,
+        columns: getComputedStyle(document.querySelector('.layout')).gridTemplateColumns.split(' ').length,
+        greeting: getComputedStyle(document.getElementById('greeting')).display,
+        clock: getComputedStyle(document.getElementById('clock')).display,
+        heatmapSwitch: document.querySelector('[data-show="heatmap"]').disabled,
+      })`);
+      const hidden = await read();
+      await blur();
+      await a.press('t');
+      const focusedAfterT = await a.eval('document.activeElement.id');
+      await a.press('>');
+      const commands = await a.eval(labels('#search-results .result-label'));
+      await a.press('Escape');
+      await a.eval(clearSearch);
+      // boot.js must apply it before the modules run: read the attributes as soon as the page starts.
+      await a.goto();
+      const afterReload = await a.eval(
+        `['focus', 'tasks', 'greeting'].map((section) => document.documentElement.hasAttribute('data-hide-' + section))`,
+      );
+      for (const section of ['focus', 'tasks', 'greeting']) await toggle(section);
+      const restored = await read();
+      assert.deepEqual(
+        {
+          hidden,
+          focusedAfterT,
+          timerCommand: commands.some((label) => /timer/i.test(label)),
+          newTask: commands.includes('Nuova attività'),
+          settings: commands.includes('Impostazioni'),
+          afterReload,
+          restored,
+        },
+        {
+          hidden: { side: 'none', columns: 1, greeting: 'none', clock: 'block', heatmapSwitch: true },
+          focusedAfterT: '',
+          timerCommand: false,
+          newTask: false,
+          settings: true,
+          afterReload: [true, true, true],
+          restored: { side: 'grid', columns: 2, greeting: 'block', clock: 'block', heatmapSwitch: false },
+        },
+      );
+    },
+  );
+
   await check('language: English from settings, every text translated, back to Italian', async () => {
     const before = await a.eval(`document.documentElement.lang`);
     await a.eval(

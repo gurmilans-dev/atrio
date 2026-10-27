@@ -2,7 +2,7 @@
 // first paint; this module keeps them in sync, loads the custom image and, for the
 // "Dallo sfondo" theme, extracts the accent color from the wallpaper.
 import { FALLBACK_ACCENT, pickAccent } from './color.js';
-import { AUTO_THEME, CUSTOM_WALLPAPER, wallpaperSrc } from './config.js';
+import { AUTO_THEME, CUSTOM_WALLPAPER, SECTIONS, wallpaperSrc } from './config.js';
 import { getState, subscribe, update } from './store.js';
 import { getImage } from './wallpaper.js';
 
@@ -93,6 +93,7 @@ export function previewBlur(value) {
 function apply(state) {
   root.dataset.theme = state.theme;
   root.dataset.wallpaper = state.wallpaper;
+  for (const section of SECTIONS) root.toggleAttribute(`data-hide-${section}`, !state.show[section]);
   previewShade(state.shade);
   previewBlur(state.blur);
   applyAccent(state);

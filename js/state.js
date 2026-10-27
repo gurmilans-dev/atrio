@@ -8,6 +8,7 @@ import {
   LIMITS,
   PRESETS,
   SCHEMA_VERSION,
+  SECTIONS,
   STORAGE_KEY,
   THEMES,
   TOOL_KEYWORDS,
@@ -50,6 +51,7 @@ export function createDefaultState() {
     shade: 25,
     blur: 0,
     mouseEffects: false,
+    show: Object.fromEntries(SECTIONS.map((section) => [section, true])),
     autoAccent: null,
     name: '',
     preset: 25,
@@ -218,6 +220,7 @@ export function normalizeState(raw) {
     blur: toInt(input.blur, 0, LIMITS.blur, base.blur),
     // Schema 5 made the mouse effects optional and off by default: older saves start with them off.
     mouseEffects: Number(input.schema) >= 5 ? bool(input.mouseEffects, base.mouseEffects) : false,
+    show: Object.fromEntries(SECTIONS.map((section) => [section, bool(input.show?.[section], true)])),
     autoAccent: normalizeAccent(input.autoAccent),
     name: cleanText(input.name, LIMITS.name),
     preset,

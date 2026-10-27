@@ -57,7 +57,8 @@ network requests unless you turn on online search suggestions.
   to several Google accounts.
 - **Make it yours.** Four themes, one of which takes its accent color from your wallpaper; your own wallpaper
   (downscaled to WebP on your machine); dim and blur; optional mouse effects (link borders that light up near the
-  cursor, a slight lift, wallpaper parallax), off by default.
+  cursor, a slight lift, wallpaper parallax), off by default. Hide the parts you do not use (greeting, clock, links,
+  focus panel, heatmap, tasks): with both side panels off the page becomes one calm, centered column.
 - **Keyboard everywhere** and **backups** to a JSON file, wallpaper included.
 
 | Developer tools        | Google apps         | Mocha theme and notes |

@@ -5,6 +5,7 @@ import { openLink } from './links.js';
 import { focusNotes } from './notes.js';
 import { focusSearch, openCommandPalette } from './search-ui.js';
 import { isSettingsOpen, openSettings } from './settings.js';
+import { getState } from './store.js';
 import { focusTaskInput } from './tasks.js';
 
 // Single-key shortcuts, active only when no text field has focus.
@@ -18,6 +19,8 @@ const ACTIONS = {
   p: toggleTimer,
   '?': () => openSettings({ scrollTo: 'shortcuts-section' }),
 };
+// A hidden part of the page (Settings → Page) leaves its shortcut inactive.
+const NEEDS = { t: 'tasks', n: 'tasks', p: 'focus' };
 
 export function initShortcuts() {
   document.addEventListener('keydown', (event) => {
@@ -43,9 +46,9 @@ export function initShortcuts() {
     }
     if (typing || event.ctrlKey || event.metaKey || event.altKey || event.repeat) return;
 
-    const action =
-      ACTIONS[key.toLowerCase()] ?? (/^[1-9]$/.test(key) ? () => openLink(Number(key) - 1) : null);
-    if (!action) return;
+    const lower = key.toLowerCase();
+    const action = ACTIONS[lower] ?? (/^[1-9]$/.test(key) ? () => openLink(Number(key) - 1) : null);
+    if (!action || (NEEDS[lower] && !getState().show[NEEDS[lower]])) return;
     event.preventDefault();
     action();
   });

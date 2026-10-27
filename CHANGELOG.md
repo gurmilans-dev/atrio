@@ -10,6 +10,11 @@
 - **Personal search prefixes** (Settings → Search prefixes): an address with `%s` where the text goes, so
   `jira 123` opens your Jira ticket and `pr 42` a pull request of your repo. Typed alone, the prefix opens the site,
   like the built-in ones. Names already used by Atrio (`gh`, `yt`, `uuid`…) are refused.
+- **Show or hide each part of the page** (Settings → Page): greeting, clock, links, focus panel, its heatmap, tasks and
+  notes. With both side panels off the page becomes a single centered column. Applied before the first paint; the
+  shortcuts and commands of a hidden part do nothing.
+- The settings are reorganized, from general to specific: General, Appearance, Wallpaper, Page, Search, Search
+  prefixes, Links, Timer, Shortcuts, Data.
 - **Recent searches** in the search box: those containing what you type appear under it, and the latest ones
   show on an empty box (none preselected, so `Enter` on an empty box still does nothing). `Shift + Delete` forgets
   the highlighted one. Kept only in this browser; Settings → General turns them off (which also clears them) or

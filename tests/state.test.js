@@ -134,6 +134,24 @@ describe('normalizeState', () => {
   });
 });
 
+describe('visible parts of the page', () => {
+  test('everything shown by default; only booleans count', () => {
+    assert.deepEqual(normalizeState({}).show, {
+      greeting: true,
+      clock: true,
+      links: true,
+      focus: true,
+      heatmap: true,
+      tasks: true,
+    });
+    const { show } = normalizeState({ show: { focus: false, tasks: 'no', junk: false } });
+    assert.equal(show.focus, false);
+    assert.equal(show.tasks, true);
+    assert.equal('junk' in show, false);
+    assert.equal(normalizeState({ show: 'x' }).show.clock, true);
+  });
+});
+
 describe('search prefixes', () => {
   test('valid prefixes are kept, the rest dropped', () => {
     const { prefixes } = normalizeState({

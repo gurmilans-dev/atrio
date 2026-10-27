@@ -16,25 +16,33 @@ const set = (key, value) => () =>
 // Keywords are in both languages, so a command is found whatever the interface language.
 /** @returns {{label: string, keywords?: string, key?: string, run: () => void}[]} */
 export function getCommands() {
-  const { timer } = getState();
-  return [
+  const { timer, show } = getState();
+  const commands = [
     {
       label: t(timer.running ? 'command.pauseTimer' : 'command.startTimer'),
       keywords: 'focus pomodoro start avvia pausa pause sessione session',
       key: 'P',
+      section: 'focus',
       run: toggleTimer,
     },
-    { label: t('command.resetTimer'), keywords: 'reset azzera focus timer', run: resetTimer },
+    {
+      label: t('command.resetTimer'),
+      keywords: 'reset azzera focus timer',
+      section: 'focus',
+      run: resetTimer,
+    },
     {
       label: t('command.newTask'),
       keywords: 'task todo aggiungi add nuova attività',
       key: 'T',
+      section: 'tasks',
       run: focusTaskInput,
     },
     {
       label: t('command.notes'),
       keywords: 'notes note appunti scratchpad snippet',
       key: 'N',
+      section: 'tasks',
       run: focusNotes,
     },
     {
@@ -71,4 +79,6 @@ export function getCommands() {
       run: set('wallpaper', id),
     })),
   ];
+  // Commands for a part of the page hidden in Settings → Page are left out.
+  return commands.filter((command) => !command.section || show[command.section]);
 }

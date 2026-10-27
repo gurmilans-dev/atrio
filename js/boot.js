@@ -13,6 +13,12 @@
     const accent = saved.autoAccent?.color;
     if (saved.theme === 'auto' && /^#[0-9a-f]{6}$/i.test(accent)) root.style.setProperty('--accent', accent);
     if (saved.apps?.visible === false) root.setAttribute('data-apps-off', '');
+    // Parts of the page turned off in Settings → Page (SECTIONS in js/config.js).
+    if (saved.show && typeof saved.show === 'object') {
+      for (const [section, shown] of Object.entries(saved.show)) {
+        if (shown === false && /^[a-z]+$/.test(section)) root.setAttribute(`data-hide-${section}`, '');
+      }
+    }
     if (isWord(saved.wallpaper)) {
       root.dataset.wallpaper = saved.wallpaper;
       if (saved.wallpaper !== 'custom') {

@@ -200,7 +200,8 @@ function buildItems(value) {
   wantedQuery = null;
   if (!text) return matchRecent(getState().recent, '', 5).map(recentItem);
   if (text.startsWith('>')) return rank(getCommands(), commandText, text.slice(1), 20, true).map(commandItem);
-  if (text.startsWith('+')) {
+  // "+ text" adds a task, unless tasks are hidden (Settings → Page): then it is a plain search.
+  if (text.startsWith('+') && getState().show.tasks) {
     const task = text.slice(1).trim();
     if (!task) return [];
     return [

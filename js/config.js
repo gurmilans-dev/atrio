@@ -15,6 +15,9 @@ export const THEMES = {
   [AUTO_THEME]: { label: null, swatch: null },
 };
 
+// Parts of the page that Settings → Page can hide (data-hide-<name> on the root element).
+export const SECTIONS = ['greeting', 'clock', 'links', 'focus', 'heatmap', 'tasks'];
+
 // Focus heatmap size; the daily history keeps exactly this many days.
 export const HEATMAP_WEEKS = 20;
 

@@ -250,6 +250,25 @@ kbd {
   height: 17px;
   fill: currentColor;
 }
+/* Parts of the page turned off in Settings → Page (boot.js applies them before the first paint). */
+:root[data-hide-greeting] .greeting,
+:root[data-hide-clock] .clock,
+:root[data-hide-links] .links-header,
+:root[data-hide-links] .links-grid,
+:root[data-hide-links] .links-header ~ .empty-note,
+:root[data-hide-focus] .focus-panel,
+:root[data-hide-heatmap] .activity,
+:root[data-hide-tasks] .tasks-panel {
+  display: none !important;
+}
+/* With both side panels off, the page becomes one centered column. */
+:root[data-hide-focus][data-hide-tasks] .layout {
+  grid-template-columns: minmax(0, 860px);
+  justify-content: center;
+}
+:root[data-hide-focus][data-hide-tasks] .side {
+  display: none;
+}
 :root[data-apps-off] .apps-button {
   display: none;
 }
@@ -748,6 +767,19 @@ kbd {
   display: block;
   margin-left: 24px;
   padding-bottom: 0;
+}
+.toggle-heading {
+  margin: 0 0 -4px;
+  font: 11px var(--mono);
+  color: var(--text-secondary);
+}
+/* A switch that depends on the one above it (the heatmap is inside the focus panel). */
+.toggle.nested {
+  margin-left: 24px;
+}
+.toggle:has(input:disabled) {
+  opacity: 0.45;
+  cursor: default;
 }
 .toggle-note {
   margin: 5px 0 0 24px;

@@ -4,6 +4,7 @@ import {
   IMAGE_TYPES,
   LIMITS,
   PRESETS,
+  SECTIONS,
   THEMES,
   WALLPAPERS,
   wallpaperSrc,
@@ -99,6 +100,19 @@ function buildPicks() {
     }),
   );
 
+  // Settings → Page: one switch per part of the page; the heatmap lives inside the focus panel.
+  $('show-toggles').replaceChildren(
+    ...SECTIONS.map((section) => {
+      const label = el('label', 'toggle');
+      const input = el('input');
+      input.type = 'checkbox';
+      input.dataset.show = section;
+      label.append(input, ' ', el('span', '', t(`show.${section}`)));
+      if (section === 'heatmap') label.classList.add('nested');
+      return label;
+    }),
+  );
+
   $('language-select').replaceChildren(
     ...LANGUAGES.map((id) => {
       const option = el('option', '', t(`language.${id}`));
@@ -126,6 +140,10 @@ function render(state) {
   $('notify-toggle').checked = state.notify;
   $('mouse-effects-toggle').checked = state.mouseEffects;
   $('apps-toggle').checked = state.apps.visible;
+  for (const input of $$('[data-show]')) {
+    input.checked = state.show[input.dataset.show];
+    if (input.dataset.show === 'heatmap') input.disabled = !state.show.focus;
+  }
   $('recent-toggle').checked = state.rememberSearches;
   $('suggest-toggle').checked = state.suggest;
   $('clear-recent').hidden = state.recent.length === 0;
@@ -381,6 +399,13 @@ export function initSettings() {
     });
     $('recent-toggle').focus(); // the button hides itself
     announce(t('recent.cleared'));
+  });
+  $('show-toggles').addEventListener('change', (event) => {
+    const { show } = event.target.dataset;
+    if (!show) return;
+    update((state) => {
+      state.show[show] = event.target.checked;
+    });
   });
   $('apps-toggle').addEventListener('change', (event) => {
     update((state) => {
