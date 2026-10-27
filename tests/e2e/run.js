@@ -216,7 +216,8 @@ try {
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
       const db = await new Promise((resolve) => { const q = indexedDB.open('workspace-wallpaper', 1); q.onsuccess = () => resolve(q.result); });
-      const blob = await new Promise((resolve) => { const q = db.transaction('images').objectStore('images').get('selected'); q.onsuccess = () => resolve(q.result); });
+      const id = ${STATE}.customImages[0];
+      const blob = await new Promise((resolve) => { const q = db.transaction('images').objectStore('images').get(id); q.onsuccess = () => resolve(q.result); });
       const bitmap = await createImageBitmap(blob);
       return { type: blob.type, smaller: bitmap.width < 4000, ready: document.documentElement.hasAttribute('data-wallpaper-ready') };
     })()`);
@@ -254,15 +255,16 @@ try {
       await new Promise((resolve) => setTimeout(resolve, 600));
       document.getElementById('settings').close();
       const s = ${STATE};
-      return { app: payload.app, image: Boolean(payload.wallpaperImage), timer: 'timer' in payload.state, afterReset, tasks: s.tasks.length, wallpaper: s.wallpaper };
+      return { app: payload.app, images: payload.wallpaperImages?.length, timer: 'timer' in payload.state, afterReset, tasks: s.tasks.length, wallpaper: s.wallpaper, own: s.customImages.length };
     })()`);
     assert.deepEqual(r, {
       app: 'atrio',
-      image: true,
+      images: 1,
       timer: false,
       afterReset: 0,
       tasks: 2,
       wallpaper: 'custom',
+      own: 1,
     });
   });
 
@@ -393,15 +395,15 @@ try {
     let accent = null;
     for (let i = 0; i < 30 && !accent; i++) {
       await sleep(100);
-      accent = await a.eval(`${STATE}.autoAccent`);
+      accent = await a.eval(`${STATE}.autoAccents.workstation ?? null`);
     }
     await a.eval(`document.getElementById('settings').close()`);
     await a.goto();
     const boot = await a.eval(`document.documentElement.style.getPropertyValue('--accent')`);
     await a.eval(settings(`document.querySelector('[data-theme-choice="tokyo"]').click()`));
     const reset = await a.eval(`document.documentElement.style.getPropertyValue('--accent')`);
-    assert.ok(accent?.key === 'workstation' && /^#[0-9a-f]{6}$/.test(accent.color), JSON.stringify(accent));
-    assert.deepEqual({ boot, reset }, { boot: accent.color, reset: '' });
+    assert.match(String(accent), /^#[0-9a-f]{6}$/);
+    assert.deepEqual({ boot, reset }, { boot: accent, reset: '' });
   });
 
   await check('notes: N opens them, autosave, survive reload', async () => {
@@ -915,6 +917,67 @@ try {
         back: { timer: '25:00', caption: '25 / 5', fields: null },
       },
     );
+  });
+
+  await check('own wallpapers: several images, rotation per tab and per day, removal', async () => {
+    const upload = (color) =>
+      a.eval(`(async () => {
+        const before = ${STATE}.customImages.length;
+        const canvas = new OffscreenCanvas(320, 200);
+        const context = canvas.getContext('2d');
+        context.fillStyle = '${color}';
+        context.fillRect(0, 0, 320, 200);
+        const png = await canvas.convertToBlob({ type: 'image/png' });
+        const transfer = new DataTransfer();
+        transfer.items.add(new File([png], 'image.png', { type: 'image/png' }));
+        const input = document.getElementById('wallpaper-upload');
+        input.files = transfer.files;
+        input.dispatchEvent(new Event('change'));
+        for (let i = 0; i < 50 && ${STATE}.customImages.length === before; i++) await new Promise((r) => setTimeout(r, 100));
+      })()`);
+    const read = () =>
+      a.eval(`({
+        images: ${STATE}.customImages,
+        shown: document.documentElement.dataset.customImage,
+        counter: Number(document.documentElement.dataset.rotation) || 0,
+        tiles: document.querySelectorAll('#wallpaper-picks [data-image]').length,
+        rotationEnabled: !document.getElementById('rotation-select').disabled,
+      })`);
+    const setRotation = (value) =>
+      a.eval(
+        settings(`
+          const select = document.getElementById('rotation-select');
+          select.value = '${value}';
+          select.dispatchEvent(new Event('change'));`),
+      );
+    await upload('#c0392b');
+    await upload('#27ae60');
+    const three = await read();
+    await setRotation('tab');
+    await a.goto();
+    const firstTab = await read();
+    await a.goto();
+    const secondTab = await read();
+    await setRotation('daily');
+    await a.goto();
+    const daily = await read();
+    const day = await a.eval('Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 86400000)');
+    await setRotation('off');
+    await a.eval(settings(`document.querySelector('#wallpaper-picks [data-image]').click()`));
+    await a.eval(settings(`document.getElementById('remove-wallpaper').click()`));
+    await sleep(300);
+    const removed = await read();
+    await a.eval(settings(`document.querySelector('[data-wallpaper="workstation"]').click()`));
+    const at = (images, step) => images[step % images.length];
+    assert.equal(three.images.length, 3);
+    assert.deepEqual([three.tiles, three.rotationEnabled], [3, true]);
+    assert.equal(secondTab.counter, firstTab.counter + 1);
+    assert.equal(firstTab.shown, at(three.images, firstTab.counter));
+    assert.equal(secondTab.shown, at(three.images, secondTab.counter));
+    assert.notEqual(secondTab.shown, firstTab.shown); // every new tab shows the next image
+    assert.equal(daily.shown, at(three.images, day));
+    assert.deepEqual([removed.images.length, removed.tiles], [2, 2]);
+    assert.ok(!removed.images.includes(three.images[0]));
   });
 
   await check('clock options: 12-hour with AM/PM, seconds ticking, date hidden', async () => {

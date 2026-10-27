@@ -9,8 +9,22 @@
     // Strings only: a missing field would be tested as "undefined", which matches.
     const isWord = (value) => typeof value === 'string' && /^[a-z]+$/.test(value);
     if (isWord(saved.theme)) root.dataset.theme = saved.theme;
-    // Automatic theme: the accent extracted earlier from the wallpaper.
-    const accent = saved.autoAccent?.color;
+    // Own wallpapers with rotation (same rule as shownImage in js/rotation.js): this tab's image.
+    // "A ogni nuova scheda" counts tabs in a key of its own, so other open tabs keep theirs.
+    const images = Array.isArray(saved.customImages) ? saved.customImages : [];
+    let shown = images.includes(saved.customImage) ? saved.customImage : images[0];
+    if (saved.wallpaper === 'custom' && images.length > 1 && saved.rotation !== 'off') {
+      let step = Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 86400000);
+      if (saved.rotation === 'tab') {
+        step = (Number(localStorage.getItem('workspace.newtab.v2.rotation')) || 0) + 1;
+        localStorage.setItem('workspace.newtab.v2.rotation', String(step));
+        root.dataset.rotation = String(step);
+      }
+      shown = images[((step % images.length) + images.length) % images.length];
+    }
+    // Automatic theme: the accent extracted earlier from the wallpaper shown.
+    const key = saved.wallpaper === 'custom' ? `custom:${shown}` : saved.wallpaper;
+    const accent = saved.autoAccents?.[key];
     if (saved.theme === 'auto' && /^#[0-9a-f]{6}$/i.test(accent)) root.style.setProperty('--accent', accent);
     // Custom theme: the readable version of the picked color.
     const custom = saved.customAccent?.color;

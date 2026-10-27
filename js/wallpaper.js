@@ -1,7 +1,7 @@
-// Custom wallpaper storage: binary Blob in IndexedDB, never base64 in localStorage.
+// Custom wallpapers: binary Blobs in IndexedDB keyed by id, never base64 in localStorage.
+// The order and the selection live in the state (customImages, customImage).
 const DB_NAME = 'workspace-wallpaper'; // former project name, kept for existing data
 const STORE = 'images';
-const KEY = 'selected';
 
 let dbPromise = null;
 
@@ -36,9 +36,13 @@ async function run(mode, action) {
   });
 }
 
-export const getImage = () => run('readonly', (store) => store.get(KEY));
-export const putImage = (blob) => run('readwrite', (store) => store.put(blob, KEY));
-export const deleteImage = () => run('readwrite', (store) => store.delete(KEY));
+export const getImage = (id) => run('readonly', (store) => store.get(id));
+export const putImage = (id, blob) => run('readwrite', (store) => store.put(blob, id));
+export const deleteImage = (id) => run('readwrite', (store) => store.delete(id));
+export const clearImages = () => run('readwrite', (store) => store.clear());
+export const storedImageIds = () => run('readonly', (store) => store.getAllKeys());
+// Earlier versions kept a single image under the key "selected": it stays a valid id.
+export const newImageId = () => `img-${crypto.randomUUID().slice(0, 8)}`;
 
 /**
  * Shrinks the image to what the screen can show (keeping "cover" coverage) and re-encodes it as WebP.

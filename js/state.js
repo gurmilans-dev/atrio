@@ -22,6 +22,7 @@ import { readableAccent } from './color.js';
 import { DEFAULT_APP_FAVORITES, GOOGLE_APPS } from './google-apps.js';
 import { LANGUAGES } from './i18n.js';
 import { normalizeRecent } from './recent.js';
+import { ROTATIONS } from './rotation.js';
 import { HISTORY_DAYS } from './stats.js';
 import { durationFor, presetOf, readyTimer } from './timer.js';
 
@@ -53,12 +54,15 @@ export function createDefaultState() {
     theme: 'tokyo',
     wallpaper: 'workstation',
     wallpaperRev: 0,
+    customImages: [],
+    customImage: '',
+    rotation: 'off',
     shade: 25,
     blur: 0,
     mouseEffects: false,
     show: Object.fromEntries(SECTIONS.map((section) => [section, true])),
     clock: { hour12: false, seconds: false },
-    autoAccent: null,
+    autoAccents: {},
     customAccent: normalizeCustomAccent(null),
     name: '',
     preset: 25,
@@ -80,7 +84,8 @@ export function createDefaultState() {
   };
 }
 
-// Accent extracted from a wallpaper: { key: wallpaper id or "custom:<rev>", color: "#rrggbb" }.
+// Accents extracted from wallpapers: { [wallpaper id or "custom:<image id>"]: "#rrggbb" }. One per
+// image, so tabs showing different images (rotation) never overwrite each other's.
 // Google apps launcher: favorites are known app ids in the user's order.
 function normalizeApps(value) {
   const input = isObject(value) ? value : {};
@@ -95,9 +100,37 @@ function normalizeApps(value) {
   };
 }
 
-function normalizeAccent(value) {
-  if (!isObject(value) || typeof value.key !== 'string' || value.key.length > 64) return null;
-  return /^#[0-9a-f]{6}$/i.test(value.color) ? { key: value.key, color: value.color.toLowerCase() } : null;
+const validAccent = (key, color) =>
+  typeof key === 'string' && key.length <= 64 && /^#[0-9a-f]{6}$/i.test(color);
+
+/** Adds or refreshes one accent, keeping the most recent ones. */
+export function addAccent(accents, key, color) {
+  const next = { ...accents };
+  delete next[key];
+  next[key] = color.toLowerCase();
+  const keys = Object.keys(next);
+  for (const old of keys.slice(0, Math.max(0, keys.length - LIMITS.accents))) delete next[old];
+  return next;
+}
+
+// Saves before schema 6 had a single { key, color }.
+function normalizeAccents(value, legacy) {
+  let accents = {};
+  if (isObject(legacy) && validAccent(legacy.key, legacy.color)) {
+    accents = addAccent(accents, legacy.key, legacy.color);
+  }
+  if (isObject(value)) {
+    for (const [key, color] of Object.entries(value)) {
+      if (validAccent(key, color)) accents = addAccent(accents, key, color);
+    }
+  }
+  return accents;
+}
+
+function normalizeImages(value) {
+  if (!Array.isArray(value)) return [];
+  const ids = value.filter((id) => typeof id === 'string' && /^[\w-]{1,40}$/.test(id));
+  return [...new Set(ids)].slice(0, LIMITS.wallpapers);
 }
 
 // Color picked for the custom theme, and the readable version actually applied (boot.js uses it).
@@ -233,19 +266,23 @@ export function normalizeState(raw) {
           base.preset,
         );
   const customPreset = normalizeCustomPreset(input.customPreset);
+  const customImages = normalizeImages(input.customImages);
   return {
     schema: SCHEMA_VERSION,
     lang: pick(input.lang, LANGUAGES, base.lang),
     theme: pick(input.theme, Object.keys(THEMES), base.theme),
     wallpaper: pick(input.wallpaper, [...WALLPAPERS, CUSTOM_WALLPAPER], base.wallpaper),
     wallpaperRev: toInt(input.wallpaperRev, 0, Number.MAX_SAFE_INTEGER, 0),
+    customImages,
+    customImage: customImages.includes(input.customImage) ? input.customImage : (customImages[0] ?? ''),
+    rotation: pick(input.rotation, ROTATIONS, base.rotation),
     shade: toInt(input.shade, 0, 75, base.shade),
     blur: toInt(input.blur, 0, LIMITS.blur, base.blur),
     // Schema 5 made the mouse effects optional and off by default: older saves start with them off.
     mouseEffects: Number(input.schema) >= 5 ? bool(input.mouseEffects, base.mouseEffects) : false,
     show: Object.fromEntries(SECTIONS.map((section) => [section, bool(input.show?.[section], true)])),
     clock: { hour12: bool(input.clock?.hour12, false), seconds: bool(input.clock?.seconds, false) },
-    autoAccent: normalizeAccent(input.autoAccent),
+    autoAccents: normalizeAccents(input.autoAccents, input.autoAccent),
     customAccent: normalizeCustomAccent(input.customAccent),
     name: cleanText(input.name, LIMITS.name),
     preset,

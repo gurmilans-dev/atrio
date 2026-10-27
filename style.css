@@ -1458,6 +1458,12 @@ kbd {
   font: 22px var(--mono);
   border-bottom: 1px dashed var(--line);
 }
+.rotation-field {
+  margin-top: 16px;
+}
+.toggle-note.rotation-note {
+  margin: 5px 0 22px;
+}
 .pick-label {
   display: block;
   font: 11px var(--mono);
@@ -1469,11 +1475,17 @@ kbd {
   border-color: var(--accent);
   color: var(--accent);
 }
+/* Upload on its own line; "Remove this image" wraps under it, aligned right, when it does not fit. */
 .upload-row {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   align-items: center;
-  gap: 14px;
+  gap: 4px 14px;
   margin: 14px 0 23px;
+}
+.upload-row .upload-button {
+  flex: 1 1 100%;
 }
 .upload-button {
   flex: 1;

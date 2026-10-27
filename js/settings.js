@@ -16,7 +16,7 @@ import { readableAccent } from './color.js';
 import { $, $$, announce, button, el } from './dom.js';
 import { LANGUAGES, numberFormat, t, themeName, wallpaperName } from './i18n.js';
 import { appVersion, hasOrigins, removeOrigins, requestOrigins } from './platform.js';
-import { loadCustomWallpaper, previewAccent, previewBlur, previewShade } from './appearance.js';
+import { accentKey, previewAccent, previewBlur, previewShade } from './appearance.js';
 import { applyPreset, syncAlarm } from './focus.js';
 import { createDefaultState, normalizeState } from './state.js';
 import { dayKey } from './stats.js';
@@ -25,9 +25,11 @@ import { SUGGEST_ORIGINS } from './suggest.js';
 import { presetOf, readyTimer } from './timer.js';
 import {
   blobToDataURL,
+  clearImages,
   dataURLToBlob,
   deleteImage,
   getImage,
+  newImageId,
   prepareWallpaper,
   putImage,
 } from './wallpaper.js';
@@ -35,7 +37,9 @@ import {
 const dialog = () => $('settings');
 const formatMB = (bytes) =>
   `${numberFormat({ minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(bytes / 1024 / 1024)} MB`;
-let hasCustomImage = false;
+let builtinPicks = [];
+let renderedImages = '';
+const thumbs = new Map(); // image id -> object URL, created while the settings are open
 
 // Wallpaper sliders: state key -> live preview and label (#<key>-range, #<key>-number).
 const RANGES = {
@@ -48,7 +52,7 @@ export const isSettingsOpen = () => dialog().open;
 /** @param {{focus?: string, scrollTo?: string}} [options] element ids */
 export function openSettings({ focus, scrollTo } = {}) {
   if (!dialog().open) dialog().showModal();
-  refreshCustomPick();
+  refreshThumbs();
   if (scrollTo) $(scrollTo)?.scrollIntoView({ block: 'start' });
   if (focus) $(focus)?.focus();
 }
@@ -64,8 +68,52 @@ function pickButton(className, dataKey, value) {
   return node;
 }
 
+// The built-in wallpapers, then one tile per image of the user's, then "Add".
+function renderWallpaperPicks(state) {
+  const key = state.customImages.join();
+  if (key === renderedImages && $('wallpaper-picks').childElementCount) return;
+  renderedImages = key;
+  const own = state.customImages.map((id, index) => {
+    const node = pickButton('wallpaper-pick custom-pick', 'image', id);
+    const image = el('img');
+    image.alt = '';
+    image.dataset.thumb = id;
+    if (thumbs.has(id)) image.src = thumbs.get(id);
+    node.append(image, el('span', 'pick-label', t('wallpaper.customN', { n: index + 1 })));
+    return node;
+  });
+  const add = button('wallpaper-pick add-pick');
+  add.dataset.add = '';
+  add.append(el('span', 'pick-placeholder', '+'), el('span', 'pick-label', t('wallpaper.add')));
+  add.hidden = state.customImages.length >= LIMITS.wallpapers;
+  $('wallpaper-picks').replaceChildren(...builtinPicks, ...own, add);
+  if (dialog().open) refreshThumbs();
+}
+
+// Thumbnails are object URLs of the stored images: made when the settings open, freed when the
+// image goes away.
+function refreshThumbs() {
+  const { customImages } = getState();
+  for (const [id, url] of thumbs) {
+    if (customImages.includes(id)) continue;
+    URL.revokeObjectURL(url);
+    thumbs.delete(id);
+  }
+  for (const id of customImages) {
+    if (thumbs.has(id)) continue;
+    getImage(id)
+      .then((blob) => {
+        if (!blob || thumbs.has(id)) return;
+        thumbs.set(id, URL.createObjectURL(blob));
+        const image = $('wallpaper-picks').querySelector(`[data-thumb="${id}"]`);
+        if (image) image.src = thumbs.get(id);
+      })
+      .catch(() => {});
+  }
+}
+
 function buildPicks() {
-  const wallpapers = WALLPAPERS.map((id) => {
+  builtinPicks = WALLPAPERS.map((id) => {
     const node = pickButton('wallpaper-pick', 'wallpaper', id);
     const image = el('img');
     image.src = wallpaperSrc(id);
@@ -74,15 +122,6 @@ function buildPicks() {
     node.append(image, el('span', 'pick-label', wallpaperName(id)));
     return node;
   });
-  const custom = pickButton('wallpaper-pick custom-pick', 'wallpaper', CUSTOM_WALLPAPER);
-  const thumb = el('img');
-  thumb.id = 'custom-thumb';
-  thumb.alt = '';
-  thumb.hidden = true;
-  const placeholder = el('span', 'pick-placeholder', '+');
-  placeholder.id = 'custom-placeholder';
-  custom.append(thumb, placeholder, el('span', 'pick-label', wallpaperName(CUSTOM_WALLPAPER)));
-  $('wallpaper-picks').replaceChildren(...wallpapers, custom);
 
   $('theme-picks').replaceChildren(
     ...Object.entries(THEMES).map(([id, theme]) => {
@@ -141,7 +180,12 @@ function render(state) {
       node.setAttribute('aria-pressed', String(active));
     }
   };
+  renderWallpaperPicks(state);
   mark('[data-wallpaper]', 'wallpaper', state.wallpaper);
+  mark('[data-image]', 'image', state.wallpaper === CUSTOM_WALLPAPER ? state.customImage : null);
+  $('remove-wallpaper').hidden = state.wallpaper !== CUSTOM_WALLPAPER || !state.customImage;
+  $('rotation-select').value = state.rotation;
+  $('rotation-select').disabled = state.customImages.length < 2;
   mark('[data-theme-choice]', 'themeChoice', state.theme);
   mark('[data-preset]', 'preset', state.preset);
   for (const [key, { format }] of Object.entries(RANGES)) {
@@ -171,25 +215,15 @@ function render(state) {
   $('language-select').value = state.lang;
   if (document.activeElement !== $('name-input')) $('name-input').value = state.name;
   const swatch = $('auto-swatch');
-  if (state.autoAccent) swatch.style.setProperty('--sample', state.autoAccent.color);
-  else swatch.style.removeProperty('--sample');
+  const autoKey = accentKey(state);
+  if (autoKey && Object.hasOwn(state.autoAccents, autoKey)) {
+    swatch.style.setProperty('--sample', state.autoAccents[autoKey]);
+  } else swatch.style.removeProperty('--sample');
   $('custom-swatch').style.setProperty('--sample', state.customAccent.color);
   // On the light theme the veil lightens the wallpaper instead of darkening it.
   $('shade-label').textContent = t(state.theme === 'light' ? 'settings.lighten' : 'settings.dim');
   $('accent-row').hidden = state.theme !== CUSTOM_THEME;
   if (document.activeElement !== $('accent-input')) $('accent-input').value = state.customAccent.picked;
-  if (dialog().open) refreshCustomPick();
-}
-
-function refreshCustomPick() {
-  loadCustomWallpaper().then((url) => {
-    hasCustomImage = Boolean(url);
-    const thumb = $('custom-thumb');
-    if (url && thumb.src !== url) thumb.src = url;
-    thumb.hidden = !url;
-    $('custom-placeholder').hidden = Boolean(url);
-    $('remove-wallpaper').hidden = !url;
-  });
 }
 
 async function uploadWallpaper(file) {
@@ -201,33 +235,44 @@ async function uploadWallpaper(file) {
     announce(t('wallpaper.tooBig', { size: formatMB(LIMITS.uploadBytes) }));
     return;
   }
+  if (getState().customImages.length >= LIMITS.wallpapers) {
+    announce(t('wallpaper.max', { n: LIMITS.wallpapers }));
+    return;
+  }
   announce(t('wallpaper.optimizing'));
   try {
     const blob = await prepareWallpaper(file);
-    await putImage(blob);
+    const id = newImageId();
+    await putImage(id, blob);
     update((state) => {
+      state.customImages = [...state.customImages, id];
+      state.customImage = id;
       state.wallpaper = CUSTOM_WALLPAPER;
       state.wallpaperRev = Date.now();
     });
-    refreshCustomPick();
     announce(t('wallpaper.updated', { size: formatMB(blob.size) }));
   } catch {
     announce(t('wallpaper.failed'));
   }
 }
 
+// Removes the selected image of the user's; the next one (or a built-in wallpaper) takes its place.
 async function removeWallpaper() {
+  const id = getState().customImage;
+  if (!id) return;
   try {
-    await deleteImage();
+    await deleteImage(id);
   } catch {
     announce(t('wallpaper.removeFailed'));
     return;
   }
   update((state) => {
+    const index = state.customImages.indexOf(id);
+    state.customImages = state.customImages.filter((item) => item !== id);
+    state.customImage = state.customImages[Math.min(index, state.customImages.length - 1)] ?? '';
+    if (!state.customImages.length && state.wallpaper === CUSTOM_WALLPAPER) state.wallpaper = 'workstation';
     state.wallpaperRev = Date.now();
-    if (state.wallpaper === CUSTOM_WALLPAPER) state.wallpaper = 'workstation';
   });
-  refreshCustomPick();
   announce(t('wallpaper.removed'));
 }
 
@@ -235,8 +280,12 @@ async function exportData() {
   const state = { ...getState() };
   delete state.timer; // a running session is not worth restoring
   const payload = { app: 'atrio', version: appVersion(), exportedAt: new Date().toISOString(), state };
-  const image = await getImage().catch(() => null);
-  if (image) payload.wallpaperImage = await blobToDataURL(image);
+  const images = [];
+  for (const id of state.customImages) {
+    const blob = await getImage(id).catch(() => null);
+    if (blob) images.push({ id, image: await blobToDataURL(blob) });
+  }
+  if (images.length) payload.wallpaperImages = images;
 
   const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
   const link = el('a');
@@ -274,27 +323,46 @@ async function importData(file) {
 
   const next = normalizeState(raw);
   next.timer = readyTimer('focus', presetOf(next));
+  // The backup's images replace the current ones: wallpaperImages (several) since the rotation,
+  // wallpaperImage (one, kept as "selected") before.
+  const images = Array.isArray(payload.wallpaperImages)
+    ? payload.wallpaperImages
+    : typeof payload.wallpaperImage === 'string'
+      ? [{ id: 'selected', image: payload.wallpaperImage }]
+      : [];
   let imageFailed = false;
-  if (typeof payload.wallpaperImage === 'string' && payload.wallpaperImage.startsWith('data:image/')) {
+  const stored = [];
+  await clearImages().catch(() => {});
+  for (const item of images.slice(0, LIMITS.wallpapers)) {
+    const valid = typeof item?.image === 'string' && item.image.startsWith('data:image/');
+    const id =
+      typeof item?.id === 'string' && /^[\w-]{1,40}$/.test(item.id) && !stored.includes(item.id)
+        ? item.id
+        : newImageId();
     try {
-      await putImage(await prepareWallpaper(await dataURLToBlob(payload.wallpaperImage)));
-      next.wallpaperRev = Date.now();
+      if (!valid) throw new Error('not an image');
+      await putImage(id, await prepareWallpaper(await dataURLToBlob(item.image)));
+      stored.push(id);
     } catch {
       imageFailed = true;
     }
   }
-  if (next.wallpaper === CUSTOM_WALLPAPER && (imageFailed || !(await getImage().catch(() => null)))) {
-    next.wallpaper = 'workstation';
-  }
+  // The backup's order for the images it listed, then any other image it carried.
+  next.customImages = [
+    ...next.customImages.filter((id) => stored.includes(id)),
+    ...stored.filter((id) => !next.customImages.includes(id)),
+  ];
+  if (!next.customImages.includes(next.customImage)) next.customImage = next.customImages[0] ?? '';
+  if (next.wallpaper === CUSTOM_WALLPAPER && !next.customImages.length) next.wallpaper = 'workstation';
+  next.wallpaperRev = Date.now();
   replaceState(next);
   syncAlarm();
-  refreshCustomPick();
   announce(t(imageFailed ? 'backup.importedNoImage' : 'backup.imported'));
 }
 
 async function resetAll() {
   if (!confirm(t('reset.confirm'))) return;
-  await deleteImage().catch(() => {});
+  await clearImages().catch(() => {});
   const next = createDefaultState();
   next.wallpaperRev = Date.now();
   replaceState(next);
@@ -334,14 +402,24 @@ export function initSettings() {
   $('close-settings').addEventListener('click', closeSettings);
 
   $('wallpaper-picks').addEventListener('click', (event) => {
-    const pick = event.target.closest('[data-wallpaper]');
+    const pick = event.target.closest('[data-wallpaper], [data-image], [data-add]');
     if (!pick) return;
-    if (pick.dataset.wallpaper === CUSTOM_WALLPAPER && !hasCustomImage) {
+    if ('add' in pick.dataset) {
       chooseWallpaper();
       return;
     }
     update((state) => {
-      state.wallpaper = pick.dataset.wallpaper;
+      if (pick.dataset.image) {
+        state.wallpaper = CUSTOM_WALLPAPER;
+        state.customImage = pick.dataset.image;
+      } else {
+        state.wallpaper = pick.dataset.wallpaper;
+      }
+    });
+  });
+  $('rotation-select').addEventListener('change', (event) => {
+    update((state) => {
+      state.rotation = event.target.value;
     });
   });
   $('theme-picks').addEventListener('click', (event) => {

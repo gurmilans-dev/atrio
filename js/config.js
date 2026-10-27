@@ -3,6 +3,8 @@
 
 // Keys keep the project's former name (Workspace) so existing data still loads.
 export const STORAGE_KEY = 'workspace.newtab.v2';
+// Per-tab counter for the wallpaper rotation, outside the state so other tabs keep their image.
+export const ROTATION_KEY = 'workspace.newtab.v2.rotation';
 export const SCHEMA_VERSION = 5;
 
 // "auto" takes its accent from the wallpaper (js/color.js), "custom" from a color picker; their
@@ -87,6 +89,8 @@ export const LIMITS = {
   name: 24,
   notes: 10000,
   prefixes: 20,
+  wallpapers: 8,
+  accents: 16,
   recent: 30,
   recentText: 200,
   uploadBytes: 25 * 1024 * 1024,

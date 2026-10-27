@@ -90,14 +90,35 @@ describe('normalizeState', () => {
     assert.equal('parallax' in normalizeState({ parallax: true }), false);
   });
 
-  test('auto accent must be a hex color with a key', () => {
-    assert.deepEqual(normalizeState({ autoAccent: { key: 'city', color: '#AABBCC' } }).autoAccent, {
-      key: 'city',
-      color: '#aabbcc',
+  test('auto accents: one hex color per wallpaper, the single one of older saves kept', () => {
+    assert.deepEqual(normalizeState({ autoAccent: { key: 'city', color: '#AABBCC' } }).autoAccents, {
+      city: '#aabbcc',
     });
-    assert.equal(normalizeState({ autoAccent: { key: 'city', color: 'red; x' } }).autoAccent, null);
-    assert.equal(normalizeState({ autoAccent: 'nope' }).autoAccent, null);
+    const accents = { city: '#112233', 'custom:img-1': '#445566', bad: 'red; x' };
+    assert.deepEqual(normalizeState({ autoAccents: accents }).autoAccents, {
+      city: '#112233',
+      'custom:img-1': '#445566',
+    });
+    assert.deepEqual(normalizeState({ autoAccents: 'nope', autoAccent: 'nope' }).autoAccents, {});
+    const many = Object.fromEntries(Array.from({ length: 30 }, (_, i) => [`k${i}`, '#000000']));
+    const kept = Object.keys(normalizeState({ autoAccents: many }).autoAccents);
+    assert.deepEqual([kept.length, kept[0], kept.at(-1)], [LIMITS.accents, 'k14', 'k29']); // the latest ones
     assert.equal(normalizeState({ theme: 'auto' }).theme, 'auto');
+  });
+
+  test('own wallpapers: valid unique ids, a selection among them, a known rotation', () => {
+    const state = normalizeState({
+      customImages: ['selected', 'img-1', 'img-1', 'bad id!', 7, 'img-2'],
+      customImage: 'img-9',
+      rotation: 'hourly',
+    });
+    assert.deepEqual(state.customImages, ['selected', 'img-1', 'img-2']);
+    assert.equal(state.customImage, 'selected');
+    assert.equal(state.rotation, 'off');
+    const chosen = normalizeState({ customImages: ['a', 'b'], customImage: 'b', rotation: 'tab' });
+    assert.deepEqual([chosen.customImage, chosen.rotation], ['b', 'tab']);
+    const ids = Array.from({ length: 12 }, (_, i) => `img-${i}`);
+    assert.equal(normalizeState({ customImages: ids }).customImages.length, LIMITS.wallpapers);
   });
 
   test('focus history is validated and seeded from older data', () => {

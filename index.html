@@ -364,6 +364,15 @@
                 hidden
               ></button>
             </div>
+            <div class="field rotation-field">
+              <label for="rotation-select" data-i18n="settings.rotation"></label>
+              <select id="rotation-select" aria-describedby="rotation-note">
+                <option value="off" data-i18n="rotation.off"></option>
+                <option value="daily" data-i18n="rotation.daily"></option>
+                <option value="tab" data-i18n="rotation.tab"></option>
+              </select>
+            </div>
+            <p class="toggle-note rotation-note" id="rotation-note" data-i18n="settings.rotationNote"></p>
             <input
               type="file"
               id="wallpaper-upload"

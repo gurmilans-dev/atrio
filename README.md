@@ -56,12 +56,12 @@ network requests unless you turn on online search suggestions.
 - **Google apps launcher.** 24 apps with editable favorites (drag, or `Ctrl + ←/→`), and a switch for people signed in
   to several Google accounts.
 - **Make it yours.** Six themes: three dark ones, a light one, one that takes its accent color from your wallpaper,
-  one with any color you pick (adjusted if needed to stay readable); your own wallpaper
-  (downscaled to WebP on your machine); dim and blur; optional mouse effects (link borders that light up near the
-  cursor, a slight lift, wallpaper parallax), off by default. Hide the parts you do not use (greeting, clock, links,
-  focus panel, heatmap, tasks): with both side panels off the page becomes one calm, centered column. The clock can be
-  24- or 12-hour, with or without seconds.
-- **Keyboard everywhere** and **backups** to a JSON file, wallpaper included.
+  one with any color you pick (adjusted if needed to stay readable). Up to eight wallpapers of your own (downscaled to
+  WebP on your machine), rotating every day or with every new tab; dim and blur. Hide the parts you do not use
+  (greeting, clock, date, links, focus panel, heatmap, tasks): with both side panels off the page becomes one calm,
+  centered column. A 24- or 12-hour clock, with or without seconds. Optional mouse effects (link borders that light
+  up near the cursor, a slight lift, wallpaper parallax), off by default.
+- **Keyboard everywhere** and **backups** to a JSON file, your wallpapers included.
 
 | Developer tools        | Google apps         | Mocha theme and notes |
 | ---------------------- | ------------------- | --------------------- |
