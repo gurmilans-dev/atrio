@@ -174,6 +174,8 @@ function render(state) {
   if (state.autoAccent) swatch.style.setProperty('--sample', state.autoAccent.color);
   else swatch.style.removeProperty('--sample');
   $('custom-swatch').style.setProperty('--sample', state.customAccent.color);
+  // On the light theme the veil lightens the wallpaper instead of darkening it.
+  $('shade-label').textContent = t(state.theme === 'light' ? 'settings.lighten' : 'settings.dim');
   $('accent-row').hidden = state.theme !== CUSTOM_THEME;
   if (document.activeElement !== $('accent-input')) $('accent-input').value = state.customAccent.picked;
   if (dialog().open) refreshCustomPick();

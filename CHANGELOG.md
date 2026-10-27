@@ -15,6 +15,8 @@
 - **Clock options** (Settings → Page): 24- or 12-hour with AM/PM, seconds, and the date can be hidden. Seconds and
   AM/PM sit beside the big digits, smaller, so the layout keeps its shape; with seconds shown the clock updates once
   a second while the tab is visible (about 0.15% of a CPU core).
+- **Light theme**: dark text on frosted white panels, over a light veil strong enough for the night wallpapers too;
+  the dim slider becomes a lighten slider. Native controls and scrollbars turn light as well.
 - **Custom theme with any accent color** (Settings → Appearance), with a live preview while the picker moves. Hue and
   saturation are kept; a color too dark or too light for the dark theme is adjusted, by perceived luminance, just
   enough for text in it and dark text on it to stay readable. Applied before the first paint.

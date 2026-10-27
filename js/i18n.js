@@ -220,6 +220,8 @@ const it = {
   'wallpaper.custom': 'Personale',
   'theme.auto': 'Dallo sfondo',
   'theme.custom': 'Personalizzato',
+  'theme.light': 'Chiaro',
+  'settings.lighten': 'Schiarimento',
   'settings.accent': 'Colore d’accento',
   'settings.accentNote':
     'Un colore molto scuro o molto chiaro viene regolato quanto basta per restare leggibile sul tema scuro.',
@@ -570,6 +572,8 @@ const en = {
   'wallpaper.custom': 'Yours',
   'theme.auto': 'From wallpaper',
   'theme.custom': 'Custom',
+  'theme.light': 'Light',
+  'settings.lighten': 'Lighten',
   'settings.accent': 'Accent color',
   'settings.accentNote':
     'A very dark or very light color is adjusted just enough to stay readable on the dark theme.',

@@ -161,11 +161,11 @@ try {
 
   await check('themes recolor the whole interface', async () => {
     const colors = new Set();
-    for (const theme of ['mocha', 'matrix', 'tokyo']) {
+    for (const theme of ['mocha', 'matrix', 'light', 'tokyo']) {
       await a.eval(settings(`document.querySelector('[data-theme-choice="${theme}"]').click()`));
       colors.add(await a.eval(`getComputedStyle(document.querySelector('.link-icon')).borderColor`));
     }
-    assert.equal(colors.size, 3);
+    assert.equal(colors.size, 4);
   });
 
   await check('links: edit, move, remove with undo, URL without scheme', async () => {

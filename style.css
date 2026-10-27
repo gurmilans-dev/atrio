@@ -19,6 +19,8 @@
   --text-muted: #8999b8;
   --danger: #f7768e;
   --shade-rgb: 4 8 19;
+  /* Subtle overlays (hover, empty cells): white on dark themes, black on the light one. */
+  --tint: 255 255 255;
   --accent-soft: color-mix(in srgb, var(--accent) 15%, transparent);
   --accent-line: color-mix(in srgb, var(--accent) 62%, transparent);
   --danger-line: color-mix(in srgb, var(--danger) 45%, transparent);
@@ -84,6 +86,28 @@
   --text-muted: #8c91a1;
   --danger: #ff7b8a;
   --shade-rgb: 6 7 10;
+}
+
+/* Light: dark text on frosted white surfaces. The veil over the wallpaper is light and stronger
+   than the dark themes' one (see .shade below), so text stays readable on night photos too. */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --accent: #3157d5;
+  --on-accent: #ffffff;
+  --bg: #eef1f7;
+  --panel: rgb(255 255 255 / 0.8);
+  --panel-hover: rgb(255 255 255 / 0.93);
+  --field: rgb(255 255 255 / 0.88);
+  --drawer: #f6f7fb;
+  --toast: #ffffff;
+  --line: rgb(20 30 60 / 0.15);
+  --line-soft: rgb(20 30 60 / 0.08);
+  --text: #141927;
+  --text-secondary: #3f4860;
+  --text-muted: #5f6982;
+  --danger: #c4264a;
+  --shade-rgb: 241 243 248;
+  --tint: 0 0 0;
 }
 
 /* The custom image is set inline by js/appearance.js once decoded. */
@@ -175,6 +199,17 @@ kbd {
       rgb(var(--shade-rgb) / 0.59) 0%,
       rgb(var(--shade-rgb) / 0.36) 46%,
       rgb(var(--shade-rgb) / 0.3) 100%
+    ),
+    rgb(var(--shade-rgb) / var(--shade));
+}
+/* Light theme: a stronger frosted veil, so dark text reads on any wallpaper, night photos included. */
+:root[data-theme='light'] .shade {
+  background:
+    linear-gradient(
+      115deg,
+      rgb(var(--shade-rgb) / 0.84) 0%,
+      rgb(var(--shade-rgb) / 0.68) 46%,
+      rgb(var(--shade-rgb) / 0.6) 100%
     ),
     rgb(var(--shade-rgb) / var(--shade));
 }
@@ -921,7 +956,7 @@ kbd {
   letter-spacing: -0.4px;
 }
 .link-icon.has-favicon {
-  background: rgb(255 255 255 / 0.06);
+  background: rgb(var(--tint) / 0.06);
   border-color: var(--line);
 }
 .link-icon img {
@@ -1138,7 +1173,7 @@ kbd {
 .outline-button {
   border: 1px solid var(--line);
   color: var(--text-secondary);
-  background: rgb(255 255 255 / 0.025);
+  background: rgb(var(--tint) / 0.025);
 }
 .outline-button:hover {
   color: var(--text);
@@ -1484,7 +1519,7 @@ kbd {
 }
 .theme-pick,
 .preset-pick {
-  background: rgb(255 255 255 / 0.025);
+  background: rgb(var(--tint) / 0.025);
   border: 1px solid var(--line);
   color: var(--text-secondary);
   border-radius: 7px;
@@ -1608,7 +1643,7 @@ kbd {
 .icon-action:hover:not(:disabled),
 .text-action:hover {
   color: var(--text);
-  background: rgb(255 255 255 / 0.05);
+  background: rgb(var(--tint) / 0.05);
 }
 .danger,
 .text-action.danger {

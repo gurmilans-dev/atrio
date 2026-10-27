@@ -55,8 +55,8 @@ network requests unless you turn on online search suggestions.
 - **Tasks and notes.** Undo for deletions; a plain-text scratchpad that saves while you type.
 - **Google apps launcher.** 24 apps with editable favorites (drag, or `Ctrl + ←/→`), and a switch for people signed in
   to several Google accounts.
-- **Make it yours.** Five themes: three ready-made, one that takes its accent color from your wallpaper, one with any
-  color you pick (adjusted if needed to stay readable); your own wallpaper
+- **Make it yours.** Six themes: three dark ones, a light one, one that takes its accent color from your wallpaper,
+  one with any color you pick (adjusted if needed to stay readable); your own wallpaper
   (downscaled to WebP on your machine); dim and blur; optional mouse effects (link borders that light up near the
   cursor, a slight lift, wallpaper parallax), off by default. Hide the parts you do not use (greeting, clock, links,
   focus panel, heatmap, tasks): with both side panels off the page becomes one calm, centered column. The clock can be

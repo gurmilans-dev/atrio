@@ -6,7 +6,7 @@ export const STORAGE_KEY = 'workspace.newtab.v2';
 export const SCHEMA_VERSION = 5;
 
 // "auto" takes its accent from the wallpaper (js/color.js), "custom" from a color picker; their
-// swatches are computed and their names translated (themeName in js/i18n.js).
+// swatches are computed. Themes without a label have their name translated (themeName in js/i18n.js).
 export const AUTO_THEME = 'auto';
 export const CUSTOM_THEME = 'custom';
 export const DEFAULT_CUSTOM_ACCENT = '#7aa2f7';
@@ -14,6 +14,7 @@ export const THEMES = {
   tokyo: { label: 'Tokyo Night', swatch: '#7aa2f7' },
   mocha: { label: 'Mocha', swatch: '#cba6f7' },
   matrix: { label: 'Terminal', swatch: '#69dbb0' },
+  light: { label: null, swatch: 'linear-gradient(135deg, #f4f6fb 50%, #3157d5 50%)' },
   [AUTO_THEME]: { label: null, swatch: null },
   [CUSTOM_THEME]: { label: null, swatch: null },
 };
