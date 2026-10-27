@@ -62,6 +62,8 @@ export const LIMITS = {
   name: 24,
   notes: 10000,
   prefixes: 20,
+  recent: 30,
+  recentText: 200,
   uploadBytes: 25 * 1024 * 1024,
   importBytes: 40 * 1024 * 1024,
 };

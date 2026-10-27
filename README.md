@@ -32,6 +32,8 @@ no tracking.
   `npm zod`; also `gh`, `mdn`, `so`, `py`, `ciu`, `dd`) and, typed alone, open it (`yt` → YouTube). Add your own
   in Settings with `%s` where the text goes: `jira 123` → your Jira ticket, `pr 42` → a pull request of your repo.
   `chrome://` pages work, `Shift + Enter` always searches.
+- **Recent searches** come back as you type, and on an empty box, like in the address bar; `Shift + Delete`
+  forgets one. They stay in your browser and can be turned off.
 - **Command palette.** While you type, matching links, Google apps and commands appear under the box. `>` (or
   `Ctrl + Shift + P`) lists every command; `+ some text` adds a task without leaving the search.
 - **Developer tools in the search box**, all local; `Enter` copies the result:
@@ -81,6 +83,7 @@ again, then import the backup. From then on the ID no longer depends on where th
 | `>` or `Ctrl + Shift + P` | Command palette                          |
 | `↑` `↓` `Enter` `Esc`     | Move through suggestions, run, close     |
 | `Shift + Enter`           | Search even if the text looks like a URL |
+| `Shift + Delete`          | Forget the highlighted recent search     |
 | `1` … `9`                 | Open quick link 1–9                      |
 | `G`                       | Google apps                              |
 | `T` / `N`                 | New task / notes                         |

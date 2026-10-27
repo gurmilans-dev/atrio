@@ -131,6 +131,7 @@ const KEYS = {
   ArrowUp: ['ArrowUp', 38],
   ArrowLeft: ['ArrowLeft', 37],
   ArrowRight: ['ArrowRight', 39],
+  Delete: ['Delete', 46],
   '/': ['Slash', 191, '/'],
   '>': ['IntlBackslash', 226, '>'],
 };

@@ -15,6 +15,7 @@ import {
 } from './config.js';
 import { DEFAULT_APP_FAVORITES, GOOGLE_APPS } from './google-apps.js';
 import { LANGUAGES } from './i18n.js';
+import { normalizeRecent } from './recent.js';
 import { HISTORY_DAYS } from './stats.js';
 import { durationFor, readyTimer } from './timer.js';
 
@@ -57,6 +58,8 @@ export function createDefaultState() {
     notify: true,
     links: DEFAULT_LINKS.map((link) => ({ id: newId(), ...link })),
     prefixes: [],
+    rememberSearches: true,
+    recent: [],
     tasks: [],
     notes: '',
     panelTab: 'tasks',
@@ -222,6 +225,8 @@ export function normalizeState(raw) {
     notify: bool(input.notify, base.notify),
     links: Array.isArray(input.links) ? normalizeLinks(input.links) : base.links,
     prefixes: Array.isArray(input.prefixes) ? normalizePrefixes(input.prefixes) : [],
+    rememberSearches: bool(input.rememberSearches, base.rememberSearches),
+    recent: input.rememberSearches === false ? [] : normalizeRecent(input.recent),
     tasks: Array.isArray(input.tasks) ? normalizeTasks(input.tasks) : [],
     notes: typeof input.notes === 'string' ? input.notes.slice(0, LIMITS.notes) : '',
     panelTab: input.panelTab === 'notes' ? 'notes' : 'tasks',

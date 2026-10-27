@@ -751,6 +751,55 @@ try {
     );
   });
 
+  await check('recent searches: remembered, offered on an empty box, Shift+Delete forgets', async () => {
+    // A personal prefix pointing back to this page runs a real search without leaving the test server.
+    const origin = await a.eval('location.origin');
+    await a.eval(
+      settings(`
+        document.getElementById('prefix-key').value = 'loc';
+        document.getElementById('prefix-url').value = ${JSON.stringify(`${origin}/index.html?q=%s`)};
+        document.getElementById('prefix-form').requestSubmit()`),
+    );
+    await blur();
+    await a.press('/');
+    await a.type('loc hello world');
+    await a.press('Enter');
+    await sleep(1500); // the "search" reloads this page
+    const saved = await a.eval(`({ recent: ${STATE}.recent, url: location.search })`);
+    const read = () =>
+      a.eval(`({
+        open: !document.getElementById('search-results').hidden,
+        rows: ${labels('#search-results .result-label')},
+        active: document.querySelectorAll('#search-results .result.active').length,
+      })`);
+    await blur();
+    await a.press('/');
+    const empty = await read();
+    await a.press('Enter'); // nothing preselected: nothing runs
+    const stillHere = await a.eval('location.search');
+    await a.type('hel');
+    const typed = await read();
+    await a.press('ArrowDown');
+    await a.press('Delete', { shift: true });
+    const after = await a.eval(`${STATE}.recent.length`);
+    await a.eval(clearSearch);
+    await a.eval(
+      settings(
+        `document.querySelector('#settings-prefixes [data-key="loc"] [data-action="remove"]').click()`,
+      ),
+    );
+    assert.deepEqual(
+      { saved, empty, stillHere, typed: typed.rows.slice(0, 2), after },
+      {
+        saved: { recent: ['loc hello world'], url: '?q=hello%20world' },
+        empty: { open: true, rows: ['loc hello world'], active: 0 },
+        stillHere: '?q=hello%20world',
+        typed: ['hel', 'loc hello world'],
+        after: 0,
+      },
+    );
+  });
+
   await check('language: English from settings, every text translated, back to Italian', async () => {
     const before = await a.eval(`document.documentElement.lang`);
     await a.eval(

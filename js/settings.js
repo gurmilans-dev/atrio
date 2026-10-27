@@ -125,6 +125,8 @@ function render(state) {
   $('notify-toggle').checked = state.notify;
   $('mouse-effects-toggle').checked = state.mouseEffects;
   $('apps-toggle').checked = state.apps.visible;
+  $('recent-toggle').checked = state.rememberSearches;
+  $('clear-recent').hidden = state.recent.length === 0;
   $('language-select').value = state.lang;
   if (document.activeElement !== $('name-input')) $('name-input').value = state.name;
   const swatch = $('auto-swatch');
@@ -341,6 +343,19 @@ export function initSettings() {
     update((state) => {
       state.lang = event.target.value;
     });
+  });
+  $('recent-toggle').addEventListener('change', (event) => {
+    update((state) => {
+      state.rememberSearches = event.target.checked;
+      if (!state.rememberSearches) state.recent = []; // turning it off also forgets what was kept
+    });
+  });
+  $('clear-recent').addEventListener('click', () => {
+    update((state) => {
+      state.recent = [];
+    });
+    $('recent-toggle').focus(); // the button hides itself
+    announce(t('recent.cleared'));
   });
   $('apps-toggle').addEventListener('change', (event) => {
     update((state) => {

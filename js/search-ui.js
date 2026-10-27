@@ -1,6 +1,7 @@
-// Search box + command palette. Typing shows developer tools, matching links, Google apps and
-// commands under the box; ">" lists only commands, "+ text" adds a task. Enter runs the
-// highlighted row (for tools: copies the result).
+// Search box + command palette. Typing shows developer tools, recent searches, matching links,
+// Google apps and commands under the box; ">" lists only commands, "+ text" adds a task. Enter
+// runs the highlighted row (for tools: copies the result). An empty box shows recent searches,
+// with none preselected.
 import { appIcon } from './apps.js';
 import { getCommands } from './commands.js';
 import { BANGS, ENGINES } from './config.js';
@@ -12,6 +13,7 @@ import { getLanguage, t } from './i18n.js';
 import { hostOf, linkIcon } from './links.js';
 import { openBrowserPage } from './platform.js';
 import { prefixTargets } from './prefixes.js';
+import { addRecent, matchRecent } from './recent.js';
 import { resolveInput } from './search.js';
 import { getState, subscribe, update } from './store.js';
 import { addTask } from './tasks.js';
@@ -24,6 +26,7 @@ const ICON_PATHS = {
   task: 'M12 6v12M6 12h12',
   copy: 'M9 9h10v10H9zM15 9V5H5v10h4',
   error: 'M12 7v6m0 4h.01',
+  recent: 'M12 7.5V12l3 2M20.5 12a8.5 8.5 0 1 1-17 0 8.5 8.5 0 0 1 17 0z',
 };
 let items = [];
 let active = 0;
@@ -65,10 +68,31 @@ async function navigate(result) {
   if (!opened) announce(t('toast.chromeOnly'));
 }
 
-function go(force) {
+// What runs from the box is remembered (unless turned off in the settings) to be offered again.
+function remember(text) {
+  if (!getState().rememberSearches) return;
+  update((state) => {
+    state.recent = addRecent(state.recent, text);
+  });
+}
+
+function forget(text) {
+  update((state) => {
+    state.recent = state.recent.filter((item) => item !== text);
+  });
+  announce(t('recent.removed'));
+}
+
+function runText(text, force = false) {
   const state = getState();
-  const result = resolveInput(input().value, state.engine, { force, prefixes: prefixTargets(state) });
-  if (result) navigate(result);
+  const result = resolveInput(text, state.engine, { force, prefixes: prefixTargets(state) });
+  if (!result) return;
+  remember(text);
+  navigate(result);
+}
+
+function go(force) {
+  runText(input().value, force);
 }
 
 function rank(list, toText, query, max, subsequence) {
@@ -117,26 +141,34 @@ const commandItem = (command) => ({
   run: command.run,
 });
 
-function primaryItem(result) {
+function primaryItem(result, text) {
+  const run = () => runText(text);
   if (result.kind === 'search') {
     return {
       kind: 'search',
       label: result.query,
       detail: t('result.searchOn', { target: result.label }),
-      run: () => navigate(result),
+      run,
     };
   }
   return {
     kind: 'url',
     label: result.label ?? result.url.replace(/^https?:\/\//, '').replace(/\/$/, ''),
     detail: t(result.kind === 'browser' ? 'result.chromePage' : 'result.openSite'),
-    run: () => navigate(result),
+    run,
   };
 }
 
+const recentItem = (text) => ({
+  kind: 'recent',
+  label: text,
+  detail: t('result.recent'),
+  run: () => runText(text),
+});
+
 function buildItems(value) {
   const text = value.trim();
-  if (!text) return [];
+  if (!text) return matchRecent(getState().recent, '', 5).map(recentItem);
   if (text.startsWith('>')) return rank(getCommands(), commandText, text.slice(1), 20, true).map(commandItem);
   if (text.startsWith('+')) {
     const task = text.slice(1).trim();
@@ -162,10 +194,13 @@ function buildItems(value) {
     console.error(error);
   }
   // Explicit tool keywords ("= 2^10", "uuid") go above the web search, guesses below it.
+  const explicitTool = tools.some((tool) => tool.first);
   const list = [
     ...tools.filter((tool) => tool.first),
-    primaryItem(resolveInput(text, state.engine, { prefixes: prefixTargets(state) })),
+    primaryItem(resolveInput(text, state.engine, { prefixes: prefixTargets(state) }), text),
     ...tools.filter((tool) => !tool.first),
+    // Recent searches right under the typed one, as in a browser's address bar.
+    ...(explicitTool ? [] : matchRecent(state.recent, text, 3).map(recentItem)),
   ];
   if (text.length >= 2) {
     const links = rank(state.links, (link) => `${link.name} ${hostOf(link.url)}`, text, 5, true);
@@ -209,7 +244,8 @@ function highlight(scroll = true) {
     rows[index].classList.toggle('active', index === active);
     rows[index].setAttribute('aria-selected', String(index === active));
   }
-  input().setAttribute('aria-activedescendant', `result-${active}`);
+  if (active >= 0) input().setAttribute('aria-activedescendant', `result-${active}`);
+  else input().removeAttribute('aria-activedescendant');
   if (scroll) rows[active]?.scrollIntoView({ block: 'nearest' });
 }
 
@@ -245,9 +281,13 @@ function render() {
 function refresh() {
   const text = input().value.trim();
   items = buildItems(text);
-  active = 0;
+  // With nothing typed only recent searches show and none is preselected, so Enter does nothing.
+  active = text ? 0 : -1;
   // A plain search with nothing else to suggest needs no dropdown: the hint chip is enough.
-  open = document.activeElement === input() && items.length > 0 && (/^[>+]/.test(text) || items.length > 1);
+  open =
+    document.activeElement === input() &&
+    items.length > 0 &&
+    (!text || /^[>+]/.test(text) || items.length > 1);
   render();
   renderHint();
 }
@@ -351,8 +391,13 @@ export function initSearch() {
     if (!open) return;
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault();
-      active = (active + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+      const step = event.key === 'ArrowDown' ? 1 : -1;
+      if (active < 0) active = step > 0 ? 0 : items.length - 1;
+      else active = (active + step + items.length) % items.length;
       highlight();
+    } else if (event.key === 'Delete' && event.shiftKey && items[active]?.kind === 'recent') {
+      event.preventDefault(); // Shift+Delete, as in the address bar
+      forget(items[active].label);
     } else if (event.key === 'Escape') {
       event.preventDefault(); // the first Esc closes the list, the second leaves the field
       close();
@@ -360,7 +405,7 @@ export function initSearch() {
   });
   $('search-form').addEventListener('submit', (event) => {
     event.preventDefault();
-    if (open) execute(active);
+    if (open && active >= 0) execute(active);
     else if (box.value.trim().startsWith('>')) announce(t('toast.noCommand'));
     else go(false);
   });

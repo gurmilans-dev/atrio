@@ -743,6 +743,12 @@ kbd {
 .subtle-action:hover:not(:disabled) {
   color: var(--accent);
 }
+/* Under its switch, aligned with the switch's text (15 px box + 9 px gap). */
+.clear-recent {
+  display: block;
+  margin-left: 24px;
+  padding-bottom: 0;
+}
 .links-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

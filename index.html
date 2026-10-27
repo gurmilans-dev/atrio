@@ -329,6 +329,16 @@
               <select id="search-engine"></select>
             </div>
             <label class="toggle"
+              ><input type="checkbox" id="recent-toggle" /> <span data-i18n="settings.recent"></span
+            ></label>
+            <button
+              type="button"
+              class="subtle-action clear-recent"
+              id="clear-recent"
+              data-i18n="settings.clearRecent"
+              hidden
+            ></button>
+            <label class="toggle"
               ><input type="checkbox" id="apps-toggle" /> <span data-i18n="settings.showApps"></span
             ></label>
             <label class="toggle"
@@ -516,6 +526,10 @@
               <div>
                 <dt><kbd>Shift</kbd>+<kbd data-i18n="key.enter"></kbd></dt>
                 <dd data-i18n="shortcuts.alwaysSearch"></dd>
+              </div>
+              <div>
+                <dt><kbd>Shift</kbd>+<kbd data-i18n="key.delete"></kbd></dt>
+                <dd data-i18n="shortcuts.removeRecent"></dd>
               </div>
               <div>
                 <dt>
