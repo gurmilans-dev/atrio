@@ -139,6 +139,7 @@ describe('visible parts of the page', () => {
     assert.deepEqual(normalizeState({}).show, {
       greeting: true,
       clock: true,
+      date: true,
       links: true,
       focus: true,
       heatmap: true,
@@ -149,6 +150,16 @@ describe('visible parts of the page', () => {
     assert.equal(show.tasks, true);
     assert.equal('junk' in show, false);
     assert.equal(normalizeState({ show: 'x' }).show.clock, true);
+  });
+});
+
+describe('clock options', () => {
+  test('24-hour without seconds by default; booleans only', () => {
+    assert.deepEqual(normalizeState({}).clock, { hour12: false, seconds: false });
+    assert.deepEqual(normalizeState({ clock: { hour12: true, seconds: 'yes' } }).clock, {
+      hour12: true,
+      seconds: false,
+    });
   });
 });
 

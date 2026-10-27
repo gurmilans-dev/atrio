@@ -54,6 +54,7 @@ export function createDefaultState() {
     blur: 0,
     mouseEffects: false,
     show: Object.fromEntries(SECTIONS.map((section) => [section, true])),
+    clock: { hour12: false, seconds: false },
     autoAccent: null,
     customAccent: normalizeCustomAccent(null),
     name: '',
@@ -230,6 +231,7 @@ export function normalizeState(raw) {
     // Schema 5 made the mouse effects optional and off by default: older saves start with them off.
     mouseEffects: Number(input.schema) >= 5 ? bool(input.mouseEffects, base.mouseEffects) : false,
     show: Object.fromEntries(SECTIONS.map((section) => [section, bool(input.show?.[section], true)])),
+    clock: { hour12: bool(input.clock?.hour12, false), seconds: bool(input.clock?.seconds, false) },
     autoAccent: normalizeAccent(input.autoAccent),
     customAccent: normalizeCustomAccent(input.customAccent),
     name: cleanText(input.name, LIMITS.name),

@@ -146,6 +146,10 @@ function render(state) {
     input.checked = state.show[input.dataset.show];
     if (input.dataset.show === 'heatmap') input.disabled = !state.show.focus;
   }
+  $('clock-format').value = state.clock.hour12 ? '12' : '24';
+  $('seconds-toggle').checked = state.clock.seconds;
+  $('clock-format').disabled = !state.show.clock;
+  $('seconds-toggle').disabled = !state.show.clock;
   $('recent-toggle').checked = state.rememberSearches;
   $('suggest-toggle').checked = state.suggest;
   $('clear-recent').hidden = state.recent.length === 0;
@@ -419,6 +423,16 @@ export function initSettings() {
     if (!show) return;
     update((state) => {
       state.show[show] = event.target.checked;
+    });
+  });
+  $('clock-format').addEventListener('change', (event) => {
+    update((state) => {
+      state.clock.hour12 = event.target.value === '12';
+    });
+  });
+  $('seconds-toggle').addEventListener('change', (event) => {
+    update((state) => {
+      state.clock.seconds = event.target.checked;
     });
   });
   $('apps-toggle').addEventListener('change', (event) => {

@@ -59,7 +59,8 @@ network requests unless you turn on online search suggestions.
   color you pick (adjusted if needed to stay readable); your own wallpaper
   (downscaled to WebP on your machine); dim and blur; optional mouse effects (link borders that light up near the
   cursor, a slight lift, wallpaper parallax), off by default. Hide the parts you do not use (greeting, clock, links,
-  focus panel, heatmap, tasks): with both side panels off the page becomes one calm, centered column.
+  focus panel, heatmap, tasks): with both side panels off the page becomes one calm, centered column. The clock can be
+  24- or 12-hour, with or without seconds.
 - **Keyboard everywhere** and **backups** to a JSON file, wallpaper included.
 
 | Developer tools        | Google apps         | Mocha theme and notes |
@@ -120,7 +121,8 @@ your engine, without cookies, as Chrome's address bar does.
   `storage` event, so tabs never overwrite each other with stale data. A corrupted save is backed up, not discarded.
 - **A timer that survives throttling.** Sessions store an absolute end time; ticks align to the displayed second while
   visible and drop to once a minute when hidden. The service worker only wakes up for the end-of-session alarm.
-- **Idle means idle.** Nothing runs while the page is still: measured at about 0.03% of one CPU core. With the mouse
+- **Idle means idle.** Nothing runs while the page is still: measured at about 0.03% of one CPU core (around 0.15%
+  with the clock's seconds shown, one text update per second). With the mouse
   effects off (the default) no pointer listener exists and hover states change instantly, so moving the mouse costs
   about what the browser itself needs (~4% of a core in headless Chrome, versus ~17% with the effects on). When on,
   the spotlight restyles one small layer per element (custom properties inherit, so setting them on a panel would

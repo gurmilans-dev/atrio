@@ -254,6 +254,7 @@ kbd {
 /* Parts of the page turned off in Settings → Page (boot.js applies them before the first paint). */
 :root[data-hide-greeting] .greeting,
 :root[data-hide-clock] .clock,
+:root[data-hide-date] .date,
 :root[data-hide-links] .links-header,
 :root[data-hide-links] .links-grid,
 :root[data-hide-links] .links-header ~ .empty-note,
@@ -513,6 +514,19 @@ kbd {
   letter-spacing: -0.075em;
   font-variant-numeric: tabular-nums;
   text-shadow: 0 3px 24px rgb(0 0 0 / 0.18);
+}
+/* Seconds and AM/PM (Settings → Page) beside the big hours and minutes. */
+.clock-seconds,
+.clock-period {
+  margin-left: 0.1em;
+  color: var(--text-secondary);
+  font-size: 0.3em;
+  letter-spacing: 0;
+}
+.clock-period {
+  margin-left: 0.3em;
+  font-size: 0.22em;
+  text-transform: uppercase;
 }
 .date {
   color: var(--text-secondary);
@@ -785,6 +799,10 @@ kbd {
   border-radius: 7px;
   background: var(--field);
   cursor: pointer;
+}
+/* The clock options follow the list of switches in Settings → Page. */
+.clock-field {
+  margin-top: 22px;
 }
 .toggle-heading {
   margin: 0 0 -4px;

@@ -875,6 +875,47 @@ try {
     );
   });
 
+  await check('clock options: 12-hour with AM/PM, seconds ticking, date hidden', async () => {
+    const read = () =>
+      a.eval(`({
+        text: document.getElementById('clock').textContent,
+        seconds: document.querySelector('.clock-seconds').hidden ? null : document.querySelector('.clock-seconds').textContent,
+        period: document.querySelector('.clock-period').hidden ? null : document.querySelector('.clock-period').textContent,
+        date: getComputedStyle(document.getElementById('date-label')).display,
+      })`);
+    const before = await read();
+    await a.eval(
+      settings(`
+        const format = document.getElementById('clock-format');
+        format.value = '12';
+        format.dispatchEvent(new Event('change'));
+        document.getElementById('seconds-toggle').click();
+        document.querySelector('[data-show="date"]').click();`),
+    );
+    const first = await read();
+    await sleep(1100);
+    const second = await read();
+    await a.eval(
+      settings(`
+        const format = document.getElementById('clock-format');
+        format.value = '24';
+        format.dispatchEvent(new Event('change'));
+        document.getElementById('seconds-toggle').click();
+        document.querySelector('[data-show="date"]').click();`),
+    );
+    const restored = await read();
+    const hour = new Date().getHours();
+    assert.match(before.text, /^\d{2}:\d{2}$/);
+    assert.deepEqual([before.seconds, before.period, before.date], [null, null, 'block']);
+    assert.match(first.text, /^\d{1,2}:\d{2}:\d{2}(AM|PM)$/);
+    assert.match(first.seconds, /^:\d{2}$/);
+    assert.equal(first.period, hour < 12 ? 'AM' : 'PM');
+    assert.equal(first.date, 'none');
+    assert.notEqual(second.seconds, first.seconds); // ticks every second
+    assert.deepEqual([restored.seconds, restored.period, restored.date], [null, null, 'block']);
+    assert.match(restored.text, /^\d{2}:\d{2}$/);
+  });
+
   await check('custom accent: picked, made readable, live preview, applied before paint', async () => {
     const before = await a.eval(`document.getElementById('accent-row').hidden`);
     await a.eval(settings(`document.querySelector('[data-theme-choice="custom"]').click()`));
