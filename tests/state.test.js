@@ -155,6 +155,12 @@ describe('normalizeState', () => {
   });
 });
 
+test('custom CSS is a string, capped', () => {
+  assert.equal(normalizeState({}).customCSS, '');
+  assert.equal(normalizeState({ customCSS: 42 }).customCSS, '');
+  assert.equal(normalizeState({ customCSS: 'x'.repeat(30000) }).customCSS.length, LIMITS.css);
+});
+
 describe('visible parts of the page', () => {
   test('everything shown by default; only booleans count', () => {
     assert.deepEqual(normalizeState({}).show, {

@@ -207,6 +207,17 @@ const it = {
   'settings.focusNote':
     'Quando apri una nuova scheda, Chrome mette il cursore nella barra degli indirizzi: fai clic sulla pagina per usare le scorciatoie.',
   'settings.data': 'Dati',
+  'css.title': 'CSS personale',
+  'css.note':
+    'Per andare oltre le impostazioni: regole CSS applicate a tutta la pagina tranne a queste impostazioni, che restano sempre utilizzabili per correggerle. Per esempio .clock { font-size: 120px } oppure .page { --accent: #ff7a59 }. Ctrl + Invio applica.',
+  'css.placeholder': '.clock { letter-spacing: -0.04em; }',
+  'css.apply': 'Applica',
+  'css.clear': 'Rimuovi',
+  'css.none': 'Nessuna regola attiva.',
+  'css.active': { one: '1 regola attiva.', other: '{n} regole attive.' },
+  'css.applied': { one: 'CSS applicato: 1 regola.', other: 'CSS applicato: {n} regole.' },
+  'css.escape': 'C’è una parentesi graffa chiusa di troppo: il CSS non è applicato.',
+  'css.cleared': 'CSS personale rimosso.',
   'settings.dataNote':
     'Il backup contiene collegamenti, attività, note, ricerche recenti, preferenze e sfondo personale. Tutto resta sul tuo computer.',
   'settings.export': 'Esporta backup',
@@ -567,6 +578,17 @@ const en = {
   'settings.focusNote':
     'When you open a new tab, Chrome puts the cursor in the address bar: click the page to use the shortcuts.',
   'settings.data': 'Data',
+  'css.title': 'Custom CSS',
+  'css.note':
+    'To go beyond the settings: CSS rules applied to the whole page except these settings, which always stay usable to fix them. For example .clock { font-size: 120px } or .page { --accent: #ff7a59 }. Ctrl + Enter applies.',
+  'css.placeholder': '.clock { letter-spacing: -0.04em; }',
+  'css.apply': 'Apply',
+  'css.clear': 'Remove',
+  'css.none': 'No rule active.',
+  'css.active': { one: '1 rule active.', other: '{n} rules active.' },
+  'css.applied': { one: 'CSS applied: 1 rule.', other: 'CSS applied: {n} rules.' },
+  'css.escape': 'There is one closing brace too many: the CSS is not applied.',
+  'css.cleared': 'Custom CSS removed.',
   'settings.dataNote':
     'The backup contains links, tasks, notes, recent searches, preferences and your wallpaper. Everything stays on your computer.',
   'settings.export': 'Export backup',

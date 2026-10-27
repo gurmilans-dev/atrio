@@ -44,6 +44,14 @@
         root.style.setProperty('--wallpaper', `url("assets/${saved.wallpaper}.webp")`);
       }
     }
+    // Custom CSS, with the @scope of js/custom-css.js: before the first paint, so what it hides never
+    // flashes. js/appearance.js removes it if a stray "}" let rules escape the scope.
+    if (typeof saved.customCSS === 'string' && saved.customCSS.trim()) {
+      const style = document.createElement('style');
+      style.id = 'custom-css';
+      style.textContent = `@scope (body) to (#settings) {\n${saved.customCSS}\n}`;
+      document.head.append(style);
+    }
     const shade = Number(saved.shade);
     if (Number.isFinite(shade)) {
       root.style.setProperty('--shade', String(Math.min(75, Math.max(0, shade)) / 100));

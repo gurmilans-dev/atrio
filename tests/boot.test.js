@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import vm from 'node:vm';
+import { scopeCSS } from '../js/custom-css.js';
 import { localDay, shownImage } from '../js/rotation.js';
 
 const source = readFileSync(new URL('../js/boot.js', import.meta.url), 'utf8');
@@ -12,6 +13,7 @@ const KEY = 'workspace.newtab.v2';
 function boot(saved, storage = {}) {
   const store = new Map(Object.entries({ [KEY]: JSON.stringify(saved), ...storage }));
   const properties = {};
+  const head = [];
   const root = {
     dataset: {},
     attributes: [],
@@ -21,13 +23,17 @@ function boot(saved, storage = {}) {
     },
   };
   vm.runInNewContext(source, {
-    document: { documentElement: root },
+    document: {
+      documentElement: root,
+      head: { append: (node) => head.push(node) },
+      createElement: () => ({}),
+    },
     localStorage: {
       getItem: (key) => store.get(key) ?? null,
       setItem: (key, value) => store.set(key, value),
     },
   });
-  return { root, properties, store };
+  return { root, properties, store, head };
 }
 
 const rotating = (rotation) => ({
@@ -67,6 +73,13 @@ test('"every new tab" counts tabs apart from the state, as js/appearance.js read
   const expected = shownImage(state, { day: 0, counter: 5 });
   assert.equal(properties['--accent'], state.autoAccents[`custom:${expected}`]);
   assert.equal(JSON.parse(store.get(KEY)).customImage, 'a'); // the shared state is not touched
+});
+
+test('custom CSS is applied with the same @scope as js/custom-css.js', () => {
+  const css = '.clock { color: red }';
+  const { head } = boot({ customCSS: css });
+  assert.deepEqual(head, [{ id: 'custom-css', textContent: scopeCSS(css) }]);
+  assert.deepEqual(boot({ customCSS: '   ' }).head, []);
 });
 
 test('custom theme accent; an empty save changes nothing', () => {

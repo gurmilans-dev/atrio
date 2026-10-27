@@ -13,6 +13,7 @@ import {
   wallpaperSrc,
 } from './config.js';
 import { readableAccent } from './color.js';
+import { checkCSS } from './custom-css.js';
 import { $, $$, announce, button, el } from './dom.js';
 import { LANGUAGES, numberFormat, t, themeName, wallpaperName } from './i18n.js';
 import { appVersion, hasOrigins, removeOrigins, requestOrigins } from './platform.js';
@@ -199,6 +200,8 @@ function render(state) {
     input.checked = state.show[input.dataset.show];
     if (input.dataset.show === 'heatmap') input.disabled = !state.show.focus;
   }
+  renderCSSStatus(state.customCSS);
+  if (document.activeElement !== $('css-input')) $('css-input').value = state.customCSS;
   $('custom-preset').hidden = state.preset !== CUSTOM_PRESET;
   for (const key of ['focus', 'break']) {
     if (document.activeElement !== $(`custom-${key}`)) {
@@ -224,6 +227,32 @@ function render(state) {
   $('shade-label').textContent = t(state.theme === 'light' ? 'settings.lighten' : 'settings.dim');
   $('accent-row').hidden = state.theme !== CUSTOM_THEME;
   if (document.activeElement !== $('accent-input')) $('accent-input').value = state.customAccent.picked;
+}
+
+function renderCSSStatus(css) {
+  const result = css.trim() ? checkCSS(css) : null;
+  const status = $('css-status');
+  status.textContent = !result
+    ? t('css.none')
+    : result.error
+      ? t('css.escape')
+      : t('css.active', { n: result.rules });
+  status.classList.toggle('error', Boolean(result?.error));
+}
+
+// Applied only when it cannot escape its scope; the settings themselves are never affected.
+function applyCSS() {
+  const css = $('css-input').value.slice(0, LIMITS.css);
+  const result = css.trim() ? checkCSS(css) : { rules: 0 };
+  if (result.error) {
+    renderCSSStatus(css);
+    announce(t('css.escape'));
+    return;
+  }
+  update((state) => {
+    state.customCSS = css;
+  });
+  announce(css.trim() ? t('css.applied', { n: result.rules }) : t('css.cleared'));
 }
 
 async function uploadWallpaper(file) {
@@ -555,6 +584,21 @@ export function initSettings() {
     update((state) => {
       state.name = event.target.value.trim().slice(0, LIMITS.name);
     });
+  });
+
+  $('css-input').maxLength = LIMITS.css;
+  $('css-apply').addEventListener('click', applyCSS);
+  $('css-input').addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' || !(event.ctrlKey || event.metaKey)) return;
+    event.preventDefault();
+    applyCSS();
+  });
+  $('css-clear').addEventListener('click', () => {
+    $('css-input').value = '';
+    update((state) => {
+      state.customCSS = '';
+    });
+    announce(t('css.cleared'));
   });
 
   $('export-data').addEventListener('click', exportBackup);

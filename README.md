@@ -50,17 +50,17 @@ network requests unless you turn on online search suggestions.
   - `http 429` explains a status code; `http 40` lists 400–409, `http too many` searches them;
   - `cron */15 9-18 * * 1-5` (or just the expression, or `@daily`) in words, with the next three runs;
   - colors: `#7aa2f7`, `rgb(…)` or `hsl(…)` converted to the other formats, with a swatch.
-- **Focus timer.** 25/5, 50/10 or your own durations, a system notification when a session ends (even with no tab open), the
-  countdown in the tab title, a 20-week heatmap and your current streak.
+- **Focus timer.** 25/5, 50/10 or your own durations, a system notification when a session ends (even with no tab
+  open), the countdown in the tab title, a 20-week heatmap and your current streak.
 - **Tasks and notes.** Undo for deletions; a plain-text scratchpad that saves while you type.
-- **Google apps launcher.** 24 apps with editable favorites (drag, or `Ctrl + ←/→`), and a switch for people signed in
-  to several Google accounts.
+- **Google apps launcher.** 24 apps with editable favorites (drag, or `Ctrl + ←/→`), and a switch for people signed
+  in to several Google accounts.
 - **Make it yours.** Six themes: three dark ones, a light one, one that takes its accent color from your wallpaper,
   one with any color you pick (adjusted if needed to stay readable). Up to eight wallpapers of your own (downscaled to
   WebP on your machine), rotating every day or with every new tab; dim and blur. Hide the parts you do not use
   (greeting, clock, date, links, focus panel, heatmap, tasks): with both side panels off the page becomes one calm,
   centered column. A 24- or 12-hour clock, with or without seconds. Optional mouse effects (link borders that light
-  up near the cursor, a slight lift, wallpaper parallax), off by default.
+  up near the cursor, a slight lift, wallpaper parallax), off by default. And for anything else, your own CSS.
 - **Keyboard everywhere** and **backups** to a JSON file, your wallpapers included.
 
 | Developer tools        | Google apps         | Mocha theme and notes |
@@ -73,7 +73,7 @@ network requests unless you turn on online search suggestions.
 2. Open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick the folder.
 3. Open a new tab. Chrome puts the cursor in the address bar: click the page to use the shortcuts.
 
-Chrome 117 or later. Edge works too.
+Chrome 118 or later. Edge works too.
 
 <details>
 <summary>Keep the same extension ID when moving the folder</summary>
@@ -134,6 +134,10 @@ your engine, without cookies, as Chrome's address bar does.
 - **Suggestions that do not get in the way.** They are requested after a 150 ms pause in typing, every keystroke
   cancels the previous request, answers are cached, and rows are never inserted while you are moving through the
   list. Offline, the box works as if they were off.
+- **Custom CSS that cannot lock you out.** Your rules are wrapped in `@scope (body) to (#settings)`: they reach the
+  whole page but never `html`, `body` or the settings drawer, so the settings always stay usable to fix a mistake. A
+  stray `}` that would let rules escape the scope is caught (the CSS is parsed in a constructable stylesheet first)
+  and the CSS is not applied.
 - **A calculator without `eval`.** The palette's math goes through a small recursive-descent parser: `eval` would be
   unsafe and is blocked by the extension's content security policy anyway.
 - **Pure logic, tested.** Search resolution, state validation, timer, stats, color extraction and ranking are pure

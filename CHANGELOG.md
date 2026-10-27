@@ -15,6 +15,9 @@
 - **Clock options** (Settings → Page): 24- or 12-hour with AM/PM, seconds, and the date can be hidden. Seconds and
   AM/PM sit beside the big digits, smaller, so the layout keeps its shape; with seconds shown the clock updates once
   a second while the tab is visible (about 0.15% of a CPU core).
+- **Custom CSS** (Settings → Custom CSS), applied before the first paint. The rules reach the whole page but never
+  `html`, `body` or the settings, which always stay usable to fix them; a stray `}` that would let rules escape is
+  caught and the CSS is not applied.
 - **Several wallpapers of your own** (up to eight), each with its tile in Settings → Wallpaper, and an optional
   **rotation** through them: every day (the same image in every tab) or with every new tab (tabs already open keep
   theirs). The automatic theme keeps one extracted accent per image, so tabs showing different images never
@@ -25,9 +28,9 @@
 - **Custom theme with any accent color** (Settings → Appearance), with a live preview while the picker moves. Hue and
   saturation are kept; a color too dark or too light for the dark theme is adjusted, by perceived luminance, just
   enough for text in it and dark text on it to stay readable. Applied before the first paint.
-- **Show or hide each part of the page** (Settings → Page): greeting, clock, links, focus panel, its heatmap, tasks and
-  notes. With both side panels off the page becomes a single centered column. Applied before the first paint; the
-  shortcuts and commands of a hidden part do nothing.
+- **Show or hide each part of the page** (Settings → Page): greeting, clock, date, links, focus panel, its heatmap,
+  tasks and notes. With both side panels off the page becomes a single centered column. Applied before the first
+  paint; the shortcuts and commands of a hidden part do nothing.
 - The settings are reorganized, from general to specific: General, Appearance, Wallpaper, Page, Search, Search
   prefixes, Links, Timer, Shortcuts, Data.
 - **Recent searches** in the search box: those containing what you type appear under it, and the latest ones
@@ -41,12 +44,15 @@
 - A **×** in the search box clears it and keeps the cursor there; it shows only while there is text.
 - **Developer tools in the search box**, local, `Enter` copies the result: calculator (`= …` or plain arithmetic,
   with hex/binary), timestamps both ways (`ts`), `uuid`, passwords (`pw`), Base64 (`b64` / `b64d`), URL encoding
-  (`url` / `urld`), JWT decoding (`jwt <token>` or a pasted token: payload, header, expiry), SHA-256 (`sha256`), JSON check and formatting (`json` or pasted JSON: formatted, minified, or where it breaks), naming styles (`case`: camelCase,
-  PascalCase, snake_case, kebab-case, CONSTANT_CASE, URL slug), HTTP status codes explained (`http 429`,
+  (`url` / `urld`), JWT decoding (`jwt <token>` or a pasted token: payload, header, expiry), SHA-256 (`sha256`),
+  JSON check and formatting (`json` or pasted JSON: formatted, minified, or where it breaks), naming styles (`case`:
+  camelCase, PascalCase, snake_case, kebab-case, CONSTANT_CASE, URL slug), HTTP status codes explained (`http 429`,
   `http 40`, `http too many`), cron expressions in words with the next runs (`cron`, or the expression alone),
   color conversion (`#hex`, `rgb()`, `hsl()`). Hovering a result shows it in full when it is too long for the row.
 
 ### Changed
+
+- Chrome 118 or later is required (was 117), for the `@scope` that keeps custom CSS away from the settings.
 
 - A search prefix typed alone opens its site: `yt` → YouTube, `gh` → GitHub, `npm` → npmjs.com. Previously it was
   searched as text. `Shift + Enter` still searches.

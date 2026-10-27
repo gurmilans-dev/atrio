@@ -980,6 +980,53 @@ try {
     assert.ok(!removed.images.includes(three.images[0]));
   });
 
+  await check('custom CSS: applied before paint, never to the settings, a stray brace refused', async () => {
+    const applyCSS = (css) =>
+      a.eval(
+        settings(`
+          document.getElementById('css-input').value = ${JSON.stringify(css)};
+          document.getElementById('css-apply').click();`),
+      );
+    const read = () =>
+      a.eval(`(() => {
+        const dialog = document.getElementById('settings');
+        dialog.showModal();
+        const result = {
+          clock: getComputedStyle(document.getElementById('clock')).color,
+          body: getComputedStyle(document.body).display,
+          settings: getComputedStyle(dialog).display !== 'none',
+          saved: ${STATE}.customCSS,
+          status: document.getElementById('css-status').textContent,
+          toast: document.getElementById('toast').textContent,
+        };
+        dialog.close();
+        return result;
+      })()`);
+    const hostile = '.clock { color: rgb(255, 0, 0) } #settings { display: none } body { display: none }';
+    await applyCSS(hostile);
+    const applied = await read();
+    await applyCSS('.clock { color: rgb(0, 0, 255) } } .page { display: none }');
+    const refused = await read();
+    await a.goto();
+    const beforeModules = await a.eval(
+      `document.getElementById('custom-css')?.textContent.includes('rgb(255, 0, 0)')`,
+    );
+    const reloaded = await read();
+    await a.eval(settings(`document.getElementById('css-clear').click()`));
+    const cleared = await read();
+    assert.deepEqual(
+      [applied.clock, applied.body, applied.settings, applied.status],
+      ['rgb(255, 0, 0)', 'block', true, '3 regole attive.'],
+    );
+    assert.deepEqual(
+      [refused.saved, refused.clock, refused.toast],
+      [hostile, 'rgb(255, 0, 0)', 'C’è una parentesi graffa chiusa di troppo: il CSS non è applicato.'],
+    );
+    assert.deepEqual([beforeModules, reloaded.clock, reloaded.settings], [true, 'rgb(255, 0, 0)', true]);
+    assert.notEqual(cleared.clock, 'rgb(255, 0, 0)');
+    assert.deepEqual([cleared.saved, cleared.status], ['', 'Nessuna regola attiva.']);
+  });
+
   await check('clock options: 12-hour with AM/PM, seconds ticking, date hidden', async () => {
     const read = () =>
       a.eval(`({

@@ -33,6 +33,7 @@ const browserGlobals = Object.fromEntries(
     'requestAnimationFrame',
     'console',
     'AbortController',
+    'CSSStyleSheet',
   ].map((name) => [name, 'readonly']),
 );
 const nodeGlobals = {

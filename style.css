@@ -1301,6 +1301,18 @@ kbd {
   color: var(--text);
   background: var(--accent-soft);
 }
+.css-input {
+  min-height: 160px;
+  margin-top: 14px;
+}
+.css-status {
+  margin: 8px 0 12px;
+  color: var(--text-muted);
+  font: 11px var(--mono);
+}
+.css-status.error {
+  color: var(--danger);
+}
 .notes {
   display: block;
   width: 100%;

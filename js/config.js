@@ -88,6 +88,7 @@ export const LIMITS = {
   taskText: 120,
   name: 24,
   notes: 10000,
+  css: 20000,
   prefixes: 20,
   wallpapers: 8,
   accents: 16,

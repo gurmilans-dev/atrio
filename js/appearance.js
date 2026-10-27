@@ -3,6 +3,7 @@
 // js/rotation.js) and sets the accent of the automatic theme (extracted from the wallpaper shown)
 // and of the custom one (picked by the user).
 import { FALLBACK_ACCENT, pickAccent } from './color.js';
+import { checkCSS, scopeCSS } from './custom-css.js';
 import { AUTO_THEME, CUSTOM_THEME, CUSTOM_WALLPAPER, LIMITS, SECTIONS, wallpaperSrc } from './config.js';
 import { localDay, shownImage } from './rotation.js';
 import { addAccent } from './state.js';
@@ -111,7 +112,27 @@ export function previewBlur(value) {
   else root.style.removeProperty('--wallpaper-filter');
 }
 
+// The custom CSS, unless it would escape its scope (then it is kept in the settings, not applied).
+let checkedCSS = null;
+let validCSS = true;
+function applyCustomCSS({ customCSS }) {
+  if (customCSS !== checkedCSS) {
+    checkedCSS = customCSS;
+    validCSS = !customCSS.trim() || !checkCSS(customCSS).error;
+  }
+  const text = validCSS ? scopeCSS(customCSS) : '';
+  let style = document.getElementById('custom-css');
+  if (!style && !text) return;
+  if (!style) {
+    style = document.createElement('style');
+    style.id = 'custom-css';
+    document.head.append(style);
+  }
+  if (style.textContent !== text) style.textContent = text;
+}
+
 function apply(state) {
+  applyCustomCSS(state);
   root.dataset.theme = state.theme;
   root.dataset.wallpaper = state.wallpaper;
   for (const section of SECTIONS) root.toggleAttribute(`data-hide-${section}`, !state.show[section]);
