@@ -81,8 +81,8 @@ async function navigate(result) {
 
 // What runs from the box is remembered (unless turned off in the settings) to be offered again.
 function remember(text) {
-  if (!getState().rememberSearches) return;
-  update((state) => {
+  if (!getState().rememberSearches) return Promise.resolve(true);
+  return update((state) => {
     state.recent = addRecent(state.recent, text);
   });
 }
@@ -104,11 +104,12 @@ function isLocalTool(text) {
   }
 }
 
-function runText(text, force = false) {
+// Saved before leaving: the page goes away with the navigation.
+async function runText(text, force = false) {
   const state = getState();
   const result = resolveInput(text, state.engine, { force, prefixes: prefixTargets(state) });
   if (!result) return;
-  if (!isLocalTool(text)) remember(text);
+  if (!isLocalTool(text)) await remember(text);
   navigate(result);
 }
 

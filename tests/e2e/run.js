@@ -21,7 +21,17 @@ async function check(name, fn) {
 }
 
 const browser = await launch(ROOT);
-const a = await browser.openPage();
+// Saving is asynchronous (js/store.js commits under a cross-tab lock): before each step the checks
+// wait for the changes already made to be saved, with the page's own store.
+function settled(page) {
+  const evaluate = page.eval.bind(page);
+  page.eval = async (expression) => {
+    await evaluate(`import('./js/store.js').then((store) => store.flush()).catch(() => {})`);
+    return evaluate(expression);
+  };
+  return page;
+}
+const a = settled(await browser.openPage());
 
 // Snippets evaluated inside the page.
 const settings = (code) =>
@@ -145,17 +155,20 @@ try {
   });
 
   await check('timer: a new preset does not cut a started session', async () => {
-    const r = await a.eval(`(() => {
+    // Separate steps: each read of the saved state waits for the clicks before it to be saved.
+    await a.eval(`(() => {
       document.getElementById('timer-toggle').click();
       document.getElementById('settings').showModal();
       document.querySelector('[data-preset="50"]').click();
-      const during = ${STATE};
-      document.getElementById('timer-reset').click();
-      const reset = ${STATE}.timer.total;
+    })()`);
+    const during = await a.eval(STATE);
+    await a.eval(`document.getElementById('timer-reset').click()`);
+    const reset = await a.eval(`${STATE}.timer.total`);
+    await a.eval(`(() => {
       document.querySelector('[data-preset="25"]').click();
       document.getElementById('settings').close();
-      return { preset: during.preset, total: during.timer.total, running: during.timer.running, reset };
     })()`);
+    const r = { preset: during.preset, total: during.timer.total, running: during.timer.running, reset };
     assert.deepEqual(r, { preset: 50, total: 300, running: true, reset: 600 });
   });
 
@@ -186,8 +199,9 @@ try {
       document.getElementById('link-url').value = 'localhost:5173';
       document.getElementById('link-form').requestSubmit();
       document.getElementById('settings').close();
-      return { edited, moved, toastInDialog, undone, last: ${STATE}.links.at(-1).url };
+      return { edited, moved, toastInDialog, undone };
     })()`);
+    r.last = await a.eval(`${STATE}.links.at(-1).url`);
     assert.deepEqual(r, {
       edited: 'GitHub Pro,ChatGPT',
       moved: 'ChatGPT,GitHub Pro',
@@ -269,7 +283,7 @@ try {
   });
 
   await check('several open tabs never overwrite each other', async () => {
-    const b = await browser.openPage();
+    const b = settled(await browser.openPage());
     await a.eval(
       `(() => { const i = document.getElementById('task-input'); i.value = 'Da scheda A'; document.getElementById('task-form').requestSubmit(); })()`,
     );
@@ -1216,6 +1230,35 @@ try {
       );
     },
   );
+
+  await check('two documents adding a task in the same JavaScript task both keep it', async () => {
+    const r = await a.eval(`(async () => {
+      // Two more Atrio documents on the same origin: same storage, same locks, separate copies.
+      const frames = await Promise.all(['A', 'B'].map(() => new Promise((resolve) => {
+        const frame = document.createElement('iframe');
+        frame.style.cssText = 'position: fixed; left: -2000px; width: 900px; height: 700px';
+        frame.onload = () => resolve(frame);
+        frame.src = 'index.html';
+        document.body.append(frame);
+      })));
+      // One task: each document changes its copy before it can see the other's write.
+      frames.forEach((frame, index) => {
+        const doc = frame.contentDocument;
+        doc.getElementById('task-input').value = 'concurrent ' + 'AB'[index];
+        doc.getElementById('task-form').requestSubmit();
+      });
+      await Promise.all(frames.map((frame) => frame.contentWindow.eval("import('./js/store.js').then((s) => s.flush())")));
+      const saved = JSON.parse(localStorage.getItem('workspace.newtab.v2')).tasks.map((task) => task.text);
+      frames.forEach((frame) => frame.remove());
+      return saved;
+    })()`);
+    await a.goto();
+    const shown = await a.eval(labels('#task-list .task-label'));
+    for (const text of ['concurrent A', 'concurrent B']) {
+      assert.ok(r.includes(text), `${text} not saved: ${JSON.stringify(r)}`);
+      assert.ok(shown.includes(text), `${text} not shown after reload: ${JSON.stringify(shown)}`);
+    }
+  });
 
   await check('language: English from settings, every text translated, back to Italian', async () => {
     const before = await a.eval(`document.documentElement.lang`);

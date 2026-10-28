@@ -80,8 +80,10 @@ export function addTask(raw) {
     announce(t('tasks.max', { n: LIMITS.tasks }));
     return false;
   }
+  // The id is made outside the change: replayed by the store, it must add the same task.
+  const task = { id: crypto.randomUUID(), text, done: false };
   update((state) => {
-    state.tasks.unshift({ id: crypto.randomUUID(), text, done: false });
+    if (!state.tasks.some((item) => item.id === task.id)) state.tasks.unshift({ ...task });
   });
   return true;
 }
@@ -98,9 +100,10 @@ export function initTasks() {
   $('task-list').addEventListener('change', (event) => {
     if (event.target.dataset.action !== 'toggle') return;
     const { id } = event.target.closest('[data-id]').dataset;
+    const done = event.target.checked;
     update((state) => {
       const task = state.tasks.find((item) => item.id === id);
-      if (task) task.done = event.target.checked;
+      if (task) task.done = done;
     });
   });
 

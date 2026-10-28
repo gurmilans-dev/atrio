@@ -13,7 +13,7 @@ import { initPrefixes } from './prefixes.js';
 import { initSearch } from './search-ui.js';
 import { initSettings } from './settings.js';
 import { initShortcuts } from './shortcuts.js';
-import { getState, initStore, reloadFromStorage, subscribe } from './store.js';
+import { flush, getState, initStore, reloadFromStorage, subscribe } from './store.js';
 import { initTasks } from './tasks.js';
 
 // The page stays hidden (style.css) until the static texts are in the right language.
@@ -45,11 +45,12 @@ let languageChoice = getState().lang;
 subscribe((state) => {
   if (state.lang === languageChoice) return;
   languageChoice = state.lang;
-  if (needsReload(state.lang)) window.location.reload();
+  // Saved first: the reloaded page reads the choice back from storage.
+  if (needsReload(state.lang)) flush().then(() => window.location.reload());
 });
 
-// Several new tabs are often open at once: when one saves, the others reload
-// instead of overwriting its changes with their stale copy.
+// Several new tabs are often open at once: when one saves, the others show its state (with their
+// own unsaved changes on top, see js/store.js).
 window.addEventListener('storage', (event) => {
   if (event.key === STORAGE_KEY || event.key === null) reloadFromStorage();
 });

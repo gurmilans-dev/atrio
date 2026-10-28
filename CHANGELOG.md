@@ -76,6 +76,9 @@
 
 ### Fixed
 
+- **Two tabs saving at the same moment could lose a change.** Each tab saved its own copy of the whole state, so the
+  last write erased the other's change. Changes are now applied at once in the tab, then saved under a lock shared
+  by every tab, on top of the latest saved state. A change that cannot be saved stays in the tab and is retried.
 - **A local tool's input could be searched on the web by accident.** After `Esc` (or a click on →, or a click
   elsewhere) closed the rows of a JWT, JSON, Base64 or a sum, `Enter` sent the text to the search engine and kept it
   among the recent searches. Now `Enter` brings the rows back; only `Shift + Enter` searches such text, and it is
