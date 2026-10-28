@@ -282,6 +282,83 @@ try {
     });
   });
 
+  // Reads the saved state, the stored image ids and the toast, as they are in the page.
+  const snapshot = `(async () => {
+    const db = await new Promise((resolve) => { const q = indexedDB.open('workspace-wallpaper', 1); q.onsuccess = () => resolve(q.result); });
+    const ids = await new Promise((resolve) => { const q = db.transaction('images').objectStore('images').getAllKeys(); q.onsuccess = () => resolve(q.result.sort()); });
+    db.close();
+    return { saved: localStorage.getItem('workspace.newtab.v2'), ids, toast: document.getElementById('toast').textContent };
+  })()`;
+
+  await check('a restore that cannot be saved (storage really full) keeps data and images', async () => {
+    const before = await a.eval(snapshot);
+    const after = await a.eval(`(async () => {
+      const canvas = new OffscreenCanvas(64, 40);
+      canvas.getContext('2d').fillRect(0, 0, 64, 40);
+      const blob = await canvas.convertToBlob({ type: 'image/png' });
+      const image = await new Promise((resolve) => { const r = new FileReader(); r.onload = () => resolve(r.result); r.readAsDataURL(blob); });
+      const backup = {
+        app: 'atrio',
+        state: { links: [], tasks: [{ text: 'from the backup' }], notes: 'n'.repeat(10000), wallpaper: 'custom', customImages: ['img-new'] },
+        wallpaperImages: [{ id: 'img-new', image }],
+      };
+      // Fill localStorage for real, chunk by chunk, until it refuses.
+      const fillers = [];
+      for (const size of [1 << 20, 1 << 16, 1 << 12, 1 << 8, 16]) {
+        for (;;) {
+          try { localStorage.setItem('filler-' + fillers.length, 'x'.repeat(size)); fillers.push('filler-' + fillers.length); } catch { break; }
+        }
+      }
+      window.confirm = () => true;
+      const transfer = new DataTransfer();
+      transfer.items.add(new File([JSON.stringify(backup)], 'backup.json', { type: 'application/json' }));
+      const input = document.getElementById('import-file');
+      input.files = transfer.files;
+      input.dispatchEvent(new Event('change'));
+      const toast = document.getElementById('toast');
+      for (let i = 0; i < 100 && !toast.textContent.startsWith('Backup non importato'); i++) await new Promise((r) => setTimeout(r, 50));
+      const result = await ${snapshot};
+      for (const key of fillers) localStorage.removeItem(key);
+      return result;
+    })()`);
+    assert.equal(after.saved, before.saved); // the previous state, untouched
+    assert.deepEqual(after.ids, before.ids); // previous images kept, the backup's removed
+    assert.equal(
+      after.toast,
+      'Backup non importato: lo spazio di archiviazione è pieno o bloccato. I tuoi dati sono rimasti com’erano.',
+    );
+    assert.ok(before.ids.length > 0);
+  });
+
+  await check('a reset that cannot be saved deletes nothing', async () => {
+    const before = await a.eval(snapshot);
+    const after = await a.eval(`(async () => {
+      // A controlled write error on the state key only.
+      const setItem = Storage.prototype.setItem;
+      Storage.prototype.setItem = function (key, value) {
+        if (key === 'workspace.newtab.v2') throw new DOMException('blocked', 'QuotaExceededError');
+        return setItem.call(this, key, value);
+      };
+      window.confirm = () => true;
+      document.getElementById('settings').showModal();
+      document.getElementById('reset-data').click();
+      const toast = document.getElementById('toast');
+      for (let i = 0; i < 100 && !toast.textContent.startsWith('Ripristino non riuscito'); i++) await new Promise((r) => setTimeout(r, 50));
+      Storage.prototype.setItem = setItem;
+      document.getElementById('settings').close();
+      return ${snapshot};
+    })()`);
+    await a.goto();
+    const reloaded = await a.eval(`${STATE}.tasks.length`);
+    assert.equal(after.saved, before.saved);
+    assert.deepEqual(after.ids, before.ids);
+    assert.equal(
+      after.toast,
+      'Ripristino non riuscito: lo spazio di archiviazione è bloccato. Non è stato cancellato nulla.',
+    );
+    assert.equal(reloaded, JSON.parse(before.saved).tasks.length);
+  });
+
   await check('several open tabs never overwrite each other', async () => {
     const b = settled(await browser.openPage());
     await a.eval(

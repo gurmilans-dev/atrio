@@ -79,6 +79,11 @@
 - **Two tabs saving at the same moment could lose a change.** Each tab saved its own copy of the whole state, so the
   last write erased the other's change. Changes are now applied at once in the tab, then saved under a lock shared
   by every tab, on top of the latest saved state. A change that cannot be saved stays in the tab and is retried.
+- **A backup that could not be saved deleted the current wallpapers.** The restore removed the images before
+  knowing whether the new state fit in storage, so with storage full the wallpapers were gone and the backup not
+  imported. Now the backup's images are stored under new ids, the state is replaced all at once, and only then are
+  the previous images removed; if anything fails, the new images go and everything stays as it was. A reset that
+  cannot be saved likewise deletes nothing.
 - **A local tool's input could be searched on the web by accident.** After `Esc` (or a click on →, or a click
   elsewhere) closed the rows of a JWT, JSON, Base64 or a sum, `Enter` sent the text to the search engine and kept it
   among the recent searches. Now `Enter` brings the rows back; only `Shift + Enter` searches such text, and it is

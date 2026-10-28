@@ -7,7 +7,9 @@ import {
   IMAGE_TYPES,
   LIMITS,
   PRESETS,
+  ROTATION_KEY,
   SECTIONS,
+  STORAGE_KEY,
   THEMES,
   WALLPAPERS,
   wallpaperSrc,
@@ -21,7 +23,7 @@ import { accentKey, previewAccent, previewBlur, previewShade } from './appearanc
 import { applyPreset, syncAlarm } from './focus.js';
 import { createDefaultState, normalizeState } from './state.js';
 import { dayKey } from './stats.js';
-import { getState, replaceState, subscribe, update } from './store.js';
+import { getState, replaceState, subscribe, trackSave, update } from './store.js';
 import { SUGGEST_ORIGINS, hasSuggestions } from './suggest.js';
 import { presetOf, readyTimer } from './timer.js';
 import {
@@ -33,6 +35,7 @@ import {
   newImageId,
   prepareWallpaper,
   putImage,
+  storedImageIds,
 } from './wallpaper.js';
 
 const dialog = () => $('settings');
@@ -353,51 +356,89 @@ async function importData(file) {
   }
   if (!confirm(t('backup.confirmImport'))) return;
 
+  // Nothing current is touched before the backup is saved: its images are prepared and stored under
+  // new ids, the state is replaced all at once, and only then do the previous images go. If anything
+  // fails, the new images are removed and everything stays as it was.
   const next = normalizeState(raw);
   next.timer = readyTimer('focus', presetOf(next));
-  // The backup's images replace the current ones: wallpaperImages (several) since the rotation,
-  // wallpaperImage (one, kept as "selected") before.
+  // wallpaperImages (several) since the rotation, wallpaperImage (one, kept as "selected") before.
   const images = Array.isArray(payload.wallpaperImages)
     ? payload.wallpaperImages
     : typeof payload.wallpaperImage === 'string'
       ? [{ id: 'selected', image: payload.wallpaperImage }]
       : [];
   let imageFailed = false;
-  const stored = [];
-  await clearImages().catch(() => {});
-  for (const item of images.slice(0, LIMITS.wallpapers)) {
-    const valid = typeof item?.image === 'string' && item.image.startsWith('data:image/');
-    const id =
-      typeof item?.id === 'string' && /^[\w-]{1,40}$/.test(item.id) && !stored.includes(item.id)
-        ? item.id
-        : newImageId();
-    try {
-      if (!valid) throw new Error('not an image');
-      await putImage(id, await prepareWallpaper(await dataURLToBlob(item.image)));
-      stored.push(id);
-    } catch {
-      imageFailed = true;
+  const staged = new Map(); // id in the backup -> new id
+  try {
+    for (const item of images.slice(0, LIMITS.wallpapers)) {
+      let blob;
+      try {
+        if (typeof item?.image !== 'string' || !item.image.startsWith('data:image/')) {
+          throw new Error('not an image');
+        }
+        blob = await prepareWallpaper(await dataURLToBlob(item.image));
+      } catch {
+        imageFailed = true; // an unreadable image is left out, the rest of the backup still comes in
+        continue;
+      }
+      const id = newImageId();
+      await putImage(id, blob); // storage full or blocked: the whole restore stops
+      staged.set(typeof item.id === 'string' && !staged.has(item.id) ? item.id : id, id);
     }
+  } catch {
+    await discardImages([...staged.values()]);
+    announce(t('backup.failed'));
+    return;
   }
-  // The backup's order for the images it listed, then any other image it carried.
-  next.customImages = [
-    ...next.customImages.filter((id) => stored.includes(id)),
-    ...stored.filter((id) => !next.customImages.includes(id)),
-  ];
-  if (!next.customImages.includes(next.customImage)) next.customImage = next.customImages[0] ?? '';
+  // The backup's images under their new ids: its order for those it listed, then any other.
+  const listed = next.customImages.filter((id) => staged.has(id));
+  next.customImages = [...listed, ...[...staged.keys()].filter((id) => !listed.includes(id))].map((id) =>
+    staged.get(id),
+  );
+  next.customImage = staged.get(next.customImage) ?? next.customImages[0] ?? '';
+  next.autoAccents = Object.fromEntries(
+    Object.entries(next.autoAccents).map(([key, color]) => {
+      const old = key.startsWith('custom:') ? key.slice(7) : null;
+      return [staged.has(old) ? `custom:${staged.get(old)}` : key, color];
+    }),
+  );
   if (next.wallpaper === CUSTOM_WALLPAPER && !next.customImages.length) next.wallpaper = 'workstation';
   next.wallpaperRev = Date.now();
-  replaceState(next);
+  if (!(await replaceState(next))) {
+    await discardImages([...staged.values()]);
+    announce(t('backup.failed'));
+    return;
+  }
+  trackSave(keepOnlyImages(next.customImages)); // saved: the previous images can go
   syncAlarm();
   announce(t(imageFailed ? 'backup.importedNoImage' : 'backup.imported'));
 }
 
+const discardImages = (ids) => Promise.all(ids.map((id) => deleteImage(id).catch(() => {})));
+
+async function keepOnlyImages(keep) {
+  const stored = await storedImageIds().catch(() => []);
+  await discardImages(stored.filter((id) => !keep.includes(id)));
+}
+
+// Same rule as the restore: the images and leftovers are deleted only once the reset is saved.
 async function resetAll() {
   if (!confirm(t('reset.confirm'))) return;
-  await clearImages().catch(() => {});
   const next = createDefaultState();
   next.wallpaperRev = Date.now();
-  replaceState(next);
+  if (!(await replaceState(next))) {
+    announce(t('reset.failed'));
+    return;
+  }
+  trackSave(clearImages().catch(() => {}));
+  // The copy of an unreadable save and the rotation counter go too.
+  for (const key of [`${STORAGE_KEY}.corrupt`, ROTATION_KEY]) {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Best effort: they hold no personal content.
+    }
+  }
   syncAlarm();
   closeSettings();
   announce(t('reset.done'));

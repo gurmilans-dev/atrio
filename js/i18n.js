@@ -265,8 +265,12 @@ const it = {
   'backup.confirmImport': 'Importare il backup? Sostituirà impostazioni, collegamenti e attività attuali.',
   'backup.imported': 'Backup importato.',
   'backup.importedNoImage': 'Backup importato, ma non lo sfondo personale.',
+  'backup.failed':
+    'Backup non importato: lo spazio di archiviazione è pieno o bloccato. I tuoi dati sono rimasti com’erano.',
   'reset.confirm': 'Ripristinare impostazioni, collegamenti, attività e sfondo personale?',
   'reset.done': 'Impostazioni ripristinate.',
+  'reset.failed':
+    'Ripristino non riuscito: lo spazio di archiviazione è bloccato. Non è stato cancellato nulla.',
 
   'shortcuts.search': 'Cerca',
   'shortcuts.palette': 'Palette dei comandi',
@@ -638,8 +642,10 @@ const en = {
   'backup.confirmImport': 'Import this backup? It replaces your current settings, links and tasks.',
   'backup.imported': 'Backup imported.',
   'backup.importedNoImage': 'Backup imported, except the wallpaper.',
+  'backup.failed': 'Backup not imported: storage is full or blocked. Your data is as it was.',
   'reset.confirm': 'Reset settings, links, tasks and your wallpaper?',
   'reset.done': 'Settings reset.',
+  'reset.failed': 'Reset failed: storage is blocked. Nothing was deleted.',
 
   'shortcuts.search': 'Search',
   'shortcuts.palette': 'Command palette',

@@ -99,9 +99,18 @@ export const hasUnsavedChanges = () => unsaved && queue.length > 0;
 /** Tries again to save the queued changes. */
 export const retrySave = () => (queue.length ? commit() : Promise.resolve(true));
 
-/** Resolves once every change made so far has been through a commit. */
+// Follow-up work of a save that must end before the page goes (old images being removed).
+const work = new Set();
+export function trackSave(task) {
+  const tracked = Promise.resolve(task)
+    .catch(() => {})
+    .finally(() => work.delete(tracked));
+  work.add(tracked);
+}
+
+/** Resolves once every change made so far has been through a commit, follow-up work included. */
 export async function flush() {
-  while (committing) await committing;
+  while (committing || work.size) await Promise.all([committing, ...work]);
 }
 
 // Leaving the page (tab closed, navigation) cannot wait for the lock: queued changes are written
