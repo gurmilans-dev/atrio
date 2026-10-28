@@ -92,6 +92,9 @@
   lost the text. Now the notes say "saved" only once storage holds them; otherwise they show "not saved" with a
   **Retry** button until a save goes through (Retry, the next edit or any other change), and the text stays in the
   page meanwhile.
+- **A paused timer could still notify.** Starting and pausing quickly (or turning notifications off right after a
+  start) let the start's alarm be created after the pause had cleared the alarms. Alarm updates now run one at a
+  time, in every tab, and each applies the latest state of the timer.
 - **A local tool's input could be searched on the web by accident.** After `Esc` (or a click on →, or a click
   elsewhere) closed the rows of a JWT, JSON, Base64 or a sum, `Enter` sent the text to the search engine and kept it
   among the recent searches. Now `Enter` brings the rows back; only `Shift + Enter` searches such text, and it is

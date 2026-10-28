@@ -21,12 +21,31 @@ import { getLanguage } from './i18n.js';
 const alarmName = (mode) => `timer:${mode}:${getLanguage()}`;
 
 // The service worker (background.js) shows a notification when the alarm fires.
-export async function syncTimerAlarm(timer, enabled) {
-  if (!ext?.alarms) return;
-  await ext.alarms.clearAll();
-  if (enabled && timer.running && timer.endAt > Date.now()) {
-    await ext.alarms.create(alarmName(timer.mode), { when: timer.endAt });
-  }
+// Syncs run one at a time (in every tab, under a lock) and each applies the latest timer asked for:
+// two quick calls, such as start then pause, can no longer finish in the wrong order and leave the
+// first one's alarm behind.
+let wanted = null; // the latest { timer, enabled } not applied yet
+let syncing = null;
+const exclusive = (task) =>
+  globalThis.navigator?.locks ? navigator.locks.request('atrio-alarm', task) : task();
+
+export function syncTimerAlarm(timer, enabled) {
+  if (!ext?.alarms) return Promise.resolve();
+  wanted = { timer, enabled };
+  syncing ??= exclusive(async () => {
+    while (wanted) {
+      const next = wanted;
+      wanted = null;
+      await ext.alarms.clearAll();
+      if (next.enabled && next.timer.running && next.timer.endAt > Date.now()) {
+        await ext.alarms.create(alarmName(next.timer.mode), { when: next.timer.endAt });
+      }
+    }
+  }).finally(() => {
+    syncing = null;
+    if (wanted) syncTimerAlarm(wanted.timer, wanted.enabled).catch(() => {}); // asked meanwhile
+  });
+  return syncing;
 }
 
 // Alarms are dropped when the extension reloads: recreate the one we expect, if missing.
