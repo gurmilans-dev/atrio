@@ -1858,6 +1858,262 @@ try {
   await a.eval(`localStorage.setItem('workspace.newtab.v2', ${JSON.stringify(beforeModes)})`);
   await a.goto();
 
+  // ---------- Visual styles and wallpapers ----------
+  const beforeStyles = await a.eval(`localStorage.getItem('workspace.newtab.v2')`);
+  const setStyle = async (style) => {
+    await a.eval(settings(`document.querySelector('input[name=visual-style][value=${style}]').click()`));
+  };
+  const setState = (code) =>
+    a.eval(`import('./js/store.js').then((store) => store.update((state) => { ${code} }))`);
+  // Blur and corner of a panel, a link card and the search box's glass layer.
+  const surfaces = `(() => {
+    const look = (selector, pseudo) => {
+      const style = getComputedStyle(document.querySelector(selector), pseudo);
+      return [style.backdropFilter, style.borderTopLeftRadius];
+    };
+    return { panel: look('.focus-panel'), link: look('#links .shortcut'), search: look('.search', '::before') };
+  })()`;
+  await setState(
+    `state.layout = 'developer'; state.theme = 'tokyo'; state.show.focus = true; state.show.links = true;`,
+  );
+
+  await check(
+    'visual style: Classic by default, Glass from the settings, applied before the first paint',
+    async () => {
+      const read = `({ saved: ${STATE}.visualStyle, root: document.documentElement.dataset.style, checked: document.querySelector('input[name=visual-style]:checked').value })`;
+      const before = await a.eval(read);
+      const classic = await a.eval(surfaces);
+      await setStyle('glass');
+      const switched = await a.eval(read);
+      const glass = await a.eval(surfaces);
+      // What boot.js applied, before the modules run.
+      const { identifier } = await a.call('Page.addScriptToEvaluateOnNewDocument', {
+        source: `document.addEventListener('readystatechange', () => {
+        if (document.readyState !== 'interactive') return;
+        window.atBoot = {
+          style: document.documentElement.dataset.style,
+          blur: getComputedStyle(document.querySelector('.focus-panel')).backdropFilter.startsWith('blur('),
+          modules: document.documentElement.hasAttribute('data-ready'),
+        };
+      });`,
+      });
+      await a.goto();
+      const atBoot = await a.eval('window.atBoot');
+      await a.call('Page.removeScriptToEvaluateOnNewDocument', { identifier });
+      const reloaded = await a.eval(read);
+      assert.deepEqual(
+        { before, switched, atBoot, reloaded },
+        {
+          before: { saved: 'classic', root: 'classic', checked: 'classic' },
+          switched: { saved: 'glass', root: 'glass', checked: 'glass' },
+          atBoot: { style: 'glass', blur: true, modules: false },
+          reloaded: { saved: 'glass', root: 'glass', checked: 'glass' },
+        },
+      );
+      // Classic draws as before: no blur, the original corners. Glass blurs, with softer ones.
+      assert.deepEqual(classic, { panel: ['none', '14px'], link: ['none', '11px'], search: ['none', '0px'] });
+      assert.deepEqual(
+        Object.values(glass).map(([filter, radius]) => [filter.startsWith('blur('), radius]),
+        [
+          [true, '20px'],
+          [true, '18px'],
+          [true, '18px'],
+        ],
+      );
+    },
+  );
+
+  await check(
+    'visual style: other tabs follow, backups carry it, an older backup opens in Classic; nothing else changes',
+    async () => {
+      const b = settled(await browser.openPage());
+      const inB = [await b.eval(`document.documentElement.dataset.style`)];
+      await setStyle('classic');
+      await sleep(200);
+      inB.push(await b.eval(`document.documentElement.dataset.style`));
+      await setStyle('glass');
+      await sleep(200);
+      inB.push(await b.eval(`document.documentElement.dataset.style`));
+      await b.close();
+      const rest = `(() => { const s = ${STATE}; delete s.visualStyle; return JSON.stringify(s); })()`;
+      const before = await a.eval(rest);
+      for (const style of ['classic', 'glass', 'classic', 'glass']) await setStyle(style);
+      const unchanged = (await a.eval(rest)) === before;
+      const exported = await a.eval(`(async () => {
+      let href;
+      const click = HTMLAnchorElement.prototype.click;
+      HTMLAnchorElement.prototype.click = function () { if (this.download) href = this.href; else click.call(this); };
+      document.getElementById('export-data').click();
+      for (let i = 0; i < 50 && !href; i++) await new Promise((resolve) => setTimeout(resolve, 100));
+      HTMLAnchorElement.prototype.click = click;
+      return JSON.parse(await (await fetch(href)).text()).state;
+    })()`);
+      // A backup from before the styles: no visualStyle, its own mode, theme and (new) wallpaper.
+      const old = {
+        ...exported,
+        layout: 'minimal',
+        theme: 'light',
+        wallpaper: 'sunrise-lake',
+        customImages: [],
+      };
+      delete old.visualStyle;
+      const restored = await a.eval(`(async () => {
+      window.confirm = () => true;
+      const transfer = new DataTransfer();
+      transfer.items.add(new File([${JSON.stringify(JSON.stringify({ app: 'atrio', state: old }))}], 'old.json', { type: 'application/json' }));
+      const input = document.getElementById('import-file');
+      input.files = transfer.files;
+      input.dispatchEvent(new Event('change'));
+      for (let i = 0; i < 50 && ${STATE}.layout !== 'minimal'; i++) await new Promise((resolve) => setTimeout(resolve, 100));
+      const s = ${STATE};
+      const root = document.documentElement.dataset;
+      return { saved: [s.visualStyle, s.layout, s.theme, s.wallpaper], root: [root.style, root.layout, root.theme, root.wallpaper] };
+    })()`);
+      assert.deepEqual(
+        { inB, unchanged, exported: exported.visualStyle, restored },
+        {
+          inB: ['glass', 'classic', 'glass'],
+          unchanged: true,
+          exported: 'glass',
+          restored: {
+            saved: ['classic', 'minimal', 'light', 'sunrise-lake'],
+            root: ['classic', 'minimal', 'light', 'sunrise-lake'],
+          },
+        },
+      );
+    },
+  );
+
+  await check(
+    'the four new wallpapers: in the picker with their names, applied before the first paint, an accent for the automatic theme',
+    async () => {
+      const picker = await a.eval(`(async () => {
+      const dialog = document.getElementById('settings');
+      dialog.showModal();
+      document.getElementById('wallpaper-picks').scrollIntoView();
+      const images = [...document.querySelectorAll('#wallpaper-picks [data-wallpaper] img')];
+      for (let i = 0; i < 50 && !images.every((image) => image.complete && image.naturalWidth); i++) await new Promise((resolve) => setTimeout(resolve, 100));
+      const picks = [...document.querySelectorAll('#wallpaper-picks [data-wallpaper]')].map((pick) => [pick.dataset.wallpaper, pick.querySelector('.pick-label').textContent, pick.querySelector('img').naturalWidth]);
+      document.querySelector('#wallpaper-picks [data-wallpaper="deep-space"]').click();
+      const pressed = document.querySelector('#wallpaper-picks [data-wallpaper="deep-space"]').getAttribute('aria-pressed');
+      dialog.close();
+      return { picks, pressed };
+    })()`);
+      const { identifier } = await a.call('Page.addScriptToEvaluateOnNewDocument', {
+        source: `document.addEventListener('readystatechange', () => {
+        if (document.readyState !== 'interactive') return;
+        window.atBoot = {
+          wallpaper: document.documentElement.dataset.wallpaper,
+          image: document.documentElement.style.getPropertyValue('--wallpaper'),
+          modules: document.documentElement.hasAttribute('data-ready'),
+        };
+      });`,
+      });
+      await a.goto();
+      const atBoot = await a.eval('window.atBoot');
+      await a.call('Page.removeScriptToEvaluateOnNewDocument', { identifier });
+      // The automatic theme: an accent computed from the image, saved for the next tabs.
+      await setState(`state.theme = 'auto'; state.wallpaper = 'liquid-glass';`);
+      const accent = await a.eval(`(async () => {
+      for (let i = 0; i < 50 && !${STATE}.autoAccents['liquid-glass']; i++) await new Promise((resolve) => setTimeout(resolve, 100));
+      return { saved: ${STATE}.autoAccents['liquid-glass'], applied: document.documentElement.style.getPropertyValue('--accent') };
+    })()`);
+      assert.deepEqual(picker, {
+        picks: [
+          ['workstation', 'Postazione', 1672],
+          ['city', 'Città', 1672],
+          ['deep-space', 'Spazio profondo', 1672],
+          ['warm-sand', 'Sabbia calda', 1672],
+          ['sunrise-lake', 'Lago all’alba', 1672],
+          ['liquid-glass', 'Vetro liquido', 1672],
+        ],
+        pressed: 'true',
+      });
+      assert.deepEqual(atBoot, {
+        wallpaper: 'deep-space',
+        image: 'url("assets/deep-space.webp")',
+        modules: false,
+      });
+      assert.match(accent.saved, /^#[0-9a-f]{6}$/);
+      assert.equal(accent.applied, accent.saved);
+    },
+  );
+
+  await check(
+    'Glass in Developer and Minimal at 1920, 1366, 1280 × 720, 768 and 420 px: in order, settings in reach, even with custom CSS',
+    async () => {
+      await setState(`state.visualStyle = 'glass'; state.theme = 'tokyo'; state.wallpaper = 'warm-sand';`);
+      const problems = [];
+      for (const layout of ['developer', 'minimal']) {
+        await setState(`state.layout = '${layout}';`);
+        for (const [width, height] of [
+          [1920, 1080],
+          [1366, 768],
+          [1280, 720],
+          [768, 1024],
+          [420, 860],
+        ]) {
+          await a.resize(width, height);
+          await sleep(250);
+          const r = await a.eval(`(() => {
+          const box = (selector) => document.querySelector(selector).getBoundingClientRect();
+          const gear = box('#open-settings');
+          const hit = document.elementFromPoint(gear.x + gear.width / 2, gear.y + gear.height / 2);
+          return {
+            stacked: box('#clock').bottom <= box('.search').top && box('.search').bottom <= box('#links').top,
+            scrollX: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+            scrollY: ${layout === 'minimal'} && document.documentElement.scrollHeight > innerHeight,
+            gear: hit?.closest('#open-settings') !== null,
+          };
+        })()`);
+          if (!r.stacked || r.scrollX || r.scrollY || !r.gear) problems.push({ layout, width, height, ...r });
+        }
+      }
+      await a.resize(1440, 900);
+      await a.eval(
+        settings(`
+        document.getElementById('css-input').value = ':scope { display: none !important }';
+        document.getElementById('css-apply').click();`),
+      );
+      const reach = await a.eval(`(() => {
+        const gear = document.getElementById('open-settings').getBoundingClientRect();
+        const hit = document.elementFromPoint(gear.x + gear.width / 2, gear.y + gear.height / 2);
+        return hit?.closest('#open-settings') !== null;
+      })()`);
+      await a.click('#open-settings');
+      const settingsOpen = await a.eval(`document.getElementById('settings').open`);
+      await a.eval(
+        `document.getElementById('css-clear').click(); document.getElementById('settings').close()`,
+      );
+      assert.deepEqual({ problems, reach, settingsOpen }, { problems: [], reach: true, settingsOpen: true });
+    },
+  );
+
+  await check('less transparency or more contrast: Glass keeps Classic’s fills, without blur', async () => {
+    await setState(`state.layout = 'developer'; state.visualStyle = 'classic';`);
+    const look = `(() => { const s = getComputedStyle(document.querySelector('.focus-panel')); return [s.backgroundColor, s.backdropFilter]; })()`;
+    const classic = await a.eval(look);
+    await setState(`state.visualStyle = 'glass';`);
+    const read = {};
+    for (const [name, value] of [
+      ['prefers-reduced-transparency', 'reduce'],
+      ['prefers-contrast', 'more'],
+    ]) {
+      await a.call('Emulation.setEmulatedMedia', { features: [{ name, value }] });
+      read[name] = await a.eval(look);
+    }
+    await a.call('Emulation.setEmulatedMedia', { features: [] });
+    const glass = await a.eval(look);
+    assert.deepEqual(read, {
+      'prefers-reduced-transparency': [classic[0], 'none'],
+      'prefers-contrast': [classic[0], 'none'],
+    });
+    assert.ok(glass[0] !== classic[0] && glass[1].startsWith('blur('), JSON.stringify(glass));
+  });
+
+  await a.eval(`localStorage.setItem('workspace.newtab.v2', ${JSON.stringify(beforeStyles)})`);
+  await a.goto();
+
   await check('narrow window (420 px): no horizontal scroll', async () => {
     await a.resize(420, 860);
     await sleep(300);

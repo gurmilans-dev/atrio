@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { LIMITS, STORAGE_KEY } from '../js/config.js';
+import { LAYOUTS, LIMITS, STORAGE_KEY, THEMES, VISUAL_STYLES, WALLPAPERS } from '../js/config.js';
 import { createDefaultState, loadState, normalizeState, serialize } from '../js/state.js';
 
 function memoryStorage(entries = {}) {
@@ -209,6 +209,70 @@ describe('interface mode', () => {
     const minimal = normalizeState({ ...saved, layout: 'minimal' });
     assert.deepEqual({ ...minimal, layout: saved.layout }, saved);
     assert.deepEqual(normalizeState({ ...minimal, layout: 'developer' }), saved);
+  });
+});
+
+describe('visual style', () => {
+  test('Classic by default and for saves from before the styles; Glass kept; anything else Classic', () => {
+    assert.equal(createDefaultState().visualStyle, 'classic');
+    assert.equal(normalizeState({ layout: 'minimal', theme: 'light' }).visualStyle, 'classic');
+    assert.equal(normalizeState({ visualStyle: 'glass' }).visualStyle, 'glass');
+    for (const visualStyle of ['Glass', 'glassy', 'minimal', 1, null, ['glass']]) {
+      assert.equal(normalizeState({ visualStyle }).visualStyle, 'classic', String(visualStyle));
+    }
+  });
+
+  test('switching it changes nothing else, both ways', () => {
+    const saved = normalizeState({
+      layout: 'minimal',
+      theme: 'mocha',
+      wallpaper: 'warm-sand',
+      show: { heatmap: false },
+      tasks: [{ id: 'a', text: 'kept', done: false }],
+      notes: 'kept too',
+    });
+    const glass = normalizeState({ ...saved, visualStyle: 'glass' });
+    assert.deepEqual({ ...glass, visualStyle: saved.visualStyle }, saved);
+    assert.deepEqual(normalizeState({ ...glass, visualStyle: 'classic' }), saved);
+  });
+
+  test('layout, style, theme and wallpaper are independent: every combination is kept as saved', () => {
+    for (const layout of LAYOUTS) {
+      for (const visualStyle of VISUAL_STYLES) {
+        for (const theme of Object.keys(THEMES)) {
+          for (const wallpaper of WALLPAPERS) {
+            const state = normalizeState({ layout, visualStyle, theme, wallpaper });
+            assert.deepEqual(
+              [state.layout, state.visualStyle, state.theme, state.wallpaper],
+              [layout, visualStyle, theme, wallpaper],
+            );
+          }
+        }
+      }
+    }
+  });
+});
+
+describe('built-in wallpapers', () => {
+  test('the four new ones are known; earlier choices and the default are unchanged', () => {
+    assert.deepEqual(WALLPAPERS, [
+      'workstation',
+      'city',
+      'deep-space',
+      'warm-sand',
+      'sunrise-lake',
+      'liquid-glass',
+    ]);
+    assert.equal(createDefaultState().wallpaper, 'workstation');
+    assert.equal(normalizeState({ wallpaper: 'city' }).wallpaper, 'city');
+    assert.equal(normalizeState({ wallpaper: 'custom', customImages: ['a'] }).wallpaper, 'custom');
+    for (const wallpaper of ['deep space', 'Deep-Space', 'deep-space.webp', '../city', 'ocean']) {
+      assert.equal(normalizeState({ wallpaper }).wallpaper, 'workstation', wallpaper);
+    }
+    // Their accents for the automatic theme are kept by id, like the others'.
+    assert.deepEqual(normalizeState({ autoAccents: { 'liquid-glass': '#8395ed' } }).autoAccents, {
+      'liquid-glass': '#8395ed',
+    });
   });
 });
 

@@ -139,6 +139,30 @@ test('the interface mode is applied before the first paint; a malformed one is l
   }
 });
 
+test('the visual style is applied before the first paint, apart from the mode; a malformed one is left out', () => {
+  const { root } = boot({ visualStyle: 'glass', layout: 'minimal', theme: 'light' });
+  assert.deepEqual(
+    [root.dataset.style, root.dataset.layout, root.dataset.theme],
+    ['glass', 'minimal', 'light'],
+  );
+  assert.equal(boot({ visualStyle: 'classic' }).root.dataset.style, 'classic');
+  for (const visualStyle of ['"glass"', 'gla ss', 'glass-x', 0, null]) {
+    assert.equal('style' in boot({ visualStyle }).root.dataset, false, String(visualStyle));
+  }
+});
+
+test('built-in wallpapers with hyphenated ids are applied too; malformed ids never reach the URL', () => {
+  for (const id of ['deep-space', 'warm-sand', 'sunrise-lake', 'liquid-glass']) {
+    const { root, properties } = boot({ wallpaper: id });
+    assert.equal(root.dataset.wallpaper, id);
+    assert.equal(properties['--wallpaper'], `url("assets/${id}.webp")`);
+  }
+  for (const wallpaper of ['../city', 'deep--space', '-city', 'city-', 'Deep-Space', 'a")', 'x y']) {
+    const { root, properties } = boot({ wallpaper });
+    assert.deepEqual([root.dataset.wallpaper, properties['--wallpaper']], [undefined, undefined], wallpaper);
+  }
+});
+
 test('custom theme accent; an empty save changes nothing', () => {
   assert.equal(
     boot({ theme: 'custom', customAccent: { color: '#ea67af' } }).properties['--accent'],

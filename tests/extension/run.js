@@ -5,6 +5,7 @@
 import assert from 'node:assert/strict';
 import http from 'node:http';
 import { fileURLToPath } from 'node:url';
+import { WALLPAPERS } from '../../js/config.js';
 import { launchExtension, sleep } from '../e2e/harness.js';
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
@@ -188,6 +189,48 @@ try {
         toast: 'Backup importato.',
         wallpaper: true,
         accent: true,
+      });
+    },
+  );
+
+  await check(
+    'the bundled wallpapers load from the package under its CSP; Glass and a new wallpaper apply before the first paint',
+    async () => {
+      await page.eval(`localStorage.setItem('workspace.newtab.v2', JSON.stringify({
+      ...${STATE}, wallpaper: 'liquid-glass', visualStyle: 'glass', customCSS: '',
+    }))`);
+      const { identifier } = await page.call('Page.addScriptToEvaluateOnNewDocument', {
+        source: `document.addEventListener('readystatechange', () => {
+        if (document.readyState !== 'interactive') return;
+        const root = document.documentElement;
+        window.atBoot = { style: root.dataset.style, wallpaper: root.dataset.wallpaper, modules: root.hasAttribute('data-ready') };
+      });`,
+      });
+      await page.goto();
+      await page.call('Page.removeScriptToEvaluateOnNewDocument', { identifier });
+      const r = await page.eval(`(async () => {
+      const blocked = [];
+      document.addEventListener('securitypolicyviolation', (e) => blocked.push(e.blockedURI));
+      const sizes = await Promise.all(${JSON.stringify(WALLPAPERS)}.map(async (id) => {
+        const image = new Image();
+        image.src = 'assets/' + id + '.webp';
+        await image.decode().catch(() => {});
+        return [id, image.naturalWidth];
+      }));
+      return {
+        atBoot: window.atBoot,
+        blocked,
+        sizes: Object.fromEntries(sizes),
+        shown: getComputedStyle(document.querySelector('.wallpaper')).backgroundImage.endsWith('/assets/liquid-glass.webp")'),
+        blur: getComputedStyle(document.querySelector('.search'), '::before').backdropFilter.startsWith('blur('),
+      };
+    })()`);
+      assert.deepEqual(r, {
+        atBoot: { style: 'glass', wallpaper: 'liquid-glass', modules: false },
+        blocked: [],
+        sizes: Object.fromEntries(WALLPAPERS.map((id) => [id, 1672])),
+        shown: true,
+        blur: true,
       });
     },
   );
