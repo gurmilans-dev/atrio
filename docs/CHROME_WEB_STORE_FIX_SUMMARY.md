@@ -26,7 +26,7 @@ developer account. See [Manual checks](#manual-checks).
 | ATR-10 | Custom CSS could load images from any server                 | CSP: `img-src 'self' data: blob:`, `font-src 'self'`, `media-src 'none'`, `connect-src` limited to the two suggestion services                    | Extension: loopback server gets no request; favicons, `blob:` wallpaper, accent load | Fixed        | `cd730f1` |
 | ATR-11 | Tests never ran in the real extension                        | `npm run test:extension`: unpacked extension in headless Chrome or Edge via `Extensions.loadUnpacked`                                             | 6 checks, Chrome and Edge                                                            | Mitigated    | `dc83096` |
 | ATR-12 | `ts 1970-01-01T00:00:00Z` was not a date                     | Only `NaN` means "not a date"                                                                                                                     | Unit                                                                                 | Fixed        | `c6b6ff0` |
-| ATR-13 | No screenshots at the Store's size                           | `npm run screenshots -- --store`: 1280 × 800 JPEG in `docs/store/`                                                                                | Size and alpha checked; images reviewed                                              | Fixed        | `b14ca94` |
+| ATR-13 | No screenshots at the Store's size                           | `npm run screenshots -- --store`: 1280 × 800 JPEG, now in `docs/store/3.2.0/`                                                                     | Size and alpha checked; images reviewed                                              | Fixed        | `b14ca94` |
 | ATR-14 | Provenance of the wallpapers and Google icons not documented | README: the wallpapers are the author's own images; launcher icons left to a trademark review                                                     | None                                                                                 | Manual check | `405ebf1` |
 | ATR-15 | Changes under "Unreleased" with version 3.1.0                | Version 3.2.0 in `manifest.json` and `package.json`, changelog dated                                                                              | `npm run check`                                                                      | Fixed        | `f246db7` |
 
@@ -37,7 +37,7 @@ developer account. See [Manual checks](#manual-checks).
 - **ATR-11:** CI still runs unit tests, lint and formatting only. The browser suites were not added to the workflow,
   because they could not be run on a GitHub Actions runner from here; they are run locally.
 - **ATR-14:** whether the launcher's drawings may be used is a trademark question for the maintainer. Until it is
-  settled, `docs/store/apps.jpg` is better left out of the listing.
+  settled, `docs/store/3.2.0/apps.jpg` is better left out of the listing.
 - **ATR-15:** 3.2.0 is higher than 3.1.0; the Dashboard's package history was not seen.
 
 ## Tests run

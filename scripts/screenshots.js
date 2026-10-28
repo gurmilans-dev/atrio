@@ -1,15 +1,17 @@
 // Regenerates the screenshots with demo data.
 //   npm run screenshots              README images in docs/, 1536 × 960 WebP
-//   npm run screenshots -- --store   Chrome Web Store set in docs/store/, 1280 × 800 JPEG (no alpha)
-// Names after the options write only those images, e.g. npm run screenshots -- --store minimal.
-import { mkdir, writeFile } from 'node:fs/promises';
+//   npm run screenshots -- --store   Chrome Web Store set in docs/store/<version>/: five 1280 × 800 JPEG
+//                                    screenshots (no alpha) and the 440 × 280 small promo tile
+// Names after the options write only those images, e.g. npm run screenshots -- --store 3-minimal-classic.
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { launch, sleep } from '../tests/e2e/harness.js';
 
 const STORE = process.argv.includes('--store');
 const ONLY = process.argv.slice(2).filter((arg) => !arg.startsWith('--'));
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const OUT = new URL(STORE ? '../docs/store/' : '../docs/', import.meta.url);
+const { version } = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+const OUT = new URL(STORE ? `../docs/store/${version}/` : '../docs/', import.meta.url);
 // The Store set shows the same 1536 × 960 layout as the README, scaled to the Store's 1280 × 800.
 const [WIDTH, HEIGHT] = [1536, 960];
 const FORMAT = STORE
@@ -57,6 +59,53 @@ function demoState() {
   };
 }
 
+// A token made up for the picture: decoded by the search box like any JWT, it holds nothing real.
+function demoToken() {
+  const part = (value) => Buffer.from(JSON.stringify(value)).toString('base64url');
+  const now = Math.floor(Date.now() / 1000);
+  const payload = { sub: 'demo-user', name: 'Demo User', role: 'developer', iat: now - 600, exp: now + 3000 };
+  return `${part({ alg: 'HS256', typ: 'JWT' })}.${part(payload)}.demo-signature`;
+}
+
+// The Chrome Web Store set: Developer and Minimal, Classic and Glass, the developer tools, the
+// appearance settings. The Google apps launcher is turned off (Settings → Page), so no drawing close
+// to a Google product icon shows until the trademark check in docs/CHROME_WEB_STORE_LISTING.md.
+async function storeSet(page, shot) {
+  const set = (patch) =>
+    page.eval(`(() => {
+      const s = JSON.parse(localStorage.getItem(${JSON.stringify(KEY)}));
+      Object.assign(s, ${JSON.stringify({ theme: 'tokyo', panelTab: 'tasks', apps: { visible: false }, ...patch })});
+      localStorage.setItem(${JSON.stringify(KEY)}, JSON.stringify(s));
+    })()`);
+
+  await set({ layout: 'developer', visualStyle: 'classic', wallpaper: 'workstation' });
+  await page.goto();
+  await shot('1-developer-classic');
+
+  await set({ layout: 'developer', visualStyle: 'glass', wallpaper: 'liquid-glass' });
+  await page.goto();
+  await page.press('/');
+  await page.type(demoToken());
+  await shot('2-developer-glass-tools');
+
+  await set({ layout: 'minimal', visualStyle: 'classic', wallpaper: 'city' });
+  await page.goto();
+  await shot('3-minimal-classic');
+
+  await set({ layout: 'minimal', visualStyle: 'glass', theme: 'mocha', wallpaper: 'sunrise-lake' });
+  await page.goto();
+  await shot('4-minimal-glass');
+
+  await set({ layout: 'developer', visualStyle: 'classic', wallpaper: 'deep-space' });
+  await page.goto();
+  await page.click('#open-settings');
+  await page.eval(`(() => {
+    document.getElementById('style-picks').scrollIntoView({ block: 'start' });
+    document.activeElement.blur();
+  })()`);
+  await shot('5-appearance');
+}
+
 // The browser language is English, so the page's automatic language is too.
 const browser = await launch(ROOT, { width: WIDTH, height: HEIGHT, lang: 'en-US' });
 try {
@@ -74,6 +123,27 @@ try {
   );
   await page.goto();
 
+  if (STORE) {
+    await storeSet(page, shot);
+    // The small promo tile, from its own page at the Store's size.
+    if (!ONLY.length || ONLY.includes('promo-440x280')) {
+      const tile = await browser.openPage('scripts/promo-tile.html');
+      await tile.resize(440, 280);
+      await sleep(400);
+      const file = new URL('promo-440x280.png', OUT);
+      await writeFile(file, await tile.screenshot({ format: 'png' }));
+      console.log(fileURLToPath(file));
+    }
+  } else {
+    await readmeSet(page, shot);
+  }
+} finally {
+  await browser.close();
+}
+
+// The README images: the full workspace, the palette, the launcher, the settings, a theme, Minimal
+// and Glass.
+async function readmeSet(page, shot) {
   await shot('home');
 
   await page.press('/');
@@ -120,6 +190,4 @@ try {
   })()`);
   await page.goto();
   await shot('glass');
-} finally {
-  await browser.close();
 }
