@@ -2233,6 +2233,12 @@ kbd {
   --glass-shadow-small:
     0 6px 16px -8px rgb(32 44 82 / 0.32), 0 0 0 1px rgb(20 30 60 / 0.06), inset 0 1px 0 rgb(255 255 255 / 0.9);
 }
+/* The automatic and custom themes tint the fills with their accent, which a bright wallpaper makes
+   lighter still: a little more smoke keeps the muted text at 4.5:1 there too. */
+:root[data-style='glass']:is([data-theme='auto'], [data-theme='custom']) {
+  --glass-blur: blur(14px) saturate(1.8) brightness(0.45);
+  --glass-blur-float: blur(20px) saturate(1.8) brightness(0.45);
+}
 
 /* The page's surfaces: panels, link cards, the corner buttons. */
 :root[data-style='glass'] .panel,
