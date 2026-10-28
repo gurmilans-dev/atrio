@@ -211,6 +211,11 @@ const it = {
   'layout.developerNote': 'Workspace completo con pannelli, strumenti e statistiche.',
   'layout.minimal': 'Minimal',
   'layout.minimalNote': 'Orologio, ricerca e collegamenti in un’interfaccia essenziale.',
+  'settings.style': 'Stile visivo',
+  'style.classic': 'Classic',
+  'style.classicNote': 'L’aspetto originale di Atrio.',
+  'style.glass': 'Glass',
+  'style.glassNote': 'Superfici traslucide e profondità.',
   'settings.pageMinimalNote':
     'In Minimal la pagina mostra orologio, data e collegamenti: attività, note e timer restano disponibili con T, N e P.',
   'settings.timer': 'Timer',
@@ -316,6 +321,7 @@ const it = {
   'command.export': 'Esporta backup',
   'command.theme': 'Tema: {name}',
   'command.layout': 'Modalità: {name}',
+  'command.style': 'Stile visivo: {name}',
   'command.wallpaper': 'Sfondo: {name}',
 
   'tool.calc': 'Calcolatrice',
@@ -605,6 +611,11 @@ const en = {
   'layout.developerNote': 'The full workspace, with panels, tools and statistics.',
   'layout.minimal': 'Minimal',
   'layout.minimalNote': 'Clock, search and links in an essential interface.',
+  'settings.style': 'Visual style',
+  'style.classic': 'Classic',
+  'style.classicNote': 'Atrio’s original appearance.',
+  'style.glass': 'Glass',
+  'style.glassNote': 'Translucent surfaces and depth.',
   'settings.pageMinimalNote':
     'In Minimal the page shows the clock, date and links: tasks, notes and the timer stay available with T, N and P.',
   'settings.timer': 'Timer',
@@ -708,6 +719,7 @@ const en = {
   'command.export': 'Export backup',
   'command.theme': 'Theme: {name}',
   'command.layout': 'Interface mode: {name}',
+  'command.style': 'Visual style: {name}',
   'command.wallpaper': 'Wallpaper: {name}',
 
   'tool.calc': 'Calculator',

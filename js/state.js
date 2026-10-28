@@ -10,6 +10,7 @@ import {
   DEFAULT_CUSTOM_PRESET,
   DEFAULT_LAYOUT,
   DEFAULT_LINKS,
+  DEFAULT_VISUAL_STYLE,
   ENGINES,
   LAYOUTS,
   LIMITS,
@@ -19,6 +20,7 @@ import {
   STORAGE_KEY,
   THEMES,
   TOOL_KEYWORDS,
+  VISUAL_STYLES,
   WALLPAPERS,
 } from './config.js';
 import { readableAccent } from './color.js';
@@ -55,6 +57,7 @@ export function createDefaultState() {
     schema: SCHEMA_VERSION,
     lang: 'auto',
     layout: DEFAULT_LAYOUT,
+    visualStyle: DEFAULT_VISUAL_STYLE,
     theme: 'tokyo',
     wallpaper: 'workstation',
     wallpaperRev: 0,
@@ -277,6 +280,8 @@ export function normalizeState(raw) {
     lang: pick(input.lang, LANGUAGES, base.lang),
     // Saves from before the modes have none: they keep the full layout they had.
     layout: pick(input.layout, LAYOUTS, base.layout),
+    // Likewise saves from before the visual styles: they keep the look they had.
+    visualStyle: pick(input.visualStyle, VISUAL_STYLES, base.visualStyle),
     theme: pick(input.theme, Object.keys(THEMES), base.theme),
     wallpaper: pick(input.wallpaper, [...WALLPAPERS, CUSTOM_WALLPAPER], base.wallpaper),
     wallpaperRev: toInt(input.wallpaperRev, 0, Number.MAX_SAFE_INTEGER, 0),

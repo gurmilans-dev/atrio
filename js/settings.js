@@ -192,6 +192,7 @@ function render(state) {
   $('rotation-select').disabled = state.customImages.length < 2;
   for (const input of $$('input[name=layout]')) input.checked = input.value === state.layout;
   $('page-minimal-note').hidden = state.layout !== 'minimal';
+  for (const input of $$('input[name=visual-style]')) input.checked = input.value === state.visualStyle;
   mark('[data-theme-choice]', 'themeChoice', state.theme);
   mark('[data-preset]', 'preset', state.preset);
   for (const [key, { format }] of Object.entries(RANGES)) {
@@ -504,6 +505,12 @@ export function initSettings() {
     const layout = event.target.value;
     update((state) => {
       state.layout = layout;
+    });
+  });
+  $('style-picks').addEventListener('change', (event) => {
+    const visualStyle = event.target.value;
+    update((state) => {
+      state.visualStyle = visualStyle;
     });
   });
   $('theme-picks').addEventListener('click', (event) => {

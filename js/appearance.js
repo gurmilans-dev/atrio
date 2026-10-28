@@ -134,6 +134,7 @@ function applyCustomCSS({ customCSS }) {
 function apply(state) {
   applyCustomCSS(state);
   root.dataset.layout = state.layout;
+  root.dataset.style = state.visualStyle;
   root.dataset.theme = state.theme;
   root.dataset.wallpaper = state.wallpaper;
   for (const section of SECTIONS) root.toggleAttribute(`data-hide-${section}`, !state.show[section]);

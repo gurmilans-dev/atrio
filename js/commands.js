@@ -1,6 +1,6 @@
 // Actions available from the command palette (type ">" in the search box).
 import { toggleApps } from './apps.js';
-import { LAYOUTS, THEMES, WALLPAPERS } from './config.js';
+import { LAYOUTS, THEMES, VISUAL_STYLES, WALLPAPERS } from './config.js';
 import { resetTimer, toggleTimer } from './focus.js';
 import { t, themeName, wallpaperName } from './i18n.js';
 import { focusNotes } from './notes.js';
@@ -16,7 +16,7 @@ const set = (key, value) => () =>
 // Keywords are in both languages, so a command is found whatever the interface language.
 /** @returns {{label: string, keywords?: string, key?: string, run: () => void}[]} */
 export function getCommands() {
-  const { timer, show, layout } = getState();
+  const { timer, show, layout, visualStyle } = getState();
   const commands = [
     {
       label: t(timer.running ? 'command.pauseTimer' : 'command.startTimer'),
@@ -72,6 +72,11 @@ export function getCommands() {
       label: t('command.layout', { name: t(`layout.${id}`) }),
       keywords: 'modalità mode interfaccia interface layout minimal minimale developer completa full',
       run: set('layout', id),
+    })),
+    ...VISUAL_STYLES.filter((id) => id !== visualStyle).map((id) => ({
+      label: t('command.style', { name: t(`style.${id}`) }),
+      keywords: 'stile visivo visual style aspetto look glass vetro traslucido translucent classic classico',
+      run: set('visualStyle', id),
     })),
     ...Object.keys(THEMES).map((id) => ({
       label: t('command.theme', { name: themeName(id) }),

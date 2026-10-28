@@ -14,6 +14,8 @@
     // Interface mode (LAYOUTS in js/config.js): an unknown one matches no rule, so the page keeps the
     // Developer layout until js/appearance.js sets the normalized value.
     if (isWord(saved.layout)) root.dataset.layout = saved.layout;
+    // Visual style (VISUAL_STYLES in js/config.js), likewise: an unknown one draws the Classic look.
+    if (isWord(saved.visualStyle)) root.dataset.style = saved.visualStyle;
     // Own wallpapers with rotation (same rule as shownImage in js/rotation.js): this tab's image.
     // "A ogni nuova scheda" counts tabs in a key of its own, so other open tabs keep theirs.
     const images = Array.isArray(saved.customImages) ? saved.customImages : [];

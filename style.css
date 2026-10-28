@@ -1550,8 +1550,9 @@ kbd {
 .range + .range-heading {
   margin-top: 18px;
 }
-/* Settings → Appearance: the interface mode, as two cards with a sketch of each layout. The radio
-   button stays the control (keyboard, screen readers); the card shows its state. */
+/* Settings → Appearance: the interface mode, as two cards with a sketch of each layout (the visual
+   style below uses the same cards). The radio button stays the control (keyboard, screen readers);
+   the card shows its state. */
 .picks-heading {
   margin: 0 0 10px;
   padding: 0;
@@ -1679,6 +1680,41 @@ kbd {
 .lp-icons > span {
   width: 6px;
   height: 6px;
+}
+/* The visual style, with the same cards: a sketch of two surfaces over two accent blobs, which
+   Classic's surfaces cover and Glass's let through, blurred. */
+.style-preview {
+  display: flex;
+  gap: 5px;
+  height: 62px;
+  padding: 8px;
+  border: 1px solid var(--line-soft);
+  border-radius: 7px;
+  background:
+    radial-gradient(circle at 78% 38%, var(--accent) 0 10px, transparent 11px) border-box,
+    radial-gradient(
+        circle at 30% 60%,
+        color-mix(in srgb, var(--accent) 60%, transparent) 0 12px,
+        transparent 13px
+      )
+      border-box,
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 24%, var(--bg)), var(--bg) 70%) border-box;
+}
+.style-preview > span {
+  display: block;
+  flex: 1;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--drawer);
+}
+.style-preview > span + span {
+  flex: 0 0 34%;
+}
+.style-preview.glass > span {
+  border-color: rgb(255 255 255 / 0.3);
+  background: linear-gradient(155deg, rgb(255 255 255 / 0.2), rgb(255 255 255 / 0.05) 60%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25);
+  backdrop-filter: blur(4px);
 }
 .theme-picks,
 .preset-picks {
@@ -2161,6 +2197,159 @@ kbd {
 :root[data-layout='minimal'][data-sheet='focus'] .tasks-panel,
 :root[data-layout='minimal'][data-sheet='tasks'] .focus-panel {
   display: none;
+}
+
+/* ---------- Glass style ---------- */
+/* Settings → Appearance → Visual style (data-style on the root, set by boot.js before the first paint).
+   Classic draws the surfaces as above. Glass makes them translucent over the blurred wallpaper, with a
+   thin bright edge, a soft sheen and a diffuse shadow. The fills are the theme's own, made lighter, so
+   every theme applies; the accent of the automatic and custom ones tints the edges too. Only the
+   surfaces below blur what is behind them: the page itself, its text and the wallpaper are left alone. */
+:root[data-style='glass'] {
+  --glass-fill: color-mix(in srgb, var(--panel) 64%, transparent);
+  --glass-fill-hover: color-mix(in srgb, var(--panel-hover) 74%, transparent);
+  --glass-field: color-mix(in srgb, var(--field) 66%, transparent);
+  /* Menus, popovers and the settings hold text over the page's own text: more opaque. */
+  --glass-float: color-mix(in srgb, var(--drawer) 82%, transparent);
+  --glass-drawer: color-mix(in srgb, var(--drawer) 90%, transparent);
+  --glass-edge: color-mix(in srgb, var(--accent) 10%, rgb(255 255 255 / 0.14));
+  --glass-sheen: linear-gradient(155deg, rgb(255 255 255 / 0.08), rgb(255 255 255 / 0) 42%);
+  --glass-shadow: 0 14px 34px -10px rgb(0 0 0 / 0.38), inset 0 1px 0 rgb(255 255 255 / 0.07);
+  --glass-shadow-small: 0 6px 16px -6px rgb(0 0 0 / 0.4), inset 0 1px 0 rgb(255 255 255 / 0.08);
+  --glass-blur: blur(14px) saturate(1.4);
+  --glass-blur-float: blur(20px) saturate(1.5);
+}
+/* Light: frosted white, with a hairline so the surfaces stand out from the light veil. */
+:root[data-style='glass'][data-theme='light'] {
+  --glass-edge: rgb(255 255 255 / 0.8);
+  --glass-sheen: linear-gradient(155deg, rgb(255 255 255 / 0.55), rgb(255 255 255 / 0) 48%);
+  --glass-shadow:
+    0 14px 34px -12px rgb(32 44 82 / 0.28), 0 0 0 1px rgb(20 30 60 / 0.06),
+    inset 0 1px 0 rgb(255 255 255 / 0.9);
+  --glass-shadow-small:
+    0 6px 16px -8px rgb(32 44 82 / 0.32), 0 0 0 1px rgb(20 30 60 / 0.06), inset 0 1px 0 rgb(255 255 255 / 0.9);
+}
+
+/* The page's surfaces: panels, link cards, the corner buttons. */
+:root[data-style='glass'] .panel,
+:root[data-style='glass']:not([data-layout='minimal']) .shortcut,
+:root[data-style='glass'] .settings-fab,
+:root[data-style='glass'] .apps-button {
+  border-color: var(--glass-edge);
+  background: var(--glass-sheen), var(--glass-fill);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: var(--glass-blur);
+}
+:root[data-style='glass'] .settings-fab,
+:root[data-style='glass'] .apps-button {
+  box-shadow: var(--glass-shadow-small);
+}
+:root[data-style='glass']:not([data-layout='minimal']) .shortcut:hover {
+  border-color: var(--accent-line);
+  background: var(--glass-sheen), var(--glass-fill-hover);
+}
+:root[data-style='glass'] :is(.settings-fab, .apps-button):is(:hover, :focus-visible),
+:root[data-style='glass'] .apps-button:has(+ .apps-panel:popover-open) {
+  border-color: var(--accent-line);
+}
+:root[data-style='glass'] :is(.add-task, .notes) {
+  background: var(--glass-field);
+}
+:root[data-style='glass'] :is(.go, .main-button) {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.28),
+    0 6px 16px -8px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+/* The search box draws its glass on a layer of its own: an element that blurs its backdrop keeps the
+   blur of everything inside it to itself, and the suggestions under the box must blur the page. */
+:root[data-style='glass'] .search {
+  border-color: transparent;
+  background: none;
+  box-shadow: none;
+}
+:root[data-style='glass'] .search::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border: 1px solid var(--glass-edge);
+  border-radius: inherit;
+  background: var(--glass-sheen), var(--glass-field);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: var(--glass-blur);
+  pointer-events: none;
+}
+:root[data-style='glass'] .search:focus-within::before {
+  border-color: var(--accent);
+}
+
+/* Menus, popovers and the toast: above the page's text, so more opaque and more blurred. */
+:root[data-style='glass'] :is(.search-results, .links-more, .apps-panel, .toast) {
+  border-color: var(--glass-edge);
+  background: var(--glass-sheen), var(--glass-float);
+  backdrop-filter: var(--glass-blur-float);
+}
+
+/* Minimal: the link tiles, their names, and a panel floating as one sheet of glass. */
+:root[data-style='glass'][data-layout='minimal'] .shortcut .link-icon {
+  border-color: var(--glass-edge);
+  background: var(--glass-sheen), var(--glass-fill);
+  box-shadow: var(--glass-shadow-small);
+  backdrop-filter: var(--glass-blur);
+}
+:root[data-style='glass'][data-layout='minimal'] .shortcut:is(:hover, :focus-visible) .link-icon {
+  border-color: var(--accent-line);
+  background: var(--glass-sheen), var(--glass-fill-hover);
+}
+:root[data-style='glass'][data-layout='minimal'] .shortcut::after {
+  background: var(--glass-float);
+  box-shadow:
+    0 6px 18px rgb(0 0 0 / 0.22),
+    inset 0 0 0 1px var(--glass-edge);
+  backdrop-filter: var(--glass-blur);
+}
+:root[data-style='glass'][data-layout='minimal'][data-sheet] .side {
+  border: 1px solid var(--glass-edge);
+  background: var(--glass-sheen), var(--glass-float);
+  backdrop-filter: var(--glass-blur-float);
+}
+:root[data-style='glass'][data-layout='minimal'][data-sheet] .side .panel {
+  border-color: transparent;
+  background: none;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+/* The settings, out of the custom CSS's reach: frosted but nearly opaque, every text reads as in
+   Classic. */
+:root[data-style='glass'] .drawer {
+  border-left-color: var(--glass-edge);
+  background: var(--glass-sheen), var(--glass-drawer);
+  backdrop-filter: var(--glass-blur-float);
+}
+
+/* Without backdrop blur, or when the system asks for less transparency or more contrast, the surfaces
+   keep Classic's fills: the edges and shadows stay, the text reads as in Classic. */
+@supports not (backdrop-filter: blur(1px)) {
+  :root[data-style='glass'] {
+    --glass-fill: var(--panel);
+    --glass-fill-hover: var(--panel-hover);
+    --glass-field: var(--field);
+    --glass-float: var(--drawer);
+    --glass-drawer: var(--drawer);
+  }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  :root[data-style='glass'] {
+    --glass-fill: var(--panel);
+    --glass-fill-hover: var(--panel-hover);
+    --glass-field: var(--field);
+    --glass-float: var(--drawer);
+    --glass-drawer: var(--drawer);
+    --glass-blur: none;
+    --glass-blur-float: none;
+  }
 }
 
 /* ---------- Responsive ---------- */

@@ -27,6 +27,12 @@ export const THEMES = {
 export const LAYOUTS = ['developer', 'minimal'];
 export const DEFAULT_LAYOUT = 'developer';
 
+// Visual styles (Settings → Appearance): how the surfaces are drawn, apart from the layout, the theme's
+// colors and the wallpaper. Classic is the original look; Glass makes panels, fields and menus
+// translucent over the blurred wallpaper. Set on the root element as data-style, before the first paint.
+export const VISUAL_STYLES = ['classic', 'glass'];
+export const DEFAULT_VISUAL_STYLE = 'classic';
+
 // Parts of the page that Settings → Page can hide (data-hide-<name> on the root element).
 export const SECTIONS = ['greeting', 'clock', 'date', 'links', 'focus', 'heatmap', 'tasks'];
 
