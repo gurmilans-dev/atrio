@@ -9,6 +9,9 @@
     // Strings only: a missing field would be tested as "undefined", which matches.
     const isWord = (value) => typeof value === 'string' && /^[a-z]+$/.test(value);
     if (isWord(saved.theme)) root.dataset.theme = saved.theme;
+    // Interface mode (LAYOUTS in js/config.js): an unknown one matches no rule, so the page keeps the
+    // Developer layout until js/appearance.js sets the normalized value.
+    if (isWord(saved.layout)) root.dataset.layout = saved.layout;
     // Own wallpapers with rotation (same rule as shownImage in js/rotation.js): this tab's image.
     // "A ogni nuova scheda" counts tabs in a key of its own, so other open tabs keep theirs.
     const images = Array.isArray(saved.customImages) ? saved.customImages : [];

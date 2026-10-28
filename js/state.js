@@ -8,8 +8,10 @@ import {
   CUSTOM_WALLPAPER,
   DEFAULT_CUSTOM_ACCENT,
   DEFAULT_CUSTOM_PRESET,
+  DEFAULT_LAYOUT,
   DEFAULT_LINKS,
   ENGINES,
+  LAYOUTS,
   LIMITS,
   PRESETS,
   SCHEMA_VERSION,
@@ -52,6 +54,7 @@ export function createDefaultState() {
   return {
     schema: SCHEMA_VERSION,
     lang: 'auto',
+    layout: DEFAULT_LAYOUT,
     theme: 'tokyo',
     wallpaper: 'workstation',
     wallpaperRev: 0,
@@ -272,6 +275,8 @@ export function normalizeState(raw) {
   return {
     schema: SCHEMA_VERSION,
     lang: pick(input.lang, LANGUAGES, base.lang),
+    // Saves from before the modes have none: they keep the full layout they had.
+    layout: pick(input.layout, LAYOUTS, base.layout),
     theme: pick(input.theme, Object.keys(THEMES), base.theme),
     wallpaper: pick(input.wallpaper, [...WALLPAPERS, CUSTOM_WALLPAPER], base.wallpaper),
     wallpaperRev: toInt(input.wallpaperRev, 0, Number.MAX_SAFE_INTEGER, 0),

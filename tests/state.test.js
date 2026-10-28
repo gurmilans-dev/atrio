@@ -189,6 +189,29 @@ describe('visible parts of the page', () => {
   });
 });
 
+describe('interface mode', () => {
+  test('Developer by default and for saves from before the modes; Minimal kept; anything else Developer', () => {
+    assert.equal(createDefaultState().layout, 'developer');
+    assert.equal(normalizeState({ links: [], theme: 'mocha' }).layout, 'developer');
+    assert.equal(normalizeState({ layout: 'minimal' }).layout, 'minimal');
+    for (const layout of ['Minimal', 'focus', 42, null, ['minimal']]) {
+      assert.equal(normalizeState({ layout }).layout, 'developer', String(layout));
+    }
+  });
+
+  test('the mode is independent: switching it changes nothing else', () => {
+    const saved = normalizeState({
+      theme: 'light',
+      show: { tasks: false, heatmap: false },
+      tasks: [{ id: 'a', text: 'kept', done: true }],
+      notes: 'kept too',
+    });
+    const minimal = normalizeState({ ...saved, layout: 'minimal' });
+    assert.deepEqual({ ...minimal, layout: saved.layout }, saved);
+    assert.deepEqual(normalizeState({ ...minimal, layout: 'developer' }), saved);
+  });
+});
+
 describe('clock options', () => {
   test('24-hour without seconds by default; booleans only', () => {
     assert.deepEqual(normalizeState({}).clock, { hour12: false, seconds: false });

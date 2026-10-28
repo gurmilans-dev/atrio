@@ -131,6 +131,14 @@ test('custom CSS that would reach the settings is left out before the first pain
   }
 });
 
+test('the interface mode is applied before the first paint; a malformed one is left out', () => {
+  assert.equal(boot({ layout: 'minimal' }).root.dataset.layout, 'minimal');
+  assert.equal(boot({ layout: 'developer', theme: 'light' }).root.dataset.layout, 'developer');
+  for (const layout of ['<b>', 'mini mal', 7, null]) {
+    assert.equal('layout' in boot({ layout }).root.dataset, false, String(layout));
+  }
+});
+
 test('custom theme accent; an empty save changes nothing', () => {
   assert.equal(
     boot({ theme: 'custom', customAccent: { color: '#ea67af' } }).properties['--accent'],

@@ -21,6 +21,12 @@ export const THEMES = {
   [CUSTOM_THEME]: { label: null, swatch: null },
 };
 
+// Interface modes (Settings → Appearance): how the page is laid out, apart from the theme's colors
+// and the wallpaper. Developer is the full workspace, Minimal the clock, search and links alone.
+// Set on the root element as data-layout; boot.js applies it before the first paint.
+export const LAYOUTS = ['developer', 'minimal'];
+export const DEFAULT_LAYOUT = 'developer';
+
 // Parts of the page that Settings → Page can hide (data-hide-<name> on the root element).
 export const SECTIONS = ['greeting', 'clock', 'date', 'links', 'focus', 'heatmap', 'tasks'];
 
