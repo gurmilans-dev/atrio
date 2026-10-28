@@ -2,6 +2,7 @@
 import { LIMITS } from './config.js';
 import { $ } from './dom.js';
 import { numberFormat, t } from './i18n.js';
+import { revealPanel } from './layout.js';
 import { getState, hasUnsavedChanges, retrySave, subscribe, update } from './store.js';
 
 const TABS = ['tasks', 'notes'];
@@ -45,6 +46,7 @@ export function showPanelTab(tab) {
 }
 
 export function focusNotes() {
+  revealPanel('tasks');
   showPanelTab('notes');
   $('notes-input').focus();
 }

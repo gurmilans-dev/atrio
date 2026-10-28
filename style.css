@@ -1814,6 +1814,84 @@ kbd {
   padding: 0;
 }
 
+/* ---------- Minimal mode ---------- */
+/* Settings → Appearance → Interface mode (data-layout on the root, set by boot.js before the first
+   paint). The same page and data as Developer, laid out as one centered column: clock, date, search
+   and links. The side panels stay in the page, hidden: js/layout.js floats the one a shortcut asks
+   for (data-sheet). Themes, wallpapers and Settings → Page apply as in Developer. */
+:root[data-layout='minimal'] .page {
+  padding-bottom: 0;
+}
+:root[data-layout='minimal'] .layout {
+  grid-template-columns: minmax(0, 640px);
+  justify-content: center;
+  align-content: center;
+  min-height: 100vh;
+  /* More room below than above: the column sits a little over the middle, where the eye lands. */
+  padding: clamp(40px, 7vh, 88px) 0 clamp(72px, 15vh, 180px);
+}
+:root[data-layout='minimal'] .greeting,
+:root[data-layout='minimal'] .search-key,
+:root[data-layout='minimal'] .search-tips,
+:root[data-layout='minimal'] .links-header,
+:root[data-layout='minimal'] .links-header ~ .empty-note,
+:root[data-layout='minimal'] .side {
+  display: none;
+}
+:root[data-layout='minimal'] .clock-area {
+  margin-bottom: clamp(28px, 5.5vh, 48px);
+  text-align: center;
+}
+:root[data-layout='minimal'] .clock {
+  font-size: clamp(80px, 10vw, 156px);
+  font-weight: 300;
+  letter-spacing: -0.055em;
+}
+:root[data-layout='minimal'] .date {
+  margin-top: clamp(14px, 2.4vh, 22px);
+}
+:root[data-layout='minimal'] .search {
+  height: 60px;
+  gap: 12px;
+  padding: 6px 7px 6px 22px;
+  border-radius: 30px;
+  box-shadow: 0 12px 34px rgb(0 0 0 / 0.18);
+}
+:root[data-layout='minimal'] .go {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+}
+:root[data-layout='minimal'] .search-results {
+  top: calc(100% + 10px);
+  max-height: min(400px, 44vh);
+  border-radius: 18px;
+}
+:root[data-layout='minimal'] .links-grid {
+  margin-top: clamp(24px, 4.5vh, 36px);
+}
+/* A panel asked for by its shortcut floats over the page, where the Google apps open. */
+:root[data-layout='minimal'][data-sheet] .side {
+  display: grid;
+  position: fixed;
+  z-index: 6;
+  inset: 72px 22px auto auto;
+  width: min(380px, calc(100vw - 32px));
+  max-height: calc(100dvh - 150px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: 14px;
+  box-shadow: 0 24px 64px rgb(0 0 0 / 0.42);
+  animation: pop-in 0.14s ease-out;
+}
+:root[data-layout='minimal'][data-sheet] .side .panel {
+  background: var(--drawer);
+}
+:root[data-layout='minimal'][data-sheet='focus'] .tasks-panel,
+:root[data-layout='minimal'][data-sheet='tasks'] .focus-panel {
+  display: none;
+}
+
 /* ---------- Responsive ---------- */
 @media (max-width: 1250px) {
   .layout {
@@ -1900,14 +1978,16 @@ kbd {
     top: 16px;
     right: 16px;
   }
-  .apps-panel {
+  .apps-panel,
+  :root[data-layout='minimal'][data-sheet] .side {
     inset: 64px 16px auto 16px;
     width: auto;
   }
 }
 @media (prefers-reduced-motion: reduce) {
   .search-results,
-  .focus-panel.celebrate {
+  .focus-panel.celebrate,
+  .side {
     animation: none;
   }
   .shortcut,

@@ -2,6 +2,7 @@
 // once per minute when hidden (just to keep the tab title current).
 import { $, announce, el } from './dom.js';
 import { dateFormat, t } from './i18n.js';
+import { revealPanel } from './layout.js';
 import { ensureTimerAlarm, syncTimerAlarm } from './platform.js';
 import { dayKey, heatLevel, heatmap, sessionsToday, streak } from './stats.js';
 import { getState, subscribe, update } from './store.js';
@@ -134,7 +135,14 @@ export function syncAlarm() {
   syncTimerAlarm(timer, notify).catch(() => {});
 }
 
+// Minimal hides the panel: a start, pause or reset from a shortcut or a command shows it, with
+// focus on its main button, so the result is visible and P, Space or Esc carry on from there.
+function showTimer() {
+  if (revealPanel('focus')) $('timer-toggle').focus();
+}
+
 export function toggleTimer() {
+  showTimer();
   const now = Date.now();
   if (isExpired(getState().timer, now)) {
     finish();
@@ -147,6 +155,7 @@ export function toggleTimer() {
 }
 
 export function resetTimer() {
+  showTimer();
   update((state) => {
     state.timer = readyTimer(state.timer.mode, presetOf(state));
   });

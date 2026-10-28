@@ -1,6 +1,7 @@
 import { LIMITS } from './config.js';
 import { $, announce, button, el } from './dom.js';
 import { t } from './i18n.js';
+import { revealPanel } from './layout.js';
 import { showPanelTab } from './notes.js';
 import { getState, subscribe, update } from './store.js';
 
@@ -68,6 +69,7 @@ function removeTasks(predicate, message) {
 }
 
 export function focusTaskInput() {
+  revealPanel('tasks');
   showPanelTab('tasks');
   $('task-input').focus();
 }

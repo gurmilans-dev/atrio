@@ -7,6 +7,7 @@ import { announce } from './dom.js';
 import { initEffects } from './effects.js';
 import { initFocus } from './focus.js';
 import { needsReload, t, translatePage } from './i18n.js';
+import { initLayout } from './layout.js';
 import { initLinks } from './links.js';
 import { initNotes } from './notes.js';
 import { initPrefixes } from './prefixes.js';
@@ -30,6 +31,7 @@ try {
   initTasks();
   initNotes();
   initFocus();
+  initLayout();
   initApps();
   initSettings();
   initShortcuts();
