@@ -206,6 +206,13 @@ const it = {
   'settings.page': 'Pagina',
   'settings.search': 'Ricerca',
   'settings.theme': 'Tema',
+  'settings.layout': 'Modalità dell’interfaccia',
+  'layout.developer': 'Developer',
+  'layout.developerNote': 'Workspace completo con pannelli, strumenti e statistiche.',
+  'layout.minimal': 'Minimal',
+  'layout.minimalNote': 'Orologio, ricerca e collegamenti in un’interfaccia essenziale.',
+  'settings.pageMinimalNote':
+    'In Minimal la pagina mostra orologio, data e collegamenti: attività, note e timer restano disponibili con T, N e P.',
   'settings.timer': 'Timer',
   'settings.durations': 'Durata delle sessioni',
   'settings.notify': 'Notifica a fine sessione',
@@ -304,6 +311,7 @@ const it = {
   'command.shortcuts': 'Scorciatoie da tastiera',
   'command.export': 'Esporta backup',
   'command.theme': 'Tema: {name}',
+  'command.layout': 'Modalità: {name}',
   'command.wallpaper': 'Sfondo: {name}',
 
   'tool.calc': 'Calcolatrice',
@@ -588,6 +596,13 @@ const en = {
   'settings.page': 'Page',
   'settings.search': 'Search',
   'settings.theme': 'Theme',
+  'settings.layout': 'Interface mode',
+  'layout.developer': 'Developer',
+  'layout.developerNote': 'The full workspace, with panels, tools and statistics.',
+  'layout.minimal': 'Minimal',
+  'layout.minimalNote': 'Clock, search and links in an essential interface.',
+  'settings.pageMinimalNote':
+    'In Minimal the page shows the clock, date and links: tasks, notes and the timer stay available with T, N and P.',
   'settings.timer': 'Timer',
   'settings.durations': 'Session length',
   'settings.notify': 'Notify when a session ends',
@@ -684,6 +699,7 @@ const en = {
   'command.shortcuts': 'Keyboard shortcuts',
   'command.export': 'Export backup',
   'command.theme': 'Theme: {name}',
+  'command.layout': 'Interface mode: {name}',
   'command.wallpaper': 'Wallpaper: {name}',
 
   'tool.calc': 'Calculator',

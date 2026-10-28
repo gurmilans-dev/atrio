@@ -341,6 +341,34 @@
 
           <section class="settings-section" aria-labelledby="appearance-title">
             <h3 id="appearance-title" data-i18n="settings.appearance">Aspetto</h3>
+            <fieldset class="layout-picks" id="layout-picks">
+              <legend class="picks-heading" data-i18n="settings.layout"></legend>
+              <div class="layout-options">
+                <label class="layout-pick"
+                  ><input type="radio" name="layout" value="developer" />
+                  <span class="layout-preview" aria-hidden="true"
+                    ><span class="lp-main"
+                      ><span class="lp-clock"></span><span class="lp-search"></span
+                      ><span class="lp-cards"
+                        ><span></span><span></span><span></span><span></span></span></span
+                    ><span class="lp-side"><span></span><span></span></span
+                  ></span>
+                  <span class="layout-name" data-i18n="layout.developer"></span>
+                  <span class="layout-note" data-i18n="layout.developerNote"></span>
+                </label>
+                <label class="layout-pick"
+                  ><input type="radio" name="layout" value="minimal" />
+                  <span class="layout-preview minimal" aria-hidden="true"
+                    ><span class="lp-clock"></span><span class="lp-search"></span
+                    ><span class="lp-icons"
+                      ><span></span><span></span><span></span><span></span><span></span></span
+                  ></span>
+                  <span class="layout-name" data-i18n="layout.minimal"></span>
+                  <span class="layout-note" data-i18n="layout.minimalNote"></span>
+                </label>
+              </div>
+            </fieldset>
+            <p class="picks-heading" data-i18n="settings.theme"></p>
             <div
               class="theme-picks"
               id="theme-picks"
@@ -410,6 +438,7 @@
             <h3 id="page-title" data-i18n="settings.page">Pagina</h3>
             <p class="toggle-heading" data-i18n="settings.show"></p>
             <div id="show-toggles"></div>
+            <p class="settings-note" id="page-minimal-note" data-i18n="settings.pageMinimalNote" hidden></p>
             <label class="toggle"
               ><input type="checkbox" id="apps-toggle" /> <span data-i18n="settings.showApps"></span
             ></label>

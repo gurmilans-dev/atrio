@@ -190,6 +190,8 @@ function render(state) {
   $('remove-wallpaper').hidden = state.wallpaper !== CUSTOM_WALLPAPER || !state.customImage;
   $('rotation-select').value = state.rotation;
   $('rotation-select').disabled = state.customImages.length < 2;
+  for (const input of $$('input[name=layout]')) input.checked = input.value === state.layout;
+  $('page-minimal-note').hidden = state.layout !== 'minimal';
   mark('[data-theme-choice]', 'themeChoice', state.theme);
   mark('[data-preset]', 'preset', state.preset);
   for (const [key, { format }] of Object.entries(RANGES)) {
@@ -497,6 +499,17 @@ export function initSettings() {
     update((state) => {
       state.rotation = event.target.value;
     });
+  });
+  // The page changes layout behind the settings: a short cross-fade, unless motion is reduced.
+  $('layout-picks').addEventListener('change', (event) => {
+    const layout = event.target.value;
+    const change = () =>
+      update((state) => {
+        state.layout = layout;
+      });
+    if (document.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      document.startViewTransition(change);
+    } else change();
   });
   $('theme-picks').addEventListener('click', (event) => {
     const pick = event.target.closest('[data-theme-choice]');
