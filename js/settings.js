@@ -500,16 +500,11 @@ export function initSettings() {
       state.rotation = event.target.value;
     });
   });
-  // The page changes layout behind the settings: a short cross-fade, unless motion is reduced.
   $('layout-picks').addEventListener('change', (event) => {
     const layout = event.target.value;
-    const change = () =>
-      update((state) => {
-        state.layout = layout;
-      });
-    if (document.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      document.startViewTransition(change);
-    } else change();
+    update((state) => {
+      state.layout = layout;
+    });
   });
   $('theme-picks').addEventListener('click', (event) => {
     const pick = event.target.closest('[data-theme-choice]');

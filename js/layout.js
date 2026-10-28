@@ -44,7 +44,21 @@ function measureResultsRoom() {
   root.style.setProperty('--results-room', `${Math.max(160, Math.floor(below - 26))}px`);
 }
 
+// A new mode, from the settings, a command or another tab, fades the page in (style.css; not with
+// reduced motion). Applied at once all the same: the fade never delays the change or blocks a click.
+let shownLayout = null;
+function fadeIn(layout) {
+  if (shownLayout !== null && layout !== shownLayout) {
+    const page = document.querySelector('.page');
+    page.classList.remove('layout-fade');
+    void page.offsetWidth; // restart the animation
+    page.classList.add('layout-fade');
+  }
+  shownLayout = layout;
+}
+
 export function initLayout() {
+  fadeIn(getState().layout);
   measureResultsRoom();
   window.addEventListener('resize', measureResultsRoom);
   document.addEventListener('keydown', (event) => {
@@ -66,6 +80,7 @@ export function initLayout() {
   });
   // Back to Developer, or the panel turned off in Settings → Page: nothing to float.
   subscribe((state) => {
+    fadeIn(state.layout);
     measureResultsRoom();
     const name = root.dataset.sheet;
     if (name && (state.layout !== 'minimal' || !state.show[name])) {

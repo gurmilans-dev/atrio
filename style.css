@@ -2132,6 +2132,15 @@ kbd {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+/* Switching modes (js/layout.js): the page fades in with its new layout. */
+.page.layout-fade {
+  animation: layout-fade 0.22s ease-out;
+}
+@keyframes layout-fade {
+  from {
+    opacity: 0;
+  }
+}
 /* A panel asked for by its shortcut floats over the page, where the Google apps open. */
 :root[data-layout='minimal'][data-sheet] .side {
   display: grid;
@@ -2254,7 +2263,8 @@ kbd {
 @media (prefers-reduced-motion: reduce) {
   .search-results,
   .focus-panel.celebrate,
-  .side {
+  .side,
+  .page.layout-fade {
     animation: none;
   }
   .shortcut,
