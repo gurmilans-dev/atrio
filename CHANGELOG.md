@@ -45,8 +45,8 @@ Not released yet: the date is added when this version is published on the Chrome
 ### Fixed
 
 - **With the rotation on, picking one of your images did not show it.** Its tile was marked, but the page kept the
-  day's image. Now picking a wallpaper, or adding an image, shows it at once and turns the rotation off, with a
-  message saying so; and the tile marked, and removed by "Remove this image", is always the image on screen.
+  day's image. Now picking a wallpaper (in the settings or from the palette), or adding an image, shows it at
+  once and turns the rotation off, with a message saying so; and the tile marked, and removed by "Remove this image", is always the image on screen.
 - **The rotation started from an arbitrary image**, picked from the date alone, often the first one. Turned on, it now
   keeps the image on screen for today (or the one last chosen, over a built-in wallpaper) and brings the next one
   tomorrow; turned off, the image on screen stays; and removing an image while it runs goes on from the one taking

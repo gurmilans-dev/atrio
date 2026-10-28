@@ -4,7 +4,7 @@ import { LAYOUTS, THEMES, VISUAL_STYLES, WALLPAPERS } from './config.js';
 import { resetTimer, toggleTimer } from './focus.js';
 import { t, themeName, wallpaperName } from './i18n.js';
 import { focusNotes } from './notes.js';
-import { exportBackup, openSettings } from './settings.js';
+import { exportBackup, openSettings, pickWallpaper } from './settings.js';
 import { getState, update } from './store.js';
 import { focusTaskInput } from './tasks.js';
 
@@ -86,7 +86,8 @@ export function getCommands() {
     ...WALLPAPERS.map((id) => ({
       label: t('command.wallpaper', { name: wallpaperName(id) }),
       keywords: 'sfondo wallpaper immagine image background',
-      run: set('wallpaper', id),
+      // As its tile in the settings: a daily rotation stops.
+      run: () => pickWallpaper(id),
     })),
   ];
   // Commands for a part of the page hidden in Settings → Page are left out.

@@ -316,6 +316,14 @@ function showOnly(change) {
   return rotating;
 }
 
+/** A built-in wallpaper chosen outside the settings (the palette): the same as clicking its tile. */
+export function pickWallpaper(id) {
+  const stopped = showOnly((state) => {
+    state.wallpaper = id;
+  });
+  if (stopped) announce(t('rotation.stopped'));
+}
+
 // Removes the image this tab shows; the next one (or a built-in wallpaper) takes its place.
 async function removeWallpaper() {
   const current = getState();

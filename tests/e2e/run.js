@@ -1216,6 +1216,16 @@ try {
     await setRotation(true);
     await sleep(300);
     const restarted = await read();
+    // The palette's "Wallpaper: City" picks a wallpaper as its tile does: the rotation stops.
+    await blur();
+    await a.eval(`document.getElementById('toast').textContent = ''`);
+    await a.press('/');
+    await a.type('>Sfondo: Città');
+    await sleep(200);
+    await a.press('Enter');
+    await sleep(300);
+    const commanded = await read();
+    await a.eval(clearSearch);
     await setRotation(false);
     await a.eval(settings(`document.querySelector('#wallpaper-picks [data-image]').click()`));
     await a.eval(settings(`document.getElementById('remove-wallpaper').click()`));
@@ -1240,6 +1250,10 @@ try {
     assert.deepEqual(
       [restarted.rotation, restarted.wallpaper, restarted.shown, restarted.marked],
       ['daily', 'custom', other, other],
+    );
+    assert.deepEqual(
+      [commanded.rotation, commanded.wallpaper, commanded.toast],
+      ['off', 'city', '“Cambia sfondo ogni giorno” disattivato.'],
     );
     assert.deepEqual([removed.images.length, removed.tiles], [2, 2]);
     assert.ok(!removed.images.includes(three.images[0]));
