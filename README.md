@@ -69,6 +69,23 @@ network requests unless you turn on online search suggestions.
 | ---------------------- | ------------------- | --------------------- |
 | ![](docs/palette.webp) | ![](docs/apps.webp) | ![](docs/mocha.webp)  |
 
+## Two interface modes
+
+**Settings → Appearance → Interface mode** switches between two layouts of the same page:
+
+- **Developer**, the full workspace shown above: search, links with their names, focus timer and heatmap, tasks and
+  notes.
+- **Minimal**, a quiet new tab: a large clock and the date, the search box, and your links as a row of icons (their
+  favicons, or their initials), each name shown on hover. Past eight links, a `+n` icon lists the others.
+
+![Atrio in Minimal mode: clock, date, search box and links as icons](docs/minimal.webp)
+
+A mode is a layout, not a profile. Themes, wallpapers and the parts chosen in Settings → Page apply to both, and
+switching loses nothing: the links, tasks, notes, timer and settings are the same in both. Minimal keeps every feature:
+the search, the command palette and the developer tools work as in Developer, and the tasks, notes and timer stay one
+key away (`T`, `N` and `P` open their panel over the page, `Esc` closes it). The mode is saved with the other settings,
+follows in the tabs already open, and comes back with a backup.
+
 ## Install
 
 1. Clone or download this repository and keep the folder somewhere permanent.
@@ -125,8 +142,11 @@ it.
 
 ## How it works
 
-- **No flash on open.** A tiny blocking script (`js/boot.js`) applies theme, wallpaper, dim and blur before the first
-  paint; the ES modules load after.
+- **No flash on open.** A tiny blocking script (`js/boot.js`) applies theme, interface mode, wallpaper, dim and blur
+  before the first paint; the ES modules load after.
+- **Two modes, one page.** The interface mode is a `data-layout` attribute on the root element: Minimal is a set of
+  CSS rules over the same HTML, the same components and the same state, so neither mode can drift from the other.
+  Panels hidden in Minimal stay in the page; `js/layout.js` floats one when its shortcut asks for it.
 - **One store, many tabs.** All state lives in one validated object (`js/state.js`). Every open new tab listens to the
   `storage` event, so tabs never overwrite each other with stale data. A corrupted save is backed up, not discarded.
 - **A timer that survives throttling.** Sessions store an absolute end time; ticks align to the displayed second while

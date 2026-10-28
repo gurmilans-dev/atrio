@@ -29,7 +29,7 @@ marked **Decide** or **Check** cannot be settled from the code and are the maint
 - **Icon:** `assets/icons/icon-128.png`.
 - **Screenshots:** `docs/store/*.jpg`, 1280 × 800 JPEG, demo data only (`npm run screenshots -- --store`). `apps.jpg`
   shows the Google apps launcher with drawings close to Google product icons: **Decide** after the trademark check
-  below; until then, upload the other four.
+  below; until then, upload the others.
 - **Detailed description** (English):
 
   > Atrio replaces the new tab page with a calm workspace for developers.

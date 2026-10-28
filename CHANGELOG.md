@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **Interface modes** (Settings → Appearance → Interface mode). **Developer** is the full workspace, as before;
+  **Minimal** is a quiet new tab with a large clock and the date, the search box, and the links as a row of icons
+  (favicons or initials, the name in a tooltip and as the link's label), with a `+n` icon for links past the eighth.
+  The mode is a layout only: themes, wallpapers, Settings → Page and all the data are shared, and switching changes
+  nothing else. Minimal keeps every feature: the search and command palette are the same, and `T`, `N`, `P` (and
+  their commands) open the tasks, notes or timer panel over the page, closed with `Esc` or a click elsewhere. The mode
+  is applied before the first paint, saved with the settings, followed by the other open tabs and kept in backups;
+  saves from earlier versions open in Developer. The palette can switch it too.
+
 ## 3.2.0 — 2026-10-28
 
 ### Added

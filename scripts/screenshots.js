@@ -1,11 +1,13 @@
 // Regenerates the screenshots with demo data.
 //   npm run screenshots              README images in docs/, 1536 × 960 WebP
 //   npm run screenshots -- --store   Chrome Web Store set in docs/store/, 1280 × 800 JPEG (no alpha)
+// Names after the options write only those images, e.g. npm run screenshots -- --store minimal.
 import { mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { launch, sleep } from '../tests/e2e/harness.js';
 
 const STORE = process.argv.includes('--store');
+const ONLY = process.argv.slice(2).filter((arg) => !arg.startsWith('--'));
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const OUT = new URL(STORE ? '../docs/store/' : '../docs/', import.meta.url);
 // The Store set shows the same 1536 × 960 layout as the README, scaled to the Store's 1280 × 800.
@@ -60,6 +62,7 @@ const browser = await launch(ROOT, { width: WIDTH, height: HEIGHT, lang: 'en-US'
 try {
   const page = await browser.openPage();
   const shot = async (name) => {
+    if (ONLY.length && !ONLY.includes(name)) return;
     await sleep(400);
     const file = new URL(`${name}.${EXTENSION}`, OUT);
     await writeFile(file, await page.screenshot(FORMAT));
@@ -99,6 +102,15 @@ try {
   })()`);
   await page.goto();
   await shot('mocha');
+
+  // Minimal mode, with the default theme and wallpaper.
+  await page.eval(`(() => {
+    const s = JSON.parse(localStorage.getItem(${JSON.stringify(KEY)}));
+    Object.assign(s, { layout: 'minimal', theme: 'tokyo', wallpaper: 'city', panelTab: 'tasks' });
+    localStorage.setItem(${JSON.stringify(KEY)}, JSON.stringify(s));
+  })()`);
+  await page.goto();
+  await shot('minimal');
 } finally {
   await browser.close();
 }
