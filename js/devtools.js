@@ -188,8 +188,10 @@ function timestamp(argument, now) {
     const ms = argument.length <= 11 ? Number(argument) * 1000 : Number(argument);
     return describeTime(ms, now, true);
   }
-  const parsed = Date.parse(argument) || Date.parse(argument.replace(' ', 'T'));
-  if (!parsed) return [errorRow('ts', t('tool.badDate'))];
+  // The epoch parses to 0: only NaN means "not a date".
+  let parsed = Date.parse(argument);
+  if (Number.isNaN(parsed)) parsed = Date.parse(argument.replace(' ', 'T'));
+  if (Number.isNaN(parsed)) return [errorRow('ts', t('tool.badDate'))];
   return [
     row('ts', Math.floor(parsed / 1000), t('tool.unixSeconds')),
     row('ts', parsed, t('tool.unixMs')),

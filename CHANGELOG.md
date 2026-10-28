@@ -100,6 +100,7 @@
   among the recent searches. Now `Enter` brings the rows back; only `Shift + Enter` searches such text, and it is
   never remembered.
 - Typing `constructor` in the search box broke the suggestions: the prefix lookup reached `Object.prototype`.
+- `ts 1970-01-01T00:00:00Z`, the epoch itself, was reported as not a date (it is timestamp 0).
 - A saved state without theme or wallpaper made the page request `assets/undefined.webp` before the first paint.
 - A JWT whose `exp` or `iat` no date can hold (such as `1e20`) broke the suggestions, and `Enter` could then run a
   stale row. Those dates are now skipped, and a failing tool can no longer break the search box.

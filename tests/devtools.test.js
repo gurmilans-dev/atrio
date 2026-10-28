@@ -105,6 +105,11 @@ describe('timestamps', () => {
     assert.equal(runTools('ts not a date', NOW)[0].error, true);
   });
 
+  test('the epoch itself is a date (it parses to 0)', () => {
+    assert.deepEqual(values('ts 1970-01-01T00:00:00Z'), ['0', '0', '1970-01-01T00:00:00.000Z']);
+    assert.deepEqual(values('ts 1970-01-01 00:00:00Z'), ['0', '0', '1970-01-01T00:00:00.000Z']);
+  });
+
   test('a bare timestamp is offered below the search', () => {
     const results = runTools('1730000000', NOW);
     assert.equal(results.length, 3);
