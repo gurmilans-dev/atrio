@@ -117,6 +117,33 @@ try {
   );
 
   await check(
+    "if Chrome's Search API fails, no other engine searches instead: the text stays, a message says so",
+    async () => {
+      const url = await page.eval('location.href');
+      await page.eval(`(() => {
+      chrome.search.query = () => Promise.reject(new Error('Search API failure (test)'));
+    })()`);
+      await search('atrio failed search');
+      await page.press('Enter');
+      await sleep(1500);
+      const sent = page.navigations.splice(0);
+      const after = await evaluate(`({
+      text: document.getElementById('search-input').value,
+      toast: document.getElementById('toast').textContent,
+      url: location.href,
+    })`);
+      await page.goto();
+      assert.deepEqual(sent, []);
+      assert.deepEqual(after, {
+        text: 'atrio failed search',
+        toast:
+          'La ricerca con il motore predefinito di Chrome non è riuscita: riprova, o scegli un motore in Impostazioni → Generale.',
+        url,
+      });
+    },
+  );
+
+  await check(
     'a JWT is never searched by accident: Esc then Enter brings its rows back (ATR-04)',
     async () => {
       const token = 'eyJhbGciOiJub25lIn0.eyJzZWNyZXQiOiJub3QtYS1yZWFsLXRva2VuIn0.signature';

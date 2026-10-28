@@ -47,6 +47,9 @@
   tomorrow; turned off, the image on screen stays; and removing an image while it runs goes on from the one taking
   its place. Rotations already running keep the image they show.
 - The wallpaper tiles' selection mark no longer also landed on the page's root element.
+- **A failure of Chrome's Search API sent the search to Google.** With Chrome's default engine, if the browser
+  refused the search, the page opened Google in its place. Now the text stays in the box and a message says that the
+  search failed, suggesting another engine in Settings → General; Google is never used instead of the user's engine.
 
 ## 3.2.0 — 2026-10-28
 

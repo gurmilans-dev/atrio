@@ -52,6 +52,8 @@ const it = {
   'recent.cleared': 'Ricerche recenti cancellate.',
   'toast.taskAdded': 'Attività aggiunta.',
   'toast.chromeOnly': 'Le pagine chrome:// si aprono solo dall’estensione installata.',
+  'toast.searchFailed':
+    'La ricerca con il motore predefinito di Chrome non è riuscita: riprova, o scegli un motore in Impostazioni → Generale.',
   'toast.noCommand': 'Nessun comando trovato.',
   'toast.copied': 'Copiato: {text}',
   'toast.copyFailed': 'Impossibile copiare negli appunti.',
@@ -450,6 +452,8 @@ const en = {
   'recent.cleared': 'Recent searches cleared.',
   'toast.taskAdded': 'Task added.',
   'toast.chromeOnly': 'chrome:// pages open only from the installed extension.',
+  'toast.searchFailed':
+    'Searching with Chrome’s default search engine failed: try again, or pick an engine in Settings → General.',
   'toast.noCommand': 'No command found.',
   'toast.copied': 'Copied: {text}',
   'toast.copyFailed': 'Could not copy to the clipboard.',

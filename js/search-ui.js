@@ -67,8 +67,16 @@ export function openCommandPalette() {
 
 async function navigate(result) {
   if (result.kind === 'search' && result.chrome) {
-    if (await searchWithChrome(result.query).catch(() => false)) return;
-    window.location.assign(FALLBACK_SEARCH_URL + encodeURIComponent(result.query));
+    // Without the Search API (outside the extension) a search URL stands in. When the API fails,
+    // the text stays and a message says so: no other engine takes the place of the user's.
+    let searched;
+    try {
+      searched = await searchWithChrome(result.query);
+    } catch {
+      announce(t('toast.searchFailed'));
+      return;
+    }
+    if (!searched) window.location.assign(FALLBACK_SEARCH_URL + encodeURIComponent(result.query));
     return;
   }
   if (result.kind !== 'browser') {
