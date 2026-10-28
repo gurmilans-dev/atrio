@@ -21,6 +21,6 @@
   "permissions": ["alarms", "notifications", "favicon", "search"],
   "optional_host_permissions": ["https://suggestqueries.google.com/*", "https://duckduckgo.com/*"],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'none'; base-uri 'none'"
+    "extension_pages": "script-src 'self'; object-src 'none'; base-uri 'none'; img-src 'self' data: blob:; font-src 'self'; media-src 'none'; connect-src 'self' data: https://suggestqueries.google.com https://duckduckgo.com"
   }
 }

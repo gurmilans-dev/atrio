@@ -59,6 +59,9 @@
   switch to Chrome's engine. Prefixes (`yt`, `npm`, your own…) are unchanged. Online suggestions need Google or
   DuckDuckGo as the engine, since Atrio does not know which provider Chrome uses.
 - Chrome 118 or later is required (was 117), for the `@scope` that keeps custom CSS away from the settings.
+- **The page cannot contact other servers.** Its content security policy now allows images only from the extension
+  itself (and local `data:`/`blob:` images), no web fonts or media, and connections only to the two suggestion
+  services. Custom CSS, including CSS from an imported backup, can no longer make it load something from the web.
 
 - A search prefix typed alone opens its site: `yt` → YouTube, `gh` → GitHub, `npm` → npmjs.com. Previously it was
   searched as text. `Shift + Enter` still searches.

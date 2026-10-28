@@ -108,6 +108,10 @@ navigates when you search or open a link. The one exception is opt-in: with **on
 (Settings → General, off by default), what you type in the search box is sent to Google or DuckDuckGo, whichever is
 your engine, without cookies, as Chrome's address bar does.
 
+The extension's content security policy holds the page to this: images only from the extension itself (and local
+`data:`/`blob:` images), no fonts or media from the web, and connections only to those two suggestion services. Custom
+CSS, including CSS from an imported backup, cannot make the page load anything from a server.
+
 | Permission                                              | Why                                                                    |
 | ------------------------------------------------------- | ---------------------------------------------------------------------- |
 | `search`                                                | Search with the engine set in Chrome (Chrome's Search API)             |
