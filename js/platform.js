@@ -2,8 +2,6 @@
 // is opened outside the extension (e.g. from a local web server while developing).
 const ext = globalThis.chrome?.runtime?.id ? globalThis.chrome : null;
 
-export const isExtension = Boolean(ext);
-
 export const appVersion = () => (ext ? ext.runtime.getManifest().version : 'dev');
 
 // Chrome's local favicon cache: no request leaves the browser.

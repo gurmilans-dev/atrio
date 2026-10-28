@@ -141,8 +141,7 @@ try {
   await browser.close();
 }
 
-// The README images: the full workspace, the palette, the launcher, the settings, a theme, Minimal
-// and Glass.
+// The README images: the full workspace, the palette, the launcher, a theme, Minimal and Glass.
 async function readmeSet(page, shot) {
   await shot('home');
 
@@ -159,10 +158,6 @@ async function readmeSet(page, shot) {
 
   await page.click('#apps-button');
   await shot('apps');
-  await page.press('Escape');
-
-  await page.click('#open-settings');
-  await shot('settings');
   await page.press('Escape');
 
   await page.eval(`(() => {
