@@ -62,6 +62,42 @@ describe('normalizeState', () => {
     assert.equal('junk' in state, false);
   });
 
+  // A backup is a file anyone could have written: it goes through normalizeState before it is used.
+  test('an untrusted backup changes no prototype, keeps only web links and no CSS in colors', () => {
+    const hostile = JSON.parse(`{
+      "__proto__": { "polluted": true },
+      "constructor": { "prototype": { "polluted": true } },
+      "links": [
+        { "name": "Script", "url": "javascript:alert(1)" },
+        { "name": "Page", "url": "data:text/html,<script>alert(1)</script>" },
+        { "name": "File", "url": "file:///C:/Windows/win.ini" },
+        { "name": "Browser", "url": "chrome://settings" },
+        { "name": "<img src=x onerror=alert(1)>", "url": "https://example.com/" }
+      ],
+      "prefixes": [{ "key": "evil", "url": "https://%s.example.com/" }, { "key": "js", "url": "javascript:%s" }],
+      "autoAccents": { "__proto__": "#ff0000", "workstation": "red; background: url(https://example.com/x)" },
+      "customAccent": { "picked": "#000000", "color": "red } body { display: none" },
+      "stats": { "history": { "__proto__": 5 } },
+      "show": { "__proto__": false },
+      "wallpaper": "../city",
+      "theme": "tokyo\\" onload=\\"x"
+    }`);
+    const state = normalizeState(hostile);
+    assert.equal({}.polluted, undefined);
+    for (const object of [state, state.autoAccents, state.stats.history, state.show]) {
+      assert.equal(Object.getPrototypeOf(object), Object.prototype);
+    }
+    // The name stays text: the page writes it with textContent.
+    assert.deepEqual(
+      state.links.map((link) => [link.name, link.url]),
+      [['<img src=x onerror=alert(1)>', 'https://example.com/']],
+    );
+    assert.deepEqual(state.prefixes, []);
+    assert.deepEqual(state.autoAccents, {});
+    assert.match(state.customAccent.color, /^#[0-9a-f]{6}$/);
+    assert.deepEqual([state.wallpaper, state.theme], ['workstation', 'tokyo']);
+  });
+
   test('shade 0 is kept', () => {
     assert.equal(normalizeState({ shade: 0 }).shade, 0);
   });
