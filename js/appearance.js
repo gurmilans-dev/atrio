@@ -4,22 +4,40 @@
 // and of the custom one (picked by the user).
 import { FALLBACK_ACCENT, pickAccent } from './color.js';
 import { checkCSS, scopeCSS } from './custom-css.js';
-import { AUTO_THEME, CUSTOM_THEME, CUSTOM_WALLPAPER, LIMITS, SECTIONS, wallpaperSrc } from './config.js';
+import {
+  AUTO_THEME,
+  CUSTOM_THEME,
+  CUSTOM_WALLPAPER,
+  LIMITS,
+  ROTATION_KEY,
+  SECTIONS,
+  wallpaperSrc,
+} from './config.js';
 import { localDay, shownImage } from './rotation.js';
 import { addAccent } from './state.js';
 import { getState, subscribe, update } from './store.js';
 import { getImage, storedImageIds } from './wallpaper.js';
 
 const root = document.documentElement;
-// This tab's number for the "every new tab" rotation, counted by boot.js.
-const tabCounter = Number(root.dataset.rotation) || 0;
 let customKey = null;
 let customPromise = null;
 let paintedURL = null;
 let samplingKey = null;
 
+// Where the rotation is in this tab: the day, and this tab's number for "every new tab" (counted by
+// boot.js, or given by countThisTab).
+export const rotationWhen = () => ({
+  day: localDay(Date.now()),
+  counter: Number(root.dataset.rotation) || 0,
+});
+
 /** The id of the user's image this tab shows when the wallpaper is one of them, or null. */
-export const shownImageId = (state) => shownImage(state, { day: localDay(Date.now()), counter: tabCounter });
+export const shownImageId = (state) => shownImage(state, rotationWhen());
+
+/** "Every new tab" chosen here: this tab takes the last number given, the next new tab the one after. */
+export function countThisTab() {
+  root.dataset.rotation = String(Number(localStorage.getItem(ROTATION_KEY)) || 0);
+}
 
 // Identifies the image the accent was computed from.
 // null while the wallpaper is the user's but no image is listed yet (repairImages may add it).

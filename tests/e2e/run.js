@@ -1133,7 +1133,7 @@ try {
     );
   });
 
-  await check('own wallpapers: images, rotation per tab and per day, a pick stops it, removal', async () => {
+  await check('own wallpapers: images, rotation from the image shown, a pick stops it, removal', async () => {
     const upload = (color) =>
       a.eval(`(async () => {
         const before = ${STATE}.customImages.length;
@@ -1185,21 +1185,28 @@ try {
         otherButtons: document.querySelectorAll('#settings [id*="upload"]:not(#wallpaper-upload, #upload-formats)').length,
       };
     })()`);
+    // Every new tab, chosen with the image just added on screen: this tab keeps it, the next new
+    // tabs bring the next ones.
     await setRotation('tab');
+    await sleep(300);
+    const joined = await read();
     await a.goto();
     const firstTab = await read();
     await a.goto();
     const secondTab = await read();
+    // "Never" keeps the image on screen; every day, chosen then, starts from it.
+    await setRotation('off');
+    await sleep(300);
+    const kept = await read();
     await setRotation('daily');
     await a.goto();
     const daily = await read();
-    const day = await a.eval('Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 86400000)');
     // Picking another image while the day's is shown: that image, and the rotation stops.
     const other = three.images.find((id) => id !== daily.shown);
     await a.eval(settings(`document.querySelector('[data-image="${other}"]').click()`));
     await sleep(300);
     const picked = await read();
-    // Choosing a rotation while a built-in wallpaper is shown starts it on the user's images.
+    // Choosing a rotation while a built-in wallpaper is shown starts it from the image last chosen.
     await a.eval(settings(`document.querySelector('[data-wallpaper="city"]').click()`));
     await setRotation('daily');
     await sleep(300);
@@ -1210,15 +1217,16 @@ try {
     await sleep(300);
     const removed = await read();
     await a.eval(settings(`document.querySelector('[data-wallpaper="workstation"]').click()`));
-    const at = (images, step) => images[step % images.length];
+    const next = (id, n = 1) => three.images[(three.images.indexOf(id) + n) % three.images.length];
     assert.equal(three.images.length, 3);
     assert.deepEqual([three.tiles, three.rotationEnabled], [3, true]);
     assert.deepEqual(add, { opened: 1, formats: 'JPG · PNG · WEBP · AVIF', otherButtons: 0 });
+    assert.equal(three.shown, three.images[2]); // the image just added
+    assert.deepEqual([joined.rotation, joined.shown, joined.marked], ['tab', three.shown, three.shown]);
     assert.equal(secondTab.counter, firstTab.counter + 1);
-    assert.equal(firstTab.shown, at(three.images, firstTab.counter));
-    assert.equal(secondTab.shown, at(three.images, secondTab.counter));
-    assert.notEqual(secondTab.shown, firstTab.shown); // every new tab shows the next image
-    assert.equal(daily.shown, at(three.images, day));
+    assert.deepEqual([firstTab.shown, secondTab.shown], [next(three.shown), next(three.shown, 2)]);
+    assert.deepEqual([kept.rotation, kept.shown], ['off', secondTab.shown]);
+    assert.equal(daily.shown, secondTab.shown);
     assert.equal(daily.marked, daily.shown); // the tile marked is the image on screen
     assert.deepEqual(
       [picked.rotation, picked.wallpaper, picked.shown, picked.marked, picked.toast],
@@ -1226,7 +1234,7 @@ try {
     );
     assert.deepEqual(
       [restarted.rotation, restarted.wallpaper, restarted.shown, restarted.marked],
-      ['daily', 'custom', daily.shown, daily.shown],
+      ['daily', 'custom', other, other],
     );
     assert.deepEqual([removed.images.length, removed.tiles], [2, 2]);
     assert.ok(!removed.images.includes(three.images[0]));

@@ -37,6 +37,11 @@
   image of the day (or of the tab). Now picking a wallpaper, or adding an image, shows it at once and sets "Change
   wallpaper" to "Never", with a message saying so; choosing a rotation starts it on your images right away; and the
   tile marked, and removed by "Remove this image", is always the image on screen.
+- **A rotation started from an arbitrary image**, picked from the date (or a tab counter) alone, often the first one.
+  It now starts from the image on screen: "Every day" keeps it for today and brings the next one tomorrow; "With every
+  new tab" leaves it in the current tab and shows the next one in the next new tab. "Never" keeps the image on screen,
+  and removing an image during a rotation goes on from the one taking its place. Rotations already running keep the
+  image they show.
 - The wallpaper tiles' selection mark no longer also landed on the page's root element.
 
 ## 3.2.0 — 2026-10-28

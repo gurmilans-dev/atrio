@@ -27,6 +27,7 @@
         localStorage.setItem('workspace.newtab.v2.rotation', String(step));
         root.dataset.rotation = String(step);
       }
+      if (Number.isSafeInteger(saved.rotationShift)) step += saved.rotationShift;
       shown = images[((step % images.length) + images.length) % images.length];
     }
     // Automatic theme: the accent extracted earlier from the wallpaper shown.

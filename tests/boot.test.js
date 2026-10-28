@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import vm from 'node:vm';
 import { checkCSS, scopeCSS } from '../js/custom-css.js';
-import { localDay, shownImage } from '../js/rotation.js';
+import { localDay, shiftFrom, shownImage } from '../js/rotation.js';
 
 const source = readFileSync(new URL('../js/boot.js', import.meta.url), 'utf8');
 const KEY = 'workspace.newtab.v2';
@@ -75,6 +75,21 @@ test('the accent of the image shown, with the same daily choice as js/rotation.j
   const state = rotating('daily');
   const expected = shownImage(state, { day: localDay(Date.now()), counter: 0 });
   assert.equal(boot(state).properties['--accent'], state.autoAccents[`custom:${expected}`]);
+});
+
+test('a rotation started from an image picks it before the first paint, as js/rotation.js does', () => {
+  const today = { day: localDay(Date.now()), counter: 0 };
+  const daily = { ...rotating('daily'), rotationShift: shiftFrom(['a', 'b', 'c'], 'c', 'daily', today) };
+  assert.equal(boot(daily).properties['--accent'], '#333333');
+  // The next new tab after the one where it started, numbered 4: the image after "b".
+  const tab = {
+    ...rotating('tab'),
+    rotationShift: shiftFrom(['a', 'b', 'c'], 'b', 'tab', { day: 0, counter: 4 }),
+  };
+  const { root, properties } = boot(tab, { [`${KEY}.rotation`]: '4' });
+  assert.equal(root.dataset.rotation, '5');
+  assert.equal(properties['--accent'], '#333333');
+  assert.equal(shownImage(tab, { day: 0, counter: 5 }), 'c');
 });
 
 test('"every new tab" counts tabs apart from the state, as js/appearance.js reads it', () => {

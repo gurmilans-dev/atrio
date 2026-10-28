@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { localDay, shownImage } from '../js/rotation.js';
+import { localDay, shiftFrom, shownImage } from '../js/rotation.js';
 
 const images = ['a', 'b', 'c'];
 
@@ -22,6 +22,20 @@ describe('shownImage', () => {
     const state = { customImages: images, customImage: 'a', rotation: 'tab' };
     const shown = [1, 2, 3, 4].map((counter) => shownImage(state, { day: 0, counter }));
     assert.deepEqual(shown, ['b', 'c', 'a', 'b']);
+  });
+
+  test('started from an image: that one now, then the next ones, whatever the day or the tab', () => {
+    for (const from of images) {
+      const daily = { customImages: images, rotation: 'daily' };
+      daily.rotationShift = shiftFrom(images, from, 'daily', { day: 20389, counter: 0 });
+      const days = [20389, 20389, 20390, 20391].map((day) => shownImage(daily, { day, counter: 0 }));
+      const tab = { customImages: images, rotation: 'tab' };
+      tab.rotationShift = shiftFrom(images, from, 'tab', { day: 0, counter: 57 });
+      const tabs = [57, 58, 59].map((counter) => shownImage(tab, { day: 0, counter }));
+      const next = (id, n) => images[(images.indexOf(id) + n) % images.length];
+      assert.deepEqual(days, [from, from, next(from, 1), next(from, 2)]);
+      assert.deepEqual(tabs, [from, next(from, 1), next(from, 2)]);
+    }
   });
 
   test('one image: rotation has nothing to rotate', () => {

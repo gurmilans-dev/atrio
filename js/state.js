@@ -64,6 +64,7 @@ export function createDefaultState() {
     customImages: [],
     customImage: '',
     rotation: 'off',
+    rotationShift: 0,
     shade: 25,
     blur: 0,
     mouseEffects: false,
@@ -288,6 +289,7 @@ export function normalizeState(raw) {
     customImages,
     customImage: customImages.includes(input.customImage) ? input.customImage : (customImages[0] ?? ''),
     rotation: pick(input.rotation, ROTATIONS, base.rotation),
+    rotationShift: toInt(input.rotationShift, -Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, 0),
     shade: toInt(input.shade, 0, 75, base.shade),
     blur: toInt(input.blur, 0, LIMITS.blur, base.blur),
     // Schema 5 made the mouse effects optional and off by default: older saves start with them off.

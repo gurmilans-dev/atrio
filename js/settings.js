@@ -19,8 +19,17 @@ import { checkCSS } from './custom-css.js';
 import { $, $$, announce, button, el } from './dom.js';
 import { LANGUAGES, numberFormat, t, themeName, wallpaperName } from './i18n.js';
 import { appVersion, hasOrigins, removeOrigins, requestOrigins } from './platform.js';
-import { accentKey, previewAccent, previewBlur, previewShade, shownImageId } from './appearance.js';
+import {
+  accentKey,
+  countThisTab,
+  previewAccent,
+  previewBlur,
+  previewShade,
+  rotationWhen,
+  shownImageId,
+} from './appearance.js';
 import { applyPreset, syncAlarm } from './focus.js';
+import { shiftFrom } from './rotation.js';
 import { createDefaultState, normalizeState } from './state.js';
 import { dayKey } from './stats.js';
 import { getState, replaceState, subscribe, trackSave, update } from './store.js';
@@ -330,6 +339,10 @@ async function removeWallpaper() {
     const index = state.customImages.indexOf(id);
     state.customImages = state.customImages.filter((item) => item !== id);
     state.customImage = state.customImages[Math.min(index, state.customImages.length - 1)] ?? '';
+    // A rotation goes on from the image that takes the removed one's place.
+    if (state.rotation !== 'off') {
+      state.rotationShift = shiftFrom(state.customImages, state.customImage, state.rotation, rotationWhen());
+    }
     if (!state.customImages.length && state.wallpaper === CUSTOM_WALLPAPER) state.wallpaper = 'workstation';
     state.wallpaperRev = Date.now();
   });
@@ -516,11 +529,21 @@ export function initSettings() {
     });
     if (stopped) announce(t('rotation.stopped'));
   });
-  // A rotation goes through the user's images, so choosing one shows them from now on.
+  // A rotation goes through the user's images from the one on screen (or the one last chosen): it
+  // stays for today, or in this tab, and the next day or the next new tab brings the one after it.
+  // "Never" keeps the image on screen.
   $('rotation-select').addEventListener('change', (event) => {
+    const rotation = event.target.value;
+    const current = getState();
+    const from = (current.wallpaper === CUSTOM_WALLPAPER && shownImageId(current)) || current.customImage;
+    if (rotation === 'tab') countThisTab();
     update((state) => {
-      state.rotation = event.target.value;
-      if (state.rotation !== 'off' && state.customImages.length) state.wallpaper = CUSTOM_WALLPAPER;
+      state.rotation = rotation;
+      if (from) state.customImage = from;
+      if (rotation !== 'off' && state.customImages.length) {
+        state.wallpaper = CUSTOM_WALLPAPER;
+        state.rotationShift = shiftFrom(state.customImages, from, rotation, rotationWhen());
+      }
     });
   });
   $('layout-picks').addEventListener('change', (event) => {

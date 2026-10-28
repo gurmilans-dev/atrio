@@ -117,6 +117,12 @@ describe('normalizeState', () => {
     assert.equal(state.rotation, 'off');
     const chosen = normalizeState({ customImages: ['a', 'b'], customImage: 'b', rotation: 'tab' });
     assert.deepEqual([chosen.customImage, chosen.rotation], ['b', 'tab']);
+    // The start of the rotation: any whole number (days and tabs count up); none in older saves.
+    assert.equal(chosen.rotationShift, 0);
+    assert.equal(normalizeState({ rotationShift: -20388 }).rotationShift, -20388);
+    for (const bad of ['x', null, Infinity, {}]) {
+      assert.equal(normalizeState({ rotationShift: bad }).rotationShift, 0);
+    }
     const ids = Array.from({ length: 12 }, (_, i) => `img-${i}`);
     assert.equal(normalizeState({ customImages: ids }).customImages.length, LIMITS.wallpapers);
   });
