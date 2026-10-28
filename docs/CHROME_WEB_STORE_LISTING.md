@@ -44,8 +44,7 @@ marked **Decide** or **Check** cannot be settled from the code and are the maint
 
   They come from the page itself with demo data (`npm run screenshots -- --store`): a made-up token, sample tasks,
   the default links, shown as initials because site icons need the installed extension. The Google apps launcher is
-  turned off in them, through its own setting, so they show Atrio's own features. The 3.2.0 set, kept in
-  `docs/store/3.2.0/`, is not for upload.
+  turned off in them, through its own setting, so they show Atrio's own features.
 
 - **Small promo tile** (440 × 280, optional): `docs/store/3.3.0/promo-440x280.png`, a 24-bit PNG without alpha, made
   from Atrio's own icon, name and colors (`scripts/promo-tile.html`). Without one, the Store shows the item without its
@@ -215,12 +214,16 @@ marked **Decide** or **Check** cannot be settled from the code and are the maint
 
 ## Dashboard checklist
 
-1. Open the item (or create it) and check the package history: no version 3.3.0 or higher already uploaded.
-2. Upload `atrio-3.3.0.zip`, built by `npm run package`; compare its SHA-256 with the one the script printed.
-3. Store listing: summary (from the package), detailed description in English and Italian (above), category
+1. Before uploading, load the extracted package unpacked in a normal Chrome profile, for what the automated checks
+   cannot do: turn online suggestions on (accept, then deny, Chrome's permission prompt) and off (the permission
+   goes); let a short focus session end and see the system notification; search with a default engine other than
+   Google.
+2. Open the item (or create it) and check the package history: no version 3.3.0 or higher already uploaded.
+3. Upload `atrio-3.3.0.zip`, built by `npm run package`; compare its SHA-256 with the one the script printed.
+4. Store listing: summary (from the package), detailed description in English and Italian (above), category
    Developer Tools, languages, store icon, the five screenshots in order, the promo tile.
-4. Privacy practices: single purpose, the four permission justifications and the optional hosts, remote code "No",
+5. Privacy practices: single purpose, the four permission justifications and the optional hosts, remote code "No",
    data usage (**Decide**: User activity for the suggestions), the three certifications, the privacy policy URL.
-5. Distribution: visibility and regions, as you prefer.
-6. Optionally, review the launcher's use of Google's product names (its icons are generic since 3.3.0).
-7. Submit for review. When it is published, put the date next to 3.3.0 in `CHANGELOG.md`.
+6. Distribution: visibility and regions, as you prefer.
+7. Optionally, review the launcher's use of Google's product names (its icons are generic since 3.3.0).
+8. Submit for review. When it is published, put the date next to 3.3.0 in `CHANGELOG.md`.

@@ -1,7 +1,8 @@
 // Smoke checks in the real extension, loaded unpacked in headless Chrome or Edge: `npm run test:extension`
 // (set CHROME_PATH to pick the browser). What the HTTP suite in tests/e2e cannot see: the manifest and
 // its permissions, Chrome's Search API, the content security policy, alarms and the service worker.
-// They also guard the fixes of docs/CHROME_WEB_STORE_FIX_SUMMARY.md that live there (ATR-01, 04, 09, 10).
+// They also guard the fixes of the 3.2.0 Chrome Web Store review that only the real extension shows (ATR-01, 04,
+// 09 and 10 in the names below; the 3.2.0 changelog describes them).
 import assert from 'node:assert/strict';
 import http from 'node:http';
 import { resolve } from 'node:path';
