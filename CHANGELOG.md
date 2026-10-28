@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 3.3.0
+
+Not released yet: the date is added when this version is published on the Chrome Web Store.
 
 ### Added
 
