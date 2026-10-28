@@ -22,7 +22,7 @@
   with the settings, followed by the other open tabs and kept in backups; Classic is the default, and saves from
   earlier versions open in it. The palette can switch it too.
 - **Four new wallpapers**: Deep Space, Warm Sand, Sunrise Lake and Liquid Glass, next to Workstation and City. They ship
-  with the extension as WebP (90–155 KB each) and work offline; the automatic theme takes its accent from them like
+  with the extension as WebP (30–115 KB each) and work offline; the automatic theme takes its accent from them like
   from the others, and backups refer to them by name, without a copy of the image. The default wallpaper and the one
   already chosen do not change.
 

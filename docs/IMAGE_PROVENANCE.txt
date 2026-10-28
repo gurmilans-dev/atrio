@@ -1,0 +1,18 @@
+Atrio — Four original AI-generated wallpapers
+Created in this ChatGPT conversation on 2026-10-28 for Atrio as default background candidates.
+
+Contents (all 1600x900 WebP):
+- assets/deep-space.webp   — Dark navy atmospheric abstraction
+- assets/warm-sand.webp    — Warm beige minimal dunes and sun
+- assets/sunrise-lake.webp — Sunrise, mountain lake and mist
+- assets/liquid-glass.webp — Iridescent blue and lilac translucent shapes
+
+These images were generated for this request, not copied from an external stock-photo source.
+No brands, logos or third-party characters were intentionally included.
+Use and rights are governed by the applicable OpenAI terms and laws.
+Do not claim these works are licensed under CC0 or carry exclusive copyright
+without separate verification. This file is provenance information, not a legal guarantee.
+
+Integration: extract into the Atrio repository root to create assets/*.webp.
+Then register the four IDs in js/config.js / js/i18n.js, preserving
+existing wallpapers, aliases, user custom wallpapers, import/export and tests.

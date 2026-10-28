@@ -244,6 +244,7 @@ scripts/             icons, screenshots, extension key
 ## License
 
 [MIT](LICENSE). The Workstation and City wallpapers are the author's own images. Deep Space, Warm Sand, Sunrise Lake and
-Liquid Glass were generated with AI for Atrio, not taken from a stock library; their provenance is recorded in
+Liquid Glass were generated with AI for Atrio, not taken from a stock library; see
+[their provenance note](docs/IMAGE_PROVENANCE.txt) and
 [the Chrome Web Store notes](docs/CHROME_WEB_STORE_LISTING.md#assets-and-trademarks). Atrio is not affiliated with
 Google. Google product names belong to their owners; the launcher icons are simplified drawings made for this project.
