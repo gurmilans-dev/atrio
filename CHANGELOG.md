@@ -84,6 +84,10 @@
   imported. Now the backup's images are stored under new ids, the state is replaced all at once, and only then are
   the previous images removed; if anything fails, the new images go and everything stays as it was. A reset that
   cannot be saved likewise deletes nothing.
+- **The notes said "saved" when storage was full.** Only a short-lived message reported the failure, and a reload
+  lost the text. Now the notes say "saved" only once storage holds them; otherwise they show "not saved" with a
+  **Retry** button until a save goes through (Retry, the next edit or any other change), and the text stays in the
+  page meanwhile.
 - **A local tool's input could be searched on the web by accident.** After `Esc` (or a click on →, or a click
   elsewhere) closed the rows of a JWT, JSON, Base64 or a sum, `Enter` sent the text to the search engine and kept it
   among the recent searches. Now `Enter` brings the rows back; only `Shift + Enter` searches such text, and it is

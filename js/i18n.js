@@ -146,6 +146,8 @@ const it = {
   'notes.placeholder': 'Appunti, snippet, comandi da ricordare…',
   'notes.saved': 'salvate',
   'notes.saving': 'salvataggio…',
+  'notes.unsaved': 'non salvate',
+  'notes.retry': 'Riprova',
 
   'apps.title': 'App Google',
   'apps.buttonTitle': 'App Google (G)',
@@ -524,6 +526,8 @@ const en = {
   'notes.placeholder': 'Notes, snippets, commands to remember…',
   'notes.saved': 'saved',
   'notes.saving': 'saving…',
+  'notes.unsaved': 'not saved',
+  'notes.retry': 'Retry',
 
   'apps.title': 'Google apps',
   'apps.buttonTitle': 'Google apps (G)',

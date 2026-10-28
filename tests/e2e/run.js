@@ -525,6 +525,70 @@ try {
     );
   });
 
+  await check('notes that storage cannot hold (really full) say so, keep the draft, save later', async () => {
+    const r = await a.eval(`(async () => {
+      const store = await import('./js/store.js');
+      const area = document.getElementById('notes-input');
+      const saved = () => JSON.parse(localStorage.getItem('workspace.newtab.v2')).notes;
+      const status = () => ({
+        text: document.getElementById('notes-status').textContent,
+        retry: !document.getElementById('notes-retry').hidden,
+      });
+      const until = async (text) => {
+        for (let i = 0; i < 100 && status().text !== text; i++) await new Promise((r) => setTimeout(r, 50));
+        return status();
+      };
+      const fillers = [];
+      const fill = () => {
+        for (const size of [1 << 20, 1 << 16, 1 << 12, 1 << 8, 16]) {
+          for (;;) {
+            try { localStorage.setItem('filler-' + fillers.length, 'x'.repeat(size)); fillers.push('filler-' + fillers.length); } catch { break; }
+          }
+        }
+      };
+      const free = () => { for (const key of fillers.splice(0)) localStorage.removeItem(key); };
+      const type = (text) => { area.value = text; area.dispatchEvent(new Event('input')); };
+      const before = saved();
+      document.getElementById('tab-notes').click();
+      await store.flush();
+      area.focus(); // typing, as a person would
+
+      fill();
+      type('n'.repeat(8000));
+      const failed = await until('non salvate');
+      const kept = { saved: saved(), draft: area.value.length };
+      free();
+      document.getElementById('notes-retry').click();
+      const retried = { ...(await until('salvate')), saved: saved().length };
+
+      // Longer, so not saved again; then saved along with another change of the page.
+      fill();
+      type('n'.repeat(9999) + 'y');
+      const again = await until('non salvate');
+      free();
+      await store.update(() => {});
+      const along = { ...status(), saved: saved().endsWith('y') };
+
+      type(before);
+      area.blur();
+      await until('salvate');
+      document.getElementById('tab-tasks').click();
+      return { before, failed, kept, retried, again, along, restored: saved() };
+    })()`);
+    assert.deepEqual(
+      { ...r, before: undefined },
+      {
+        before: undefined,
+        failed: { text: 'non salvate', retry: true },
+        kept: { saved: r.before, draft: 8000 },
+        retried: { text: 'salvate', retry: false, saved: 8000 },
+        again: { text: 'non salvate', retry: true },
+        along: { text: 'salvate', retry: false, saved: true },
+        restored: r.before,
+      },
+    );
+  });
+
   await check('greeting uses the name', async () => {
     const text = await a.eval(`(() => {
       document.getElementById('settings').showModal();

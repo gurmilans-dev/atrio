@@ -176,7 +176,15 @@
               </div>
               <span class="panel-muted" id="tasks-count"><span id="task-counter">0 / 0</span></span>
               <span class="panel-muted" id="notes-count" hidden
-                ><span id="notes-length"></span> · <span id="notes-status" data-i18n="notes.saved"></span
+                ><span id="notes-size"><span id="notes-length"></span> · </span
+                ><span id="notes-status" class="notes-status" data-i18n="notes.saved"></span
+                ><button
+                  type="button"
+                  id="notes-retry"
+                  class="notes-retry"
+                  data-i18n="notes.retry"
+                  hidden
+                ></button
               ></span>
             </div>
             <div id="tasks-pane" role="tabpanel" aria-labelledby="tab-tasks">

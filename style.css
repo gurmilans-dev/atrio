@@ -1313,6 +1313,17 @@ kbd {
 .css-status.error {
   color: var(--danger);
 }
+.notes-status.failed {
+  color: var(--danger);
+}
+.notes-retry {
+  margin-left: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font: 600 11px var(--mono);
+}
 .notes {
   display: block;
   width: 100%;
