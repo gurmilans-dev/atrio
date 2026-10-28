@@ -156,19 +156,22 @@ CSS, including CSS from an imported backup, cannot make the page load anything f
 
 Requires Node.js 22+. There is nothing to install: the tools run through `npx`.
 
-| Command               | What it does                                                       |
-| --------------------- | ------------------------------------------------------------------ |
-| `npm test`            | Unit tests (`node --test`)                                         |
-| `npm run test:e2e`    | End-to-end checks in headless Chrome (set `CHROME_PATH` if needed) |
-| `npm run lint`        | ESLint                                                             |
-| `npm run format`      | Prettier                                                           |
-| `npm run check`       | Unit tests, lint and formatting check (what CI runs)               |
-| `npm run screenshots` | Regenerate the images in `docs/` with demo data                    |
-| `npm run icons`       | Render the PNG icons from `assets/icons/icon.svg`                  |
+| Command                  | What it does                                                                   |
+| ------------------------ | ------------------------------------------------------------------------------ |
+| `npm test`               | Unit tests (`node --test`)                                                     |
+| `npm run test:e2e`       | End-to-end checks in headless Chrome (set `CHROME_PATH` if needed)             |
+| `npm run test:extension` | Smoke checks of the real extension, loaded unpacked in headless Chrome or Edge |
+| `npm run lint`           | ESLint                                                                         |
+| `npm run format`         | Prettier                                                                       |
+| `npm run check`          | Unit tests, lint and formatting check (what CI runs)                           |
+| `npm run screenshots`    | Regenerate the images in `docs/` with demo data                                |
+| `npm run icons`          | Render the PNG icons from `assets/icons/icon.svg`                              |
 
 To work on the UI without reloading the extension, serve the folder (e.g. `npx serve .`) and open `index.html`: the
 page runs outside the extension too, just without notifications, site icons, online suggestions and `chrome://`
-pages.
+pages. `npm run test:e2e` checks the page that way; `npm run test:extension` loads the extension itself (through the
+DevTools protocol, which branded Chrome allows with `--enable-unsafe-extension-debugging`) for what only it has: the
+manifest's permissions and content security policy, Chrome's Search API, alarms and the service worker.
 
 ```
 manifest.json        Manifest V3
@@ -184,7 +187,7 @@ js/timer.js, js/stats.js, js/color.js, js/fuzzy.js   pure logic
 js/google-apps.js    launcher catalog and icons
 js/*.js              UI modules (links, tasks, notes, focus, apps, settings, effects…)
 _locales/            extension description for the Chrome Web Store and chrome://extensions
-tests/               unit tests; tests/e2e/ browser checks
+tests/               unit tests; tests/e2e/ browser checks; tests/extension/ the real extension
 scripts/             icons, screenshots, extension key
 ```
 

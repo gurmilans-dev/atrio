@@ -1,6 +1,7 @@
 // Minimal Chrome DevTools Protocol harness, zero dependencies (Node 22+: global fetch and WebSocket).
-// Serves the extension folder over HTTP and drives a headless Chrome with a throwaway profile.
-// The page runs outside the extension, so chrome.* APIs are absent and degrade gracefully.
+// launch() serves the extension folder over HTTP and drives a headless Chrome with a throwaway
+// profile: the page runs outside the extension, so chrome.* APIs are absent and degrade gracefully.
+// launchExtension() loads the extension itself, for what only it has (APIs, CSP, service worker).
 import { execFileSync, spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
@@ -81,18 +82,14 @@ async function waitForDevTools(profile) {
   throw new Error('Chrome did not start (no DevToolsActivePort).');
 }
 
-async function connect(url) {
-  const socket = new WebSocket(url);
-  await new Promise((resolve, reject) => {
-    socket.addEventListener('open', resolve, { once: true });
-    socket.addEventListener('error', reject, { once: true });
-  });
+// The protocol over any transport: `write` sends a message, receive() takes one in.
+function protocol(write) {
   let id = 0;
   const pending = new Map();
   const listeners = new Set();
   const problems = [];
 
-  socket.addEventListener('message', ({ data }) => {
+  function receive(data) {
     const message = JSON.parse(data);
     if (message.id && pending.has(message.id)) {
       const { resolve, reject } = pending.get(message.id);
@@ -113,14 +110,42 @@ async function connect(url) {
       problems.push(`${params.entry.text} ${params.entry.url ?? ''}`.trim());
     }
     for (const listener of listeners) listener(message);
-  });
+  }
 
   const send = (method, params = {}, sessionId) =>
     new Promise((resolve, reject) => {
       pending.set(++id, { resolve, reject });
-      socket.send(JSON.stringify({ id, method, params, sessionId }));
+      write(JSON.stringify({ id, method, params, sessionId }));
     });
-  return { send, listeners, problems, close: () => socket.close() };
+  return { send, listeners, problems, receive };
+}
+
+async function connect(url) {
+  const socket = new WebSocket(url);
+  await new Promise((resolve, reject) => {
+    socket.addEventListener('open', resolve, { once: true });
+    socket.addEventListener('error', reject, { once: true });
+  });
+  const cdp = protocol((text) => socket.send(text));
+  socket.addEventListener('message', ({ data }) => cdp.receive(data));
+  return { ...cdp, close: () => socket.close() };
+}
+
+// --remote-debugging-pipe: messages go in on file descriptor 3 and out on 4, each ended by a NUL.
+function connectPipe(child) {
+  const [, , , input, output] = child.stdio;
+  const cdp = protocol((text) => input.write(`${text}\0`));
+  let buffer = '';
+  output.setEncoding('utf8');
+  output.on('data', (chunk) => {
+    buffer += chunk;
+    for (let end = buffer.indexOf('\0'); end >= 0; end = buffer.indexOf('\0')) {
+      const message = buffer.slice(0, end);
+      buffer = buffer.slice(end + 1);
+      cdp.receive(message);
+    }
+  });
+  return { ...cdp, close: () => input.end() };
 }
 
 // Keys used by the tests: [code, windowsVirtualKeyCode, text].
@@ -264,6 +289,46 @@ export async function launch(root, { width = 1440, height = 900, lang = 'it-IT' 
       cdp.close();
       chrome.kill();
       server.close();
+      await sleep(500);
+      await rm(profile, { recursive: true, force: true }).catch(() => {});
+    },
+  };
+}
+
+/**
+ * Loads the extension itself, unpacked, in headless Chrome or Edge: chrome.* APIs, the manifest's CSP
+ * and the service worker are the real ones. Branded Chrome ignores --load-extension; it accepts
+ * Extensions.loadUnpacked on a DevTools pipe with --enable-unsafe-extension-debugging.
+ */
+export async function launchExtension(root, { width = 1440, height = 900, lang = 'it-IT' } = {}) {
+  const profile = await mkdtemp(path.join(tmpdir(), 'atrio-extension-'));
+  const chrome = spawn(
+    findChrome(),
+    [
+      '--headless=new',
+      '--remote-debugging-pipe',
+      '--enable-unsafe-extension-debugging',
+      `--user-data-dir=${profile}`,
+      `--window-size=${width},${height}`,
+      `--lang=${lang}`,
+      `--accept-lang=${lang}`,
+      '--no-first-run',
+      '--no-default-browser-check',
+      'about:blank',
+    ],
+    { stdio: ['ignore', 'ignore', 'ignore', 'pipe', 'pipe'] },
+  );
+  const cdp = connectPipe(chrome);
+  const { id } = await cdp.send('Extensions.loadUnpacked', { path: path.resolve(root) });
+  return {
+    id,
+    send: cdp.send,
+    listeners: cdp.listeners,
+    problems: cdp.problems,
+    openPage: (file = 'index.html') => openPage(cdp, `chrome-extension://${id}/${file}`, { width, height }),
+    async close() {
+      cdp.close();
+      chrome.kill();
       await sleep(500);
       await rm(profile, { recursive: true, force: true }).catch(() => {});
     },
