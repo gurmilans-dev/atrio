@@ -1133,7 +1133,7 @@ try {
     );
   });
 
-  await check('own wallpapers: several images, rotation per tab and per day, removal', async () => {
+  await check('own wallpapers: images, rotation per tab and per day, a pick stops it, removal', async () => {
     const upload = (color) =>
       a.eval(`(async () => {
         const before = ${STATE}.customImages.length;
@@ -1152,10 +1152,14 @@ try {
     const read = () =>
       a.eval(`({
         images: ${STATE}.customImages,
+        wallpaper: ${STATE}.wallpaper,
+        rotation: ${STATE}.rotation,
         shown: document.documentElement.dataset.customImage,
+        marked: document.querySelector('#wallpaper-picks [data-image][aria-pressed="true"]')?.dataset.image,
         counter: Number(document.documentElement.dataset.rotation) || 0,
         tiles: document.querySelectorAll('#wallpaper-picks [data-image]').length,
         rotationEnabled: !document.getElementById('rotation-select').disabled,
+        toast: document.getElementById('toast').textContent,
       })`);
     const setRotation = (value) =>
       a.eval(
@@ -1190,6 +1194,16 @@ try {
     await a.goto();
     const daily = await read();
     const day = await a.eval('Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 86400000)');
+    // Picking another image while the day's is shown: that image, and the rotation stops.
+    const other = three.images.find((id) => id !== daily.shown);
+    await a.eval(settings(`document.querySelector('[data-image="${other}"]').click()`));
+    await sleep(300);
+    const picked = await read();
+    // Choosing a rotation while a built-in wallpaper is shown starts it on the user's images.
+    await a.eval(settings(`document.querySelector('[data-wallpaper="city"]').click()`));
+    await setRotation('daily');
+    await sleep(300);
+    const restarted = await read();
     await setRotation('off');
     await a.eval(settings(`document.querySelector('#wallpaper-picks [data-image]').click()`));
     await a.eval(settings(`document.getElementById('remove-wallpaper').click()`));
@@ -1205,6 +1219,15 @@ try {
     assert.equal(secondTab.shown, at(three.images, secondTab.counter));
     assert.notEqual(secondTab.shown, firstTab.shown); // every new tab shows the next image
     assert.equal(daily.shown, at(three.images, day));
+    assert.equal(daily.marked, daily.shown); // the tile marked is the image on screen
+    assert.deepEqual(
+      [picked.rotation, picked.wallpaper, picked.shown, picked.marked, picked.toast],
+      ['off', 'custom', other, other, '“Cambia sfondo” ora è su “Mai”.'],
+    );
+    assert.deepEqual(
+      [restarted.rotation, restarted.wallpaper, restarted.shown, restarted.marked],
+      ['daily', 'custom', daily.shown, daily.shown],
+    );
     assert.deepEqual([removed.images.length, removed.tiles], [2, 2]);
     assert.ok(!removed.images.includes(three.images[0]));
   });

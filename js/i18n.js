@@ -258,7 +258,8 @@ const it = {
   'rotation.daily': 'Ogni giorno',
   'rotation.tab': 'A ogni nuova scheda',
   'settings.rotationNote':
-    'Ruota tra le tue immagini quando lo sfondo è una di loro. Ne servono almeno due; le schede già aperte tengono la loro.',
+    'Ruota tra le tue immagini; ne servono almeno due. Scegliere o aggiungere uno sfondo la ferma; le schede già aperte tengono il loro.',
+  'rotation.stopped': '“Cambia sfondo” ora è su “Mai”.',
   'theme.auto': 'Dallo sfondo',
   'theme.custom': 'Personalizzato',
   'theme.light': 'Chiaro',
@@ -657,7 +658,8 @@ const en = {
   'rotation.daily': 'Every day',
   'rotation.tab': 'With every new tab',
   'settings.rotationNote':
-    'Rotates through your images when the wallpaper is one of them. It takes at least two; tabs already open keep theirs.',
+    'Rotates through your images; it takes at least two. Picking or adding a wallpaper stops it; tabs already open keep theirs.',
+  'rotation.stopped': '“Change wallpaper” is now set to “Never”.',
   'theme.auto': 'From wallpaper',
   'theme.custom': 'Custom',
   'theme.light': 'Light',

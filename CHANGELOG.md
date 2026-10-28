@@ -31,6 +31,14 @@
 - Settings → Wallpaper has one way to add an image, the **Add** tile, with the accepted formats under the tiles; the
   separate "Upload image" button, which did the same, is gone.
 
+### Fixed
+
+- **With the rotation on, picking one of your images did not show it.** Its tile was marked, but the page kept the
+  image of the day (or of the tab). Now picking a wallpaper, or adding an image, shows it at once and sets "Change
+  wallpaper" to "Never", with a message saying so; choosing a rotation starts it on your images right away; and the
+  tile marked, and removed by "Remove this image", is always the image on screen.
+- The wallpaper tiles' selection mark no longer also landed on the page's root element.
+
 ## 3.2.0 — 2026-10-28
 
 ### Added

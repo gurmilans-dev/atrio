@@ -19,7 +19,7 @@ import { checkCSS } from './custom-css.js';
 import { $, $$, announce, button, el } from './dom.js';
 import { LANGUAGES, numberFormat, t, themeName, wallpaperName } from './i18n.js';
 import { appVersion, hasOrigins, removeOrigins, requestOrigins } from './platform.js';
-import { accentKey, previewAccent, previewBlur, previewShade } from './appearance.js';
+import { accentKey, previewAccent, previewBlur, previewShade, shownImageId } from './appearance.js';
 import { applyPreset, syncAlarm } from './focus.js';
 import { createDefaultState, normalizeState } from './state.js';
 import { dayKey } from './stats.js';
@@ -187,9 +187,12 @@ function render(state) {
     }
   };
   renderWallpaperPicks(state);
-  mark('[data-wallpaper]', 'wallpaper', state.wallpaper);
-  mark('[data-image]', 'image', state.wallpaper === CUSTOM_WALLPAPER ? state.customImage : null);
-  $('remove-wallpaper').hidden = state.wallpaper !== CUSTOM_WALLPAPER || !state.customImage;
+  // The root element carries data-wallpaper too: only the tiles are marked.
+  mark('#wallpaper-picks [data-wallpaper]', 'wallpaper', state.wallpaper);
+  // The image marked, and removed by "Remove this image", is the one this tab shows.
+  const shown = state.wallpaper === CUSTOM_WALLPAPER ? shownImageId(state) : null;
+  mark('[data-image]', 'image', shown);
+  $('remove-wallpaper').hidden = !shown;
   $('rotation-select').value = state.rotation;
   $('rotation-select').disabled = state.customImages.length < 2;
   for (const input of $$('input[name=layout]')) input.checked = input.value === state.layout;
@@ -287,21 +290,35 @@ async function uploadWallpaper(file) {
     const blob = await prepareWallpaper(file);
     const id = newImageId();
     await putImage(id, blob);
-    update((state) => {
+    const stopped = showOnly((state) => {
       state.customImages = [...state.customImages, id];
       state.customImage = id;
       state.wallpaper = CUSTOM_WALLPAPER;
       state.wallpaperRev = Date.now();
     });
-    announce(t('wallpaper.updated', { size: formatMB(blob.size) }));
+    const updated = t('wallpaper.updated', { size: formatMB(blob.size) });
+    announce(stopped ? `${updated} ${t('rotation.stopped')}` : updated);
   } catch {
     announce(t('wallpaper.failed'));
   }
 }
 
-// Removes the selected image of the user's; the next one (or a built-in wallpaper) takes its place.
+// A wallpaper picked, or an image added, is shown at once: a rotation running would keep showing
+// its own image instead, so it stops. Returns whether it did, for the message.
+function showOnly(change) {
+  const { rotation, customImages } = getState();
+  const rotating = rotation !== 'off' && customImages.length > 1;
+  update((state) => {
+    change(state);
+    state.rotation = 'off';
+  });
+  return rotating;
+}
+
+// Removes the image this tab shows; the next one (or a built-in wallpaper) takes its place.
 async function removeWallpaper() {
-  const id = getState().customImage;
+  const current = getState();
+  const id = current.wallpaper === CUSTOM_WALLPAPER ? shownImageId(current) : null;
   if (!id) return;
   try {
     await deleteImage(id);
@@ -489,7 +506,7 @@ export function initSettings() {
       chooseWallpaper();
       return;
     }
-    update((state) => {
+    const stopped = showOnly((state) => {
       if (pick.dataset.image) {
         state.wallpaper = CUSTOM_WALLPAPER;
         state.customImage = pick.dataset.image;
@@ -497,10 +514,13 @@ export function initSettings() {
         state.wallpaper = pick.dataset.wallpaper;
       }
     });
+    if (stopped) announce(t('rotation.stopped'));
   });
+  // A rotation goes through the user's images, so choosing one shows them from now on.
   $('rotation-select').addEventListener('change', (event) => {
     update((state) => {
       state.rotation = event.target.value;
+      if (state.rotation !== 'off' && state.customImages.length) state.wallpaper = CUSTOM_WALLPAPER;
     });
   });
   $('layout-picks').addEventListener('change', (event) => {
