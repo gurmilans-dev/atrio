@@ -14,7 +14,8 @@
     "check": "npm test && npm run lint && npm run format:check",
     "icons": "node scripts/make-icons.js",
     "screenshots": "node scripts/screenshots.js",
-    "apply-key": "node scripts/apply-key.js"
+    "apply-key": "node scripts/apply-key.js",
+    "package": "node scripts/package.js"
   },
   "license": "MIT",
   "repository": {

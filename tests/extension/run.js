@@ -4,11 +4,13 @@
 // They also guard the fixes of docs/CHROME_WEB_STORE_FIX_SUMMARY.md that live there (ATR-01, 04, 09, 10).
 import assert from 'node:assert/strict';
 import http from 'node:http';
+import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WALLPAPERS } from '../../js/config.js';
 import { launchExtension, sleep } from '../e2e/harness.js';
 
-const ROOT = fileURLToPath(new URL('../..', import.meta.url));
+// The repository, or the folder given (npm run test:extension -- <folder>): the package from npm run package.
+const ROOT = process.argv[2] ? resolve(process.argv[2]) : fileURLToPath(new URL('../..', import.meta.url));
 const STATE = `JSON.parse(localStorage.getItem('workspace.newtab.v2'))`;
 const results = [];
 
