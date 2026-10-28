@@ -434,6 +434,25 @@ kbd {
   height: 36px;
   flex: none;
 }
+/* Generic symbols in the theme's accent, like the links' initials (js/google-apps.js): not the
+   products' own icons or colors. */
+.app-icon .app-tile {
+  fill: var(--accent-soft);
+  stroke: color-mix(in srgb, var(--accent) 20%, transparent);
+  stroke-width: 0.6;
+}
+.app-glyph {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.app-glyph text {
+  fill: var(--accent);
+  stroke: none;
+  font: 700 6px var(--sans);
+}
 .app-name {
   max-width: 100%;
   overflow: hidden;

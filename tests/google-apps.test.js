@@ -15,6 +15,13 @@ describe('google apps catalog', () => {
     }
   });
 
+  test("icons are generic symbols in the theme's color: a tile and a glyph, no colors of their own", () => {
+    for (const app of GOOGLE_APPS) {
+      assert.deepEqual([app.icon[0][1].class, app.icon[1][1].class], ['app-tile', 'app-glyph'], app.id);
+      assert.doesNotMatch(JSON.stringify(app.icon), /#[0-9a-f]{3,8}\b|rgb|hsl|gradient|fill|stroke/i, app.id);
+    }
+  });
+
   test('default favorites exist in the catalog', () => {
     assert.ok(DEFAULT_APP_FAVORITES.every((id) => byId(id)));
   });

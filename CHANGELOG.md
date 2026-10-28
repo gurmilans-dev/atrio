@@ -33,6 +33,9 @@ Not released yet: the date is added when this version is published on the Chrome
 - Settings → Wallpaper has one way to add an image, the **Add** tile, with the accepted formats under the tiles; the
   separate "Upload image" button, which did the same, is gone.
 - The wallpaper rotation is a switch, **Change wallpaper every day**: one of your images a day, the same in every tab.
+- **The Google apps launcher shows generic icons**: each service is a symbol of what it does (an envelope for Gmail, a
+  folder for Drive, a grid for Sheets…) in the theme's accent color, like the links' initials, instead of drawings in
+  the colors and shapes of Google's product icons. Names, addresses, favorites and the account switch are unchanged.
 
 ### Removed
 

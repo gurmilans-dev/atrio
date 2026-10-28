@@ -44,7 +44,7 @@ marked **Decide** or **Check** cannot be settled from the code and are the maint
 
   They come from the page itself with demo data (`npm run screenshots -- --store`): a made-up token, sample tasks,
   the default links, shown as initials because site icons need the installed extension. The Google apps launcher is
-  turned off in them, through its own setting, until the trademark check below. The 3.2.0 set, kept in
+  turned off in them, through its own setting, so they show Atrio's own features. The 3.2.0 set, kept in
   `docs/store/3.2.0/`, is not for upload.
 
 - **Small promo tile** (440 × 280, optional): `docs/store/3.3.0/promo-440x280.png`, a 24-bit PNG without alpha, made
@@ -142,7 +142,7 @@ marked **Decide** or **Check** cannot be settled from the code and are the maint
   > Atrio non è affiliato a Google.
 
   Plain text, as the Store shows it: the capitalized lines are headings. The Google apps launcher is left out of both
-  texts until the trademark check.
+  texts, which describe Atrio's own features.
 
 ## Privacy practices
 
@@ -200,14 +200,14 @@ marked **Decide** or **Check** cannot be settled from the code and are the maint
   metadata. No license or clearance beyond that is claimed for them. **Check:** keep the PNG files, with their
   credentials, outside the repository as a record (they are not part of the package), and that the OpenAI terms allow
   this use.
-- **Google apps launcher** (`js/google-apps.js`): simplified drawings in each product's colors, made for this project.
-  This is the listing's main trademark risk: drawings close to Google product icons can be read as impersonation or
-  as use of Google's marks. The README and the description say that Atrio is not affiliated with Google, and the
-  screenshots and the promo tile do not show the launcher. **Decide** after reviewing
+- **Google apps launcher** (`js/google-apps.js`): since 3.3.0 each service is shown with a generic symbol of what it
+  does (an envelope for Gmail, a folder for Drive, a grid for Sheets…), drawn in Atrio's accent color like the links'
+  initials: none of Google's product icons, shapes or colors. The services keep their names, in text, and their
+  addresses, to say where each tile leads. The README and the description say that Atrio is not affiliated with
+  Google; the screenshots and the promo tile do not show the launcher. **Check**, if in doubt, against
   [Google's brand guidance](https://about.google/brand-resource-center/guidance/) and the Store's
   [impersonation and intellectual property policy](https://developer.chrome.com/docs/webstore/program-policies/impersonation-and-intellectual-property).
-  The safe fallback keeps the feature: generic glyphs or monograms with the services' names in text. Atrio's own name
-  and logo do not resemble Google's.
+  Atrio's own name and logo do not resemble Google's.
 
 ## Account
 
@@ -222,5 +222,5 @@ marked **Decide** or **Check** cannot be settled from the code and are the maint
 4. Privacy practices: single purpose, the four permission justifications and the optional hosts, remote code "No",
    data usage (**Decide**: User activity for the suggestions), the three certifications, the privacy policy URL.
 5. Distribution: visibility and regions, as you prefer.
-6. **Decide** on the Google apps launcher before submitting, or submit knowing it may be questioned in review.
+6. Optionally, review the launcher's use of Google's product names (its icons are generic since 3.3.0).
 7. Submit for review. When it is published, put the date next to 3.3.0 in `CHANGELOG.md`.

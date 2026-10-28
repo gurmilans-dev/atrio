@@ -68,8 +68,8 @@ function demoToken() {
 }
 
 // The Chrome Web Store set: Developer and Minimal, Classic and Glass, the developer tools, the
-// appearance settings. The Google apps launcher is turned off (Settings → Page), so no drawing close
-// to a Google product icon shows until the trademark check in docs/CHROME_WEB_STORE_LISTING.md.
+// appearance settings. The Google apps launcher is turned off (Settings → Page), so the pictures show
+// Atrio's own features.
 async function storeSet(page, shot) {
   const set = (patch) =>
     page.eval(`(() => {
