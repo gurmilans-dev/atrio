@@ -99,6 +99,13 @@ marked **Decide** or **Check** cannot be settled from the code and are the maint
 
 - **Wallpapers** (`assets/city.webp`, `assets/workstation.webp`): the author's own images, as stated by the
   maintainer. **Check:** keep the source files, and how they were made, as a record.
+- **Wallpapers added after 3.2.0** (`assets/deep-space.webp`, `warm-sand.webp`, `sunrise-lake.webp`,
+  `liquid-glass.webp`): generated with AI for Atrio on 28 October 2026, not downloaded from a stock library. The
+  original PNG exports carry signed C2PA Content Credentials: created with ChatGPT (`gpt-image`), digital source type
+  `trainedAlgorithmicMedia`, claim signed by OpenAI. They were converted to WebP at the same 1672 × 941 (quality 90;
+  96 for Deep Space, whose dark sky bands at lower settings), which does not carry the credentials over. No license
+  or clearance beyond that is claimed for them. **Check:** keep the original PNG files, with their credentials, as a
+  record, and that the image generator's terms allow this use.
 - **Google apps launcher** (`js/google-apps.js`): simplified drawings in each product's colors, made for this project.
   The README and the description say that Atrio is not affiliated with Google. **Decide** after reviewing
   [Google's brand guidance](https://about.google/brand-resource-center/guidance/) and the Store's

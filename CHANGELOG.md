@@ -12,6 +12,19 @@
   their commands) open the tasks, notes or timer panel over the page, closed with `Esc` or a click elsewhere. The mode
   is applied before the first paint, saved with the settings, followed by the other open tabs and kept in backups;
   saves from earlier versions open in Developer. The palette can switch it too.
+- **Visual styles** (Settings → Appearance → Visual style). **Classic** is Atrio's look as before; **Glass** makes the
+  panels, link cards, search box, menus, popovers and the settings translucent over the blurred wallpaper, with thin
+  bright edges, a soft sheen, diffuse shadows and softer corners. It works in both interface modes and with every
+  theme, and the edges take the accent of the automatic and custom themes. The glass is smoked, so text stays readable
+  on bright wallpapers too (muted text at 4.5:1 or more, measured on every theme and built-in wallpaper); when the
+  system asks for less transparency or more contrast, it keeps Classic's fills and no blur. Mode, style, theme and
+  wallpaper are independent: changing one changes nothing else. The style is applied before the first paint, saved
+  with the settings, followed by the other open tabs and kept in backups; Classic is the default, and saves from
+  earlier versions open in it. The palette can switch it too.
+- **Four new wallpapers**: Deep Space, Warm Sand, Sunrise Lake and Liquid Glass, next to Workstation and City. They ship
+  with the extension as WebP (90–155 KB each) and work offline; the automatic theme takes its accent from them like
+  from the others, and backups refer to them by name, without a copy of the image. The default wallpaper and the one
+  already chosen do not change.
 
 ## 3.2.0 — 2026-10-28
 

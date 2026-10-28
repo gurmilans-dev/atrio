@@ -58,11 +58,13 @@ network requests unless you turn on online search suggestions.
 - **Google apps launcher.** 24 apps with editable favorites (drag, or `Ctrl + ←/→`), and a switch for people signed
   in to several Google accounts.
 - **Make it yours.** Six themes: three dark ones, a light one, one that takes its accent color from your wallpaper,
-  one with any color you pick (adjusted if needed to stay readable). Up to eight wallpapers of your own (downscaled to
-  WebP on your machine), rotating every day or with every new tab; dim and blur. Hide the parts you do not use
-  (greeting, clock, date, links, focus panel, heatmap, tasks): with both side panels off the page becomes one calm,
-  centered column. A 24- or 12-hour clock, with or without seconds. Optional mouse effects (link borders that light
-  up near the cursor, a slight lift, wallpaper parallax), off by default. And for anything else, your own CSS.
+  one with any color you pick (adjusted if needed to stay readable), each in two visual styles, Classic or Glass.
+  Six built-in wallpapers (Workstation, City, Deep Space, Warm Sand, Sunrise Lake, Liquid Glass), or up to eight of
+  your own (downscaled to WebP on your machine), rotating every day or with every new tab; dim and blur. Hide the
+  parts you do not use (greeting, clock, date, links, focus panel, heatmap, tasks): with both side panels off the page
+  becomes one calm, centered column. A 24- or 12-hour clock, with or without seconds. Optional mouse effects (link
+  borders that light up near the cursor, a slight lift, wallpaper parallax), off by default. And for anything else,
+  your own CSS.
 - **Keyboard everywhere** and **backups** to a JSON file, your wallpapers included.
 
 | Developer tools        | Google apps         | Mocha theme and notes |
@@ -85,6 +87,25 @@ switching loses nothing: the links, tasks, notes, timer and settings are the sam
 the search, the command palette and the developer tools work as in Developer, and the tasks, notes and timer stay one
 key away (`T`, `N` and `P` open their panel over the page, `Esc` closes it). The mode is saved with the other settings,
 follows in the tabs already open, and comes back with a backup.
+
+## Two visual styles
+
+**Settings → Appearance → Visual style** changes how the surfaces are drawn, in either mode and with any theme:
+
+- **Classic**, Atrio's original look, as in the screenshots above.
+- **Glass**: the panels, link cards, search box, menus and popovers turn translucent over the blurred wallpaper, with
+  thin bright edges, a soft sheen, diffuse shadows and softer corners.
+
+![Atrio in the Glass style, in Developer mode on the Liquid Glass wallpaper](docs/glass.webp)
+
+The glass is smoked: what shows through is dimmed and its colors saturated, so the wallpaper glows behind the surfaces
+while their text stays readable, even on bright wallpapers (measured on every theme and built-in wallpaper, the muted
+text on Glass's surfaces stays at 4.5:1 or more). When the system asks for less transparency or more contrast, Glass
+keeps Classic's fills and drops the blur.
+
+Mode, style, theme and wallpaper are four separate settings: every combination works, and changing one never changes
+the others. Classic is the default, and saves from earlier versions open in it; the style is saved with the other
+settings, follows in the tabs already open, and comes back with a backup.
 
 ## Install
 
@@ -142,11 +163,17 @@ it.
 
 ## How it works
 
-- **No flash on open.** A tiny blocking script (`js/boot.js`) applies theme, interface mode, wallpaper, dim and blur
-  before the first paint; the ES modules load after.
+- **No flash on open.** A tiny blocking script (`js/boot.js`) applies theme, interface mode, visual style, wallpaper,
+  dim and blur before the first paint; the ES modules load after.
 - **Two modes, one page.** The interface mode is a `data-layout` attribute on the root element: Minimal is a set of
   CSS rules over the same HTML, the same components and the same state, so neither mode can drift from the other.
   Panels hidden in Minimal stay in the page; `js/layout.js` floats one when its shortcut asks for it.
+- **Glass in CSS alone.** The visual style is a `data-style` attribute, apart from `data-layout` and `data-theme`.
+  Glass is a few custom properties (fill, edge, sheen, shadow, blur) drawn over the theme's own colors, on the surfaces
+  that need them; nothing else is blurred, nothing animates, and Classic's rules are untouched. The search box draws
+  its glass on a pseudo-element: an element that blurs its backdrop confines the blur of everything inside it, and the
+  suggestions under the box must blur the page. In headless Chrome, a frame with thirty glass link cards took under
+  2 ms to draw (95th percentile; Classic 0.3 ms).
 - **One store, many tabs.** All state lives in one validated object (`js/state.js`). Every open new tab listens to the
   `storage` event, so tabs never overwrite each other with stale data. A corrupted save is backed up, not discarded.
 - **A timer that survives throttling.** Sessions store an absolute end time; ticks align to the displayed second while
@@ -216,5 +243,7 @@ scripts/             icons, screenshots, extension key
 
 ## License
 
-[MIT](LICENSE). The wallpapers in `assets/` are the author's own images. Atrio is not affiliated with Google. Google
-product names belong to their owners; the launcher icons are simplified drawings made for this project.
+[MIT](LICENSE). The Workstation and City wallpapers are the author's own images. Deep Space, Warm Sand, Sunrise Lake and
+Liquid Glass were generated with AI for Atrio, not taken from a stock library; their provenance is recorded in
+[the Chrome Web Store notes](docs/CHROME_WEB_STORE_LISTING.md#assets-and-trademarks). Atrio is not affiliated with
+Google. Google product names belong to their owners; the launcher icons are simplified drawings made for this project.

@@ -111,6 +111,15 @@ try {
   })()`);
   await page.goto();
   await shot('minimal');
+
+  // The Glass style, in Developer, on one of the bundled wallpapers.
+  await page.eval(`(() => {
+    const s = JSON.parse(localStorage.getItem(${JSON.stringify(KEY)}));
+    Object.assign(s, { layout: 'developer', visualStyle: 'glass', theme: 'tokyo', wallpaper: 'liquid-glass' });
+    localStorage.setItem(${JSON.stringify(KEY)}, JSON.stringify(s));
+  })()`);
+  await page.goto();
+  await shot('glass');
 } finally {
   await browser.close();
 }
