@@ -1544,6 +1544,320 @@ try {
     );
   });
 
+  // ---------- Interface modes ----------
+  const beforeModes = await a.eval(`localStorage.getItem('workspace.newtab.v2')`);
+  const setLayout = async (layout) => {
+    await a.eval(settings(`document.querySelector('input[name=layout][value=${layout}]').click()`));
+  };
+
+  await check(
+    'interface mode: Developer by default, Minimal from the settings, applied before the first paint',
+    async () => {
+      const before = await a.eval(
+        `({ saved: ${STATE}.layout, root: document.documentElement.dataset.layout })`,
+      );
+      await setLayout('minimal');
+      const switched = await a.eval(
+        `({ saved: ${STATE}.layout, root: document.documentElement.dataset.layout })`,
+      );
+      // What boot.js applied, before the modules run (readyState "interactive" comes first).
+      const { identifier } = await a.call('Page.addScriptToEvaluateOnNewDocument', {
+        source: `document.addEventListener('readystatechange', () => {
+        if (document.readyState !== 'interactive') return;
+        window.atBoot = {
+          layout: document.documentElement.dataset.layout,
+          side: getComputedStyle(document.querySelector('.side')).display,
+          modules: document.documentElement.hasAttribute('data-ready'),
+        };
+      });`,
+      });
+      await a.goto();
+      const atBoot = await a.eval('window.atBoot');
+      await a.call('Page.removeScriptToEvaluateOnNewDocument', { identifier });
+      const reloaded = await a.eval(
+        `({ root: document.documentElement.dataset.layout, checked: document.querySelector('input[name=layout]:checked').value })`,
+      );
+      assert.deepEqual(
+        { before, switched, atBoot, reloaded },
+        {
+          before: { saved: 'developer', root: 'developer' },
+          switched: { saved: 'minimal', root: 'minimal' },
+          atBoot: { layout: 'minimal', side: 'none', modules: false },
+          reloaded: { root: 'minimal', checked: 'minimal' },
+        },
+      );
+    },
+  );
+
+  await check(
+    'Minimal: clock, date, search and links as icons, in this order; the panels hidden, their data kept',
+    async () => {
+      const r = await a.eval(`(() => {
+      const display = (selector) => getComputedStyle(document.querySelector(selector)).display;
+      const box = (selector) => document.querySelector(selector).getBoundingClientRect();
+      const first = document.querySelector('#links .shortcut');
+      const clock = box('#clock');
+      return {
+        hidden: ['.side', '.greeting', '.links-header', '.search-tips'].map(display),
+        order: [box('#clock').bottom <= box('#date-label').top, box('#date-label').bottom <= box('.search').top, box('.search').bottom <= box('#links').top],
+        centered: Math.abs(clock.left + clock.width / 2 - innerWidth / 2) < 2,
+        tile: Math.round(first.getBoundingClientRect().width),
+        label: first.getAttribute('aria-label') === first.querySelector('.link-name').textContent,
+        tooltip: getComputedStyle(first, '::after').content === JSON.stringify(first.querySelector('.link-name').textContent),
+        title: first.hasAttribute('title'),
+        info: getComputedStyle(first.querySelector('.link-info')).display,
+        tasks: ${STATE}.tasks.length === document.querySelectorAll('#task-list li').length,
+      };
+    })()`);
+      assert.deepEqual(r, {
+        hidden: ['none', 'none', 'none', 'none'],
+        order: [true, true, true],
+        centered: true,
+        tile: 52,
+        label: true,
+        tooltip: true,
+        title: false,
+        info: 'none',
+        tasks: true,
+      });
+    },
+  );
+
+  await check(
+    'Minimal: past eight links a "+n" tile opens the others, by mouse and keyboard; 1-9 still work',
+    async () => {
+      await a.eval(`import('./js/store.js').then((store) => store.update((state) => {
+      state.links = Array.from({ length: 12 }, (_, i) => ({ id: 'mode-' + i, name: 'Sito ' + (i + 1), url: 'https://sito' + (i + 1) + '.example/' }));
+    }))`);
+      const shown = await a.eval(`({
+      tiles: document.querySelectorAll('#links a.shortcut').length,
+      more: document.querySelector('.link-more').textContent,
+      label: document.querySelector('.link-more').getAttribute('aria-label'),
+      rest: [...document.querySelectorAll('#links-more .more-name')].map((name) => name.textContent),
+    })`);
+      await a.click('.link-more');
+      const opened = await a.eval(`document.getElementById('links-more').matches(':popover-open')`);
+      await a.call('Input.dispatchKeyEvent', {
+        type: 'keyDown',
+        key: 'Tab',
+        code: 'Tab',
+        windowsVirtualKeyCode: 9,
+      });
+      await a.call('Input.dispatchKeyEvent', {
+        type: 'keyUp',
+        key: 'Tab',
+        code: 'Tab',
+        windowsVirtualKeyCode: 9,
+      });
+      const tabbed = await a.eval(
+        `document.activeElement.closest('#links-more')?.querySelector('a') === document.activeElement`,
+      );
+      await a.press('Escape');
+      const closed = await a.eval(
+        `({ open: document.getElementById('links-more').matches(':popover-open'), focus: document.activeElement.classList.contains('link-more') })`,
+      );
+      await blur();
+      await a.press('9');
+      await sleep(300);
+      const ninth = a.navigations.splice(0);
+      await a.goto();
+      assert.deepEqual(
+        { shown, opened, tabbed, closed, ninth },
+        {
+          shown: {
+            tiles: 8,
+            more: '+4',
+            label: 'Altri 4 collegamenti',
+            rest: ['Sito 9', 'Sito 10', 'Sito 11', 'Sito 12'],
+          },
+          opened: true,
+          tabbed: true,
+          closed: { open: false, focus: true },
+          ninth: ['https://sito9.example/'],
+        },
+      );
+    },
+  );
+
+  await check(
+    'Minimal: T, N and P open their panel over the page, Esc closes it; tasks and notes carry over to Developer',
+    async () => {
+      const read = () =>
+        a.eval(`({
+        sheet: document.documentElement.dataset.sheet ?? null,
+        focus: document.activeElement.id || document.activeElement.tagName,
+        visible: [...document.querySelectorAll('.side > .panel')].filter((panel) => panel.checkVisibility()).length,
+      })`);
+      await blur();
+      await a.press('t');
+      const tasks = await read();
+      await a.type('Da Minimal');
+      await a.press('Enter');
+      await a.press('Escape');
+      const closed = await read();
+      await a.press('n');
+      const notes = await read();
+      await a.press('Escape');
+      await a.press('p');
+      const timer = { ...(await read()), running: await a.eval(`${STATE}.timer.running`) };
+      await a.press('p');
+      await a.click('#clock'); // a click elsewhere closes it too
+      const clicked = await read();
+      await setLayout('developer');
+      const developer = await a.eval(`({
+      task: ${labels('#task-list .task-label')}.includes('Da Minimal'),
+      panels: [...document.querySelectorAll('.side > .panel')].filter((panel) => panel.checkVisibility()).length,
+      running: ${STATE}.timer.running,
+    })`);
+      await a.eval(`import('./js/store.js').then((store) => store.update((state) => {
+      state.tasks = state.tasks.filter((task) => task.text !== 'Da Minimal');
+    }))`);
+      await setLayout('minimal');
+      assert.deepEqual(
+        { tasks, closed, notes, timer, clicked, developer },
+        {
+          tasks: { sheet: 'tasks', focus: 'task-input', visible: 1 },
+          closed: { sheet: null, focus: 'BODY', visible: 0 },
+          notes: { sheet: 'tasks', focus: 'notes-input', visible: 1 },
+          timer: { sheet: 'focus', focus: 'timer-toggle', visible: 1, running: true },
+          clicked: { sheet: null, focus: 'BODY', visible: 0 },
+          developer: { task: true, panels: 2, running: false },
+        },
+      );
+    },
+  );
+
+  await check('Minimal: the search behaves as in Developer, and its list fits the window', async () => {
+    await blur();
+    await a.press('>');
+    await a.type('modalità');
+    await sleep(200);
+    const command = await a.eval(
+      `document.querySelector('#search-results .result.active .result-label')?.textContent`,
+    );
+    await a.eval(clearSearch);
+    const token = 'eyJhbGciOiJub25lIn0.eyJzZWNyZXQiOiJub3QtYS1yZWFsLXRva2VuIn0.signature';
+    await blur();
+    await a.press('/');
+    await a.type(token);
+    await a.press('Escape');
+    await a.press('Enter');
+    const accidental = a.navigations.splice(0);
+    const reopened = await a.eval(`!document.getElementById('search-results').hidden`);
+    await a.press('Enter', { shift: true });
+    await sleep(400);
+    const forced = a.navigations.splice(0);
+    await a.goto();
+    await a.resize(1280, 720);
+    await sleep(300);
+    await blur();
+    await a.press('>');
+    await sleep(200);
+    const fits = await a.eval(
+      `document.getElementById('search-results').getBoundingClientRect().bottom <= innerHeight && document.documentElement.scrollHeight <= innerHeight`,
+    );
+    await a.press('Escape');
+    await a.resize(1440, 900);
+    assert.deepEqual(
+      { command, accidental, reopened, forced: forced.length, fits },
+      { command: 'Modalità: Developer', accidental: [], reopened: true, forced: 1, fits: true },
+    );
+  });
+
+  await check(
+    'Minimal: other tabs follow, backups carry it, themes recolor it, custom CSS cannot lock the settings',
+    async () => {
+      const b = settled(await browser.openPage());
+      const inB = [await b.eval(`document.documentElement.dataset.layout`)];
+      await setLayout('developer');
+      await sleep(200);
+      inB.push(await b.eval(`document.documentElement.dataset.layout`));
+      await setLayout('minimal');
+      await sleep(200);
+      inB.push(await b.eval(`document.documentElement.dataset.layout`));
+      await b.close();
+      const exported = await a.eval(`(async () => {
+      let href;
+      const click = HTMLAnchorElement.prototype.click;
+      HTMLAnchorElement.prototype.click = function () { if (this.download) href = this.href; else click.call(this); };
+      document.getElementById('export-data').click();
+      for (let i = 0; i < 50 && !href; i++) await new Promise((resolve) => setTimeout(resolve, 100));
+      HTMLAnchorElement.prototype.click = click;
+      return JSON.parse(await (await fetch(href)).text()).state.layout;
+    })()`);
+      const colors = {};
+      for (const theme of ['light', 'mocha', 'tokyo']) {
+        await a.eval(
+          `import('./js/store.js').then((store) => store.update((state) => { state.theme = '${theme}'; }))`,
+        );
+        colors[theme] = await a.eval(`getComputedStyle(document.getElementById('clock')).color`);
+      }
+      await a.eval(
+        settings(`
+        document.getElementById('css-input').value = ':scope { display: none !important }';
+        document.getElementById('css-apply').click();`),
+      );
+      const reach = await a.eval(`(() => {
+        const gear = document.getElementById('open-settings').getBoundingClientRect();
+        const hit = document.elementFromPoint(gear.x + gear.width / 2, gear.y + gear.height / 2);
+        return hit?.closest('#open-settings') !== null;
+      })()`);
+      await a.click('#open-settings');
+      const settingsOpen = await a.eval(`document.getElementById('settings').open`);
+      await a.eval(
+        `document.getElementById('css-clear').click(); document.getElementById('settings').close()`,
+      );
+      assert.deepEqual(
+        { inB, exported, colors, reach, settingsOpen },
+        {
+          inB: ['minimal', 'developer', 'minimal'],
+          exported: 'minimal',
+          colors: { light: 'rgb(20, 25, 39)', mocha: 'rgb(205, 214, 244)', tokyo: 'rgb(237, 242, 255)' },
+          reach: true,
+          settingsOpen: true,
+        },
+      );
+    },
+  );
+
+  await check(
+    'Minimal at 1920, 1366, 1280 × 720, 768 and 420 px: no overlap, no scroll, settings in reach',
+    async () => {
+      const problems = [];
+      for (const [width, height] of [
+        [1920, 1080],
+        [1366, 768],
+        [1280, 720],
+        [768, 1024],
+        [420, 860],
+      ]) {
+        await a.resize(width, height);
+        await sleep(250);
+        const r = await a.eval(`(() => {
+        const box = (selector) => document.querySelector(selector).getBoundingClientRect();
+        const gear = box('#open-settings');
+        const hit = document.elementFromPoint(gear.x + gear.width / 2, gear.y + gear.height / 2);
+        const tiles = [...document.querySelectorAll('#links > *')].map((tile) => tile.getBoundingClientRect());
+        return {
+          stacked: box('#clock').bottom <= box('#date-label').top && box('#date-label').bottom <= box('.search').top && box('.search').bottom <= box('#links').top,
+          inside: tiles.every((tile) => tile.left >= 0 && tile.right <= innerWidth),
+          scrollX: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+          scrollY: document.documentElement.scrollHeight > innerHeight,
+          gear: hit?.closest('#open-settings') !== null,
+        };
+      })()`);
+        if (!r.stacked || !r.inside || r.scrollX || r.scrollY || !r.gear) {
+          problems.push({ width, height, ...r });
+        }
+      }
+      await a.resize(1440, 900);
+      assert.deepEqual(problems, []);
+    },
+  );
+
+  await a.eval(`localStorage.setItem('workspace.newtab.v2', ${JSON.stringify(beforeModes)})`);
+  await a.goto();
+
   await check('narrow window (420 px): no horizontal scroll', async () => {
     await a.resize(420, 860);
     await sleep(300);
