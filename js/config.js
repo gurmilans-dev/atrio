@@ -33,9 +33,10 @@ export const SECTIONS = ['greeting', 'clock', 'date', 'links', 'focus', 'heatmap
 // Focus heatmap size; the daily history keeps exactly this many days.
 export const HEATMAP_WEEKS = 20;
 
-// Built-in wallpapers live at assets/<id>.webp; "custom" is the uploaded image.
+// Built-in wallpapers live at assets/<id>.webp; "custom" is the uploaded image. Ids are lowercase
+// words, joined by hyphens (boot.js checks them before building the image's URL).
 // Names are translated: wallpaper.<id> in js/i18n.js.
-export const WALLPAPERS = ['workstation', 'city'];
+export const WALLPAPERS = ['workstation', 'city', 'deep-space', 'warm-sand', 'sunrise-lake', 'liquid-glass'];
 export const CUSTOM_WALLPAPER = 'custom';
 export const wallpaperSrc = (id) => `assets/${id}.webp`;
 

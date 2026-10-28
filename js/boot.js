@@ -8,6 +8,8 @@
     const root = document.documentElement;
     // Strings only: a missing field would be tested as "undefined", which matches.
     const isWord = (value) => typeof value === 'string' && /^[a-z]+$/.test(value);
+    // Wallpaper ids (WALLPAPERS in js/config.js) may join words with hyphens: "deep-space".
+    const isId = (value) => typeof value === 'string' && /^[a-z]+(-[a-z]+)*$/.test(value);
     if (isWord(saved.theme)) root.dataset.theme = saved.theme;
     // Interface mode (LAYOUTS in js/config.js): an unknown one matches no rule, so the page keeps the
     // Developer layout until js/appearance.js sets the normalized value.
@@ -41,7 +43,7 @@
         if (shown === false && /^[a-z]+$/.test(section)) root.setAttribute(`data-hide-${section}`, '');
       }
     }
-    if (isWord(saved.wallpaper)) {
+    if (isId(saved.wallpaper)) {
       root.dataset.wallpaper = saved.wallpaper;
       if (saved.wallpaper !== 'custom') {
         root.style.setProperty('--wallpaper', `url("assets/${saved.wallpaper}.webp")`);
