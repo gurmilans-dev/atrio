@@ -6,6 +6,7 @@ import { test } from 'node:test';
 import vm from 'node:vm';
 import { checkCSS, scopeCSS } from '../js/custom-css.js';
 import { localDay, shiftFrom, shownImage } from '../js/rotation.js';
+import { normalizeState } from '../js/state.js';
 
 const source = readFileSync(new URL('../js/boot.js', import.meta.url), 'utf8');
 const KEY = 'workspace.newtab.v2';
@@ -73,33 +74,26 @@ test('theme, wallpaper, hidden parts and blur are applied', () => {
 
 test('the accent of the image shown, with the same daily choice as js/rotation.js', () => {
   const state = rotating('daily');
-  const expected = shownImage(state, { day: localDay(Date.now()), counter: 0 });
+  const expected = shownImage(state, localDay(Date.now()));
   assert.equal(boot(state).properties['--accent'], state.autoAccents[`custom:${expected}`]);
 });
 
 test('a rotation started from an image picks it before the first paint, as js/rotation.js does', () => {
-  const today = { day: localDay(Date.now()), counter: 0 };
-  const daily = { ...rotating('daily'), rotationShift: shiftFrom(['a', 'b', 'c'], 'c', 'daily', today) };
-  assert.equal(boot(daily).properties['--accent'], '#333333');
-  // The next new tab after the one where it started, numbered 4: the image after "b".
-  const tab = {
-    ...rotating('tab'),
-    rotationShift: shiftFrom(['a', 'b', 'c'], 'b', 'tab', { day: 0, counter: 4 }),
+  const daily = {
+    ...rotating('daily'),
+    rotationShift: shiftFrom(['a', 'b', 'c'], 'c', localDay(Date.now())),
   };
-  const { root, properties } = boot(tab, { [`${KEY}.rotation`]: '4' });
-  assert.equal(root.dataset.rotation, '5');
-  assert.equal(properties['--accent'], '#333333');
-  assert.equal(shownImage(tab, { day: 0, counter: 5 }), 'c');
+  assert.equal(boot(daily).properties['--accent'], '#333333');
 });
 
-test('"every new tab" counts tabs apart from the state, as js/appearance.js reads it', () => {
+test('a save of the "every new tab" rotation, gone since, rotates daily, as js/state.js reads it', () => {
   const state = rotating('tab');
   const { root, properties, store } = boot(state, { [`${KEY}.rotation`]: '4' });
-  assert.equal(root.dataset.rotation, '5');
-  assert.equal(store.get(`${KEY}.rotation`), '5');
-  const expected = shownImage(state, { day: 0, counter: 5 });
+  const expected = shownImage(normalizeState(state), localDay(Date.now()));
   assert.equal(properties['--accent'], state.autoAccents[`custom:${expected}`]);
-  assert.equal(JSON.parse(store.get(KEY)).customImage, 'a'); // the shared state is not touched
+  // No tab is counted any more.
+  assert.equal(root.dataset.rotation, undefined);
+  assert.equal(store.get(`${KEY}.rotation`), '4');
 });
 
 test('custom CSS is applied with the same @scope as js/custom-css.js', () => {

@@ -1485,11 +1485,8 @@ kbd {
   font: 22px var(--mono);
   border-bottom: 1px dashed var(--line);
 }
-.rotation-field {
-  margin-top: 16px;
-}
 .toggle-note.rotation-note {
-  margin: 5px 0 22px;
+  margin-bottom: 22px;
 }
 .pick-label {
   display: block;

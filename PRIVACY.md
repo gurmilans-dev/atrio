@@ -22,7 +22,7 @@ cannot read it.
 | Your name, preferences, quick links, search prefixes, tasks, notes, custom CSS, the focus timer and its statistics (daily counts for up to 140 days), the Google account number chosen for the apps launcher | You change it, reset Atrio or uninstall it                                     |
 | Recent searches: up to 30, of up to 200 characters each                                                                                                                                                      | You clear them, turn them off (which clears them), reset Atrio or uninstall it |
 | Your own wallpapers: up to eight images                                                                                                                                                                      | You remove them, reset Atrio or uninstall it                                   |
-| A copy of a save that could not be read, kept so that nothing is silently lost; the counter of the "every new tab" wallpaper rotation                                                                        | You reset Atrio or uninstall it                                                |
+| A copy of a save that could not be read, kept so that nothing is silently lost                                                                                                                               | You reset Atrio or uninstall it                                                |
 
 Atrio does not read your browsing history, your cookies or the content of the sites you visit.
 
@@ -103,7 +103,7 @@ possono leggerlo.
 | Nome, preferenze, collegamenti rapidi, prefissi di ricerca, attività, note, CSS personale, il timer focus e le sue statistiche (conteggi giornalieri fino a 140 giorni), il numero dell'account Google scelto per le app | Non li modifichi, ripristini Atrio o lo disinstalli                                   |
 | Ricerche recenti: fino a 30, di 200 caratteri al massimo                                                                                                                                                                 | Non le cancelli, le disattivi (il che le cancella), ripristini Atrio o lo disinstalli |
 | Sfondi personali: fino a otto immagini                                                                                                                                                                                   | Non li rimuovi, ripristini Atrio o lo disinstalli                                     |
-| Una copia di un salvataggio illeggibile, tenuta perché niente vada perso in silenzio; il contatore della rotazione degli sfondi «a ogni nuova scheda»                                                                    | Non ripristini Atrio o lo disinstalli                                                 |
+| Una copia di un salvataggio illeggibile, tenuta perché niente vada perso in silenzio                                                                                                                                     | Non ripristini Atrio o lo disinstalli                                                 |
 
 Atrio non legge la cronologia, i cookie o il contenuto dei siti che visiti.
 

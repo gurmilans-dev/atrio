@@ -1133,7 +1133,7 @@ try {
     );
   });
 
-  await check('own wallpapers: images, rotation from the image shown, a pick stops it, removal', async () => {
+  await check('own wallpapers: images, daily rotation from the one shown, picking stops it', async () => {
     const upload = (color) =>
       a.eval(`(async () => {
         const before = ${STATE}.customImages.length;
@@ -1156,17 +1156,16 @@ try {
         rotation: ${STATE}.rotation,
         shown: document.documentElement.dataset.customImage,
         marked: document.querySelector('#wallpaper-picks [data-image][aria-pressed="true"]')?.dataset.image,
-        counter: Number(document.documentElement.dataset.rotation) || 0,
         tiles: document.querySelectorAll('#wallpaper-picks [data-image]').length,
-        rotationEnabled: !document.getElementById('rotation-select').disabled,
+        rotationEnabled: !document.getElementById('rotation-toggle').disabled,
         toast: document.getElementById('toast').textContent,
       })`);
-    const setRotation = (value) =>
+    const setRotation = (on) =>
       a.eval(
         settings(`
-          const select = document.getElementById('rotation-select');
-          select.value = '${value}';
-          select.dispatchEvent(new Event('change'));`),
+          const box = document.getElementById('rotation-toggle');
+          box.checked = ${on};
+          box.dispatchEvent(new Event('change'));`),
       );
     await upload('#c0392b');
     await upload('#27ae60');
@@ -1185,33 +1184,39 @@ try {
         otherButtons: document.querySelectorAll('#settings [id*="upload"]:not(#wallpaper-upload, #upload-formats)').length,
       };
     })()`);
-    // Every new tab, chosen with the image just added on screen: this tab keeps it, the next new
-    // tabs bring the next ones.
-    await setRotation('tab');
+    // The tab counter of the "every new tab" rotation of 3.2.0, gone since, is deleted at the next start.
+    await a.eval(`localStorage.setItem('workspace.newtab.v2.rotation', '7')`);
+    await a.goto();
+    const counter = await a.eval(`localStorage.getItem('workspace.newtab.v2.rotation')`);
+    // Every day, turned on with the image just added on screen: it stays today, in a new tab too.
+    await setRotation(true);
     await sleep(300);
     const joined = await read();
     await a.goto();
-    const firstTab = await read();
+    const daily = await read();
+    // A day later (the start moved by one) the next image shows; turned off, it stays.
+    await a.eval(`(() => {
+      const s = ${STATE};
+      s.rotationShift += 1;
+      localStorage.setItem('workspace.newtab.v2', JSON.stringify(s));
+    })()`);
     await a.goto();
-    const secondTab = await read();
-    // "Never" keeps the image on screen; every day, chosen then, starts from it.
-    await setRotation('off');
+    const tomorrow = await read();
+    await setRotation(false);
     await sleep(300);
     const kept = await read();
-    await setRotation('daily');
-    await a.goto();
-    const daily = await read();
     // Picking another image while the day's is shown: that image, and the rotation stops.
-    const other = three.images.find((id) => id !== daily.shown);
+    await setRotation(true);
+    const other = three.images.find((id) => id !== kept.shown);
     await a.eval(settings(`document.querySelector('[data-image="${other}"]').click()`));
     await sleep(300);
     const picked = await read();
     // Choosing a rotation while a built-in wallpaper is shown starts it from the image last chosen.
     await a.eval(settings(`document.querySelector('[data-wallpaper="city"]').click()`));
-    await setRotation('daily');
+    await setRotation(true);
     await sleep(300);
     const restarted = await read();
-    await setRotation('off');
+    await setRotation(false);
     await a.eval(settings(`document.querySelector('#wallpaper-picks [data-image]').click()`));
     await a.eval(settings(`document.getElementById('remove-wallpaper').click()`));
     await sleep(300);
@@ -1221,16 +1226,16 @@ try {
     assert.equal(three.images.length, 3);
     assert.deepEqual([three.tiles, three.rotationEnabled], [3, true]);
     assert.deepEqual(add, { opened: 1, formats: 'JPG · PNG · WEBP · AVIF', otherButtons: 0 });
+    assert.equal(counter, null);
     assert.equal(three.shown, three.images[2]); // the image just added
-    assert.deepEqual([joined.rotation, joined.shown, joined.marked], ['tab', three.shown, three.shown]);
-    assert.equal(secondTab.counter, firstTab.counter + 1);
-    assert.deepEqual([firstTab.shown, secondTab.shown], [next(three.shown), next(three.shown, 2)]);
-    assert.deepEqual([kept.rotation, kept.shown], ['off', secondTab.shown]);
-    assert.equal(daily.shown, secondTab.shown);
-    assert.equal(daily.marked, daily.shown); // the tile marked is the image on screen
+    assert.deepEqual([joined.rotation, joined.shown, joined.marked], ['daily', three.shown, three.shown]);
+    assert.deepEqual([daily.shown, daily.marked], [three.shown, three.shown]);
+    // The tile marked is the image on screen, not the one selected before.
+    assert.deepEqual([tomorrow.shown, tomorrow.marked], [next(three.shown), next(three.shown)]);
+    assert.deepEqual([kept.rotation, kept.shown], ['off', next(three.shown)]);
     assert.deepEqual(
       [picked.rotation, picked.wallpaper, picked.shown, picked.marked, picked.toast],
-      ['off', 'custom', other, other, '“Cambia sfondo” ora è su “Mai”.'],
+      ['off', 'custom', other, other, '“Cambia sfondo ogni giorno” disattivato.'],
     );
     assert.deepEqual(
       [restarted.rotation, restarted.wallpaper, restarted.shown, restarted.marked],

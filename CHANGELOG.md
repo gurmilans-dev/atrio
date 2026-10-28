@@ -30,18 +30,22 @@
 
 - Settings → Wallpaper has one way to add an image, the **Add** tile, with the accepted formats under the tiles; the
   separate "Upload image" button, which did the same, is gone.
+- The wallpaper rotation is a switch, **Change wallpaper every day**: one of your images a day, the same in every tab.
+
+### Removed
+
+- The **"With every new tab"** rotation, and the tab counter it kept in the browser's storage (deleted at the next
+  start). Saves and backups that used it change the image every day instead.
 
 ### Fixed
 
 - **With the rotation on, picking one of your images did not show it.** Its tile was marked, but the page kept the
-  image of the day (or of the tab). Now picking a wallpaper, or adding an image, shows it at once and sets "Change
-  wallpaper" to "Never", with a message saying so; choosing a rotation starts it on your images right away; and the
-  tile marked, and removed by "Remove this image", is always the image on screen.
-- **A rotation started from an arbitrary image**, picked from the date (or a tab counter) alone, often the first one.
-  It now starts from the image on screen: "Every day" keeps it for today and brings the next one tomorrow; "With every
-  new tab" leaves it in the current tab and shows the next one in the next new tab. "Never" keeps the image on screen,
-  and removing an image during a rotation goes on from the one taking its place. Rotations already running keep the
-  image they show.
+  day's image. Now picking a wallpaper, or adding an image, shows it at once and turns the rotation off, with a
+  message saying so; and the tile marked, and removed by "Remove this image", is always the image on screen.
+- **The rotation started from an arbitrary image**, picked from the date alone, often the first one. Turned on, it now
+  keeps the image on screen for today (or the one last chosen, over a built-in wallpaper) and brings the next one
+  tomorrow; turned off, the image on screen stays; and removing an image while it runs goes on from the one taking
+  its place. Rotations already running keep the image they show.
 - The wallpaper tiles' selection mark no longer also landed on the page's root element.
 
 ## 3.2.0 — 2026-10-28

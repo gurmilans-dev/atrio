@@ -16,17 +16,12 @@
     if (isWord(saved.layout)) root.dataset.layout = saved.layout;
     // Visual style (VISUAL_STYLES in js/config.js), likewise: an unknown one draws the Classic look.
     if (isWord(saved.visualStyle)) root.dataset.style = saved.visualStyle;
-    // Own wallpapers with rotation (same rule as shownImage in js/rotation.js): this tab's image.
-    // "A ogni nuova scheda" counts tabs in a key of its own, so other open tabs keep theirs.
+    // Own wallpapers with the daily rotation (same rule as shownImage in js/rotation.js): the day's
+    // image. Saves of the "every new tab" rotation, gone since, rotate daily (js/state.js).
     const images = Array.isArray(saved.customImages) ? saved.customImages : [];
     let shown = images.includes(saved.customImage) ? saved.customImage : images[0];
-    if (saved.wallpaper === 'custom' && images.length > 1 && saved.rotation !== 'off') {
+    if (saved.wallpaper === 'custom' && images.length > 1 && ['daily', 'tab'].includes(saved.rotation)) {
       let step = Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 86400000);
-      if (saved.rotation === 'tab') {
-        step = (Number(localStorage.getItem('workspace.newtab.v2.rotation')) || 0) + 1;
-        localStorage.setItem('workspace.newtab.v2.rotation', String(step));
-        root.dataset.rotation = String(step);
-      }
       if (Number.isSafeInteger(saved.rotationShift)) step += saved.rotationShift;
       shown = images[((step % images.length) + images.length) % images.length];
     }

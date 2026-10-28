@@ -24,20 +24,8 @@ let customPromise = null;
 let paintedURL = null;
 let samplingKey = null;
 
-// Where the rotation is in this tab: the day, and this tab's number for "every new tab" (counted by
-// boot.js, or given by countThisTab).
-export const rotationWhen = () => ({
-  day: localDay(Date.now()),
-  counter: Number(root.dataset.rotation) || 0,
-});
-
 /** The id of the user's image this tab shows when the wallpaper is one of them, or null. */
-export const shownImageId = (state) => shownImage(state, rotationWhen());
-
-/** "Every new tab" chosen here: this tab takes the last number given, the next new tab the one after. */
-export function countThisTab() {
-  root.dataset.rotation = String(Number(localStorage.getItem(ROTATION_KEY)) || 0);
-}
+export const shownImageId = (state) => shownImage(state, localDay(Date.now()));
 
 // Identifies the image the accent was computed from.
 // null while the wallpaper is the user's but no image is listed yet (repairImages may add it).
@@ -204,4 +192,6 @@ export function initAppearance() {
   apply(getState());
   subscribe(apply);
   repairImages();
+  // The tab counter of the "every new tab" rotation of 3.2.0, gone since.
+  localStorage.removeItem(ROTATION_KEY);
 }

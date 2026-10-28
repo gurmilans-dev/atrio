@@ -19,17 +19,9 @@ import { checkCSS } from './custom-css.js';
 import { $, $$, announce, button, el } from './dom.js';
 import { LANGUAGES, numberFormat, t, themeName, wallpaperName } from './i18n.js';
 import { appVersion, hasOrigins, removeOrigins, requestOrigins } from './platform.js';
-import {
-  accentKey,
-  countThisTab,
-  previewAccent,
-  previewBlur,
-  previewShade,
-  rotationWhen,
-  shownImageId,
-} from './appearance.js';
+import { accentKey, previewAccent, previewBlur, previewShade, shownImageId } from './appearance.js';
 import { applyPreset, syncAlarm } from './focus.js';
-import { shiftFrom } from './rotation.js';
+import { localDay, shiftFrom } from './rotation.js';
 import { createDefaultState, normalizeState } from './state.js';
 import { dayKey } from './stats.js';
 import { getState, replaceState, subscribe, trackSave, update } from './store.js';
@@ -202,8 +194,8 @@ function render(state) {
   const shown = state.wallpaper === CUSTOM_WALLPAPER ? shownImageId(state) : null;
   mark('[data-image]', 'image', shown);
   $('remove-wallpaper').hidden = !shown;
-  $('rotation-select').value = state.rotation;
-  $('rotation-select').disabled = state.customImages.length < 2;
+  $('rotation-toggle').checked = state.rotation === 'daily';
+  $('rotation-toggle').disabled = state.customImages.length < 2;
   for (const input of $$('input[name=layout]')) input.checked = input.value === state.layout;
   $('page-minimal-note').hidden = state.layout !== 'minimal';
   for (const input of $$('input[name=visual-style]')) input.checked = input.value === state.visualStyle;
@@ -341,7 +333,7 @@ async function removeWallpaper() {
     state.customImage = state.customImages[Math.min(index, state.customImages.length - 1)] ?? '';
     // A rotation goes on from the image that takes the removed one's place.
     if (state.rotation !== 'off') {
-      state.rotationShift = shiftFrom(state.customImages, state.customImage, state.rotation, rotationWhen());
+      state.rotationShift = shiftFrom(state.customImages, state.customImage, localDay(Date.now()));
     }
     if (!state.customImages.length && state.wallpaper === CUSTOM_WALLPAPER) state.wallpaper = 'workstation';
     state.wallpaperRev = Date.now();
@@ -529,20 +521,19 @@ export function initSettings() {
     });
     if (stopped) announce(t('rotation.stopped'));
   });
-  // A rotation goes through the user's images from the one on screen (or the one last chosen): it
-  // stays for today, or in this tab, and the next day or the next new tab brings the one after it.
-  // "Never" keeps the image on screen.
-  $('rotation-select').addEventListener('change', (event) => {
-    const rotation = event.target.value;
+  // The daily rotation goes through the user's images from the one on screen (or the one last
+  // chosen): it stays for today, and the next day brings the one after it. Turned off, the image on
+  // screen stays.
+  $('rotation-toggle').addEventListener('change', (event) => {
+    const rotation = event.target.checked ? 'daily' : 'off';
     const current = getState();
     const from = (current.wallpaper === CUSTOM_WALLPAPER && shownImageId(current)) || current.customImage;
-    if (rotation === 'tab') countThisTab();
     update((state) => {
       state.rotation = rotation;
       if (from) state.customImage = from;
-      if (rotation !== 'off' && state.customImages.length) {
+      if (rotation === 'daily' && state.customImages.length) {
         state.wallpaper = CUSTOM_WALLPAPER;
-        state.rotationShift = shiftFrom(state.customImages, from, rotation, rotationWhen());
+        state.rotationShift = shiftFrom(state.customImages, from, localDay(Date.now()));
       }
     });
   });

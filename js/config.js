@@ -3,7 +3,8 @@
 
 // Keys keep the project's former name (Workspace) so existing data still loads.
 export const STORAGE_KEY = 'workspace.newtab.v2';
-// Per-tab counter for the wallpaper rotation, outside the state so other tabs keep their image.
+// Tab counter of the "every new tab" wallpaper rotation of 3.2.0, gone since: deleted where found
+// (js/appearance.js, and a reset).
 export const ROTATION_KEY = 'workspace.newtab.v2.rotation';
 export const SCHEMA_VERSION = 6;
 

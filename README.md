@@ -60,7 +60,7 @@ network requests unless you turn on online search suggestions.
 - **Make it yours.** Six themes: three dark ones, a light one, one that takes its accent color from your wallpaper,
   one with any color you pick (adjusted if needed to stay readable), each in two visual styles, Classic or Glass.
   Six built-in wallpapers (Workstation, City, Deep Space, Warm Sand, Sunrise Lake, Liquid Glass), or up to eight of
-  your own (downscaled to WebP on your machine), rotating every day or with every new tab; dim and blur. Hide the
+  your own (downscaled to WebP on your machine), changing every day if you like; dim and blur. Hide the
   parts you do not use (greeting, clock, date, links, focus panel, heatmap, tasks): with both side panels off the page
   becomes one calm, centered column. A 24- or 12-hour clock, with or without seconds. Optional mouse effects (link
   borders that light up near the cursor, a slight lift, wallpaper parallax), off by default. And for anything else,

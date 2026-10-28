@@ -115,9 +115,11 @@ describe('normalizeState', () => {
     assert.deepEqual(state.customImages, ['selected', 'img-1', 'img-2']);
     assert.equal(state.customImage, 'selected');
     assert.equal(state.rotation, 'off');
-    const chosen = normalizeState({ customImages: ['a', 'b'], customImage: 'b', rotation: 'tab' });
-    assert.deepEqual([chosen.customImage, chosen.rotation], ['b', 'tab']);
-    // The start of the rotation: any whole number (days and tabs count up); none in older saves.
+    const chosen = normalizeState({ customImages: ['a', 'b'], customImage: 'b', rotation: 'daily' });
+    assert.deepEqual([chosen.customImage, chosen.rotation], ['b', 'daily']);
+    // The "every new tab" rotation of 3.2.0 is gone: its saves rotate daily.
+    assert.equal(normalizeState({ customImages: ['a', 'b'], rotation: 'tab' }).rotation, 'daily');
+    // The start of the rotation: any whole number (days count up); none in older saves.
     assert.equal(chosen.rotationShift, 0);
     assert.equal(normalizeState({ rotationShift: -20388 }).rotationShift, -20388);
     for (const bad of ['x', null, Infinity, {}]) {

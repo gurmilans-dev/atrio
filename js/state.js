@@ -288,7 +288,8 @@ export function normalizeState(raw) {
     wallpaperRev: toInt(input.wallpaperRev, 0, Number.MAX_SAFE_INTEGER, 0),
     customImages,
     customImage: customImages.includes(input.customImage) ? input.customImage : (customImages[0] ?? ''),
-    rotation: pick(input.rotation, ROTATIONS, base.rotation),
+    // The "every new tab" rotation of 3.2.0 is gone: saves and backups that used it rotate daily.
+    rotation: input.rotation === 'tab' ? 'daily' : pick(input.rotation, ROTATIONS, base.rotation),
     rotationShift: toInt(input.rotationShift, -Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, 0),
     shade: toInt(input.shade, 0, 75, base.shade),
     blur: toInt(input.blur, 0, LIMITS.blur, base.blur),
