@@ -2022,10 +2022,10 @@ try {
         picks: [
           ['workstation', 'Postazione', 1672],
           ['city', 'Città', 1672],
-          ['deep-space', 'Spazio profondo', 1672],
-          ['warm-sand', 'Sabbia calda', 1672],
-          ['sunrise-lake', 'Lago all’alba', 1672],
-          ['liquid-glass', 'Vetro liquido', 1672],
+          ['deep-space', 'Spazio profondo', 1600],
+          ['warm-sand', 'Sabbia calda', 1600],
+          ['sunrise-lake', 'Lago all’alba', 1600],
+          ['liquid-glass', 'Vetro liquido', 1600],
         ],
         pressed: 'true',
       });

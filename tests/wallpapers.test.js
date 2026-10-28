@@ -1,5 +1,5 @@
 // The built-in wallpapers are files of the extension: each id in WALLPAPERS has its image in assets/,
-// a real WebP the size of the others, and a name in both languages.
+// a real WebP shaped like a screen, and a name in both languages.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
@@ -14,10 +14,14 @@ function webpSize(bytes) {
   return [bytes.readUInt16LE(26) & 0x3fff, bytes.readUInt16LE(28) & 0x3fff];
 }
 
-test('every built-in wallpaper is a WebP in assets/, 1672 × 941 and light to ship', () => {
+// Workstation and City are 1672 × 941, the four added later 1600 × 900: all 16:9 and wide enough to cover a
+// full-HD screen without much upscaling.
+test('every built-in wallpaper is a 16:9 WebP in assets/, at least 1600 px wide and light to ship', () => {
   for (const id of WALLPAPERS) {
     const bytes = readFileSync(new URL(`../${wallpaperSrc(id)}`, import.meta.url));
-    assert.deepEqual(webpSize(bytes), [1672, 941], id);
+    const [width, height] = webpSize(bytes);
+    assert.ok(width >= 1600, `${id}: ${width} px wide`);
+    assert.ok(Math.abs(width / height - 16 / 9) < 0.01, `${id}: ${width} × ${height}`);
     assert.ok(bytes.length < 400 * 1024, `${id}: ${bytes.length} bytes`);
   }
 });

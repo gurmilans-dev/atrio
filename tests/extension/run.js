@@ -228,7 +228,10 @@ try {
       assert.deepEqual(r, {
         atBoot: { style: 'glass', wallpaper: 'liquid-glass', modules: false },
         blocked: [],
-        sizes: Object.fromEntries(WALLPAPERS.map((id) => [id, 1672])),
+        // The widths of the files: the four wallpapers added after Workstation and City are 1600 px wide.
+        sizes: Object.fromEntries(
+          WALLPAPERS.map((id) => [id, ['workstation', 'city'].includes(id) ? 1672 : 1600]),
+        ),
         shown: true,
         blur: true,
       });
