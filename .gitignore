@@ -1,5 +1,11 @@
 node_modules/
+# Signing keys and secrets: the extension's private key lives outside the repository.
 *.pem
+*.key
+*.p12
+*.pfx
+.env
+.env.*
 *.crx
 *.zip
 atrio-backup-*.json
