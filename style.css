@@ -1994,7 +1994,7 @@ kbd {
 }
 :root[data-layout='minimal'] .search-results {
   top: calc(100% + 10px);
-  max-height: min(400px, 44vh);
+  max-height: min(400px, var(--results-room, 44vh)); /* js/layout.js */
   border-radius: 18px;
 }
 :root[data-layout='minimal'] .links-grid {
@@ -2077,6 +2077,10 @@ kbd {
 :root[data-layout='minimal'] .shortcut:focus-visible::after {
   opacity: 1;
   translate: -50% 0;
+}
+/* The "+n" tile says what it opens; once open, the list says it better. */
+:root[data-layout='minimal'] .primary:has(.links-more:popover-open) .link-more::after {
+  display: none;
 }
 /* The other links: a native popover under the "+n" tile (above it when there is no room below). */
 .links-more {
@@ -2236,8 +2240,9 @@ kbd {
     top: 16px;
     right: 16px;
   }
-  :root[data-layout='minimal'] .links-grid {
-    max-width: calc(5 * 52px + 4 * 4px); /* nine tiles as 5 + 4 rather than 6 + 3 */
+  /* From seven tiles, five per row (9 as 5 + 4 rather than 6 + 3); six or fewer stay on one row. */
+  :root[data-layout='minimal'] .links-grid:has(> :nth-child(7)) {
+    max-width: calc(5 * 52px + 4 * 4px);
     margin-inline: auto;
   }
   .apps-panel,

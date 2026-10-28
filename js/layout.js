@@ -32,7 +32,21 @@ function closePanel({ restoreFocus }) {
   if (restoreFocus && target?.isConnected && target !== document.body) target.focus();
 }
 
+// Minimal centers the search box: its list of results gets the room left below it, so the bottom
+// of the window never cuts it (style.css reads --results-room). Measured when the page or the window
+// changes, not while typing.
+function measureResultsRoom() {
+  if (getState().layout !== 'minimal') {
+    root.style.removeProperty('--results-room');
+    return;
+  }
+  const below = window.innerHeight - document.querySelector('.search').getBoundingClientRect().bottom;
+  root.style.setProperty('--results-room', `${Math.max(160, Math.floor(below - 26))}px`);
+}
+
 export function initLayout() {
+  measureResultsRoom();
+  window.addEventListener('resize', measureResultsRoom);
   document.addEventListener('keydown', (event) => {
     // Esc in the settings closes the settings, not the sheet behind them.
     if (event.key !== 'Escape' || !root.dataset.sheet || event.target.closest?.('dialog')) return;
@@ -52,6 +66,7 @@ export function initLayout() {
   });
   // Back to Developer, or the panel turned off in Settings → Page: nothing to float.
   subscribe((state) => {
+    measureResultsRoom();
     const name = root.dataset.sheet;
     if (name && (state.layout !== 'minimal' || !state.show[name])) {
       closePanel({ restoreFocus: false });
