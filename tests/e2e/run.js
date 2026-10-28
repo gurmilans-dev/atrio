@@ -1167,6 +1167,20 @@ try {
     await upload('#c0392b');
     await upload('#27ae60');
     const three = await read();
+    // "Add" is the one way to upload: it opens the file picker, and the formats sit under the tiles.
+    const add = await a.eval(`(() => {
+      const input = document.getElementById('wallpaper-upload');
+      let opened = 0;
+      input.click = () => opened++;
+      ${settings(`document.querySelector('#wallpaper-picks [data-add]').click()`)};
+      delete input.click;
+      const tile = document.querySelector('#wallpaper-picks [data-add]');
+      return {
+        opened,
+        formats: document.getElementById(tile.getAttribute('aria-describedby')).textContent,
+        otherButtons: document.querySelectorAll('#settings [id*="upload"]:not(#wallpaper-upload, #upload-formats)').length,
+      };
+    })()`);
     await setRotation('tab');
     await a.goto();
     const firstTab = await read();
@@ -1185,6 +1199,7 @@ try {
     const at = (images, step) => images[step % images.length];
     assert.equal(three.images.length, 3);
     assert.deepEqual([three.tiles, three.rotationEnabled], [3, true]);
+    assert.deepEqual(add, { opened: 1, formats: 'JPG · PNG · WEBP · AVIF', otherButtons: 0 });
     assert.equal(secondTab.counter, firstTab.counter + 1);
     assert.equal(firstTab.shown, at(three.images, firstTab.counter));
     assert.equal(secondTab.shown, at(three.images, secondTab.counter));

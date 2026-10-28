@@ -88,8 +88,10 @@ function renderWallpaperPicks(state) {
   });
   const add = button('wallpaper-pick add-pick');
   add.dataset.add = '';
+  add.setAttribute('aria-describedby', 'upload-formats');
   add.append(el('span', 'pick-placeholder', '+'), el('span', 'pick-label', t('wallpaper.add')));
   add.hidden = state.customImages.length >= LIMITS.wallpapers;
+  $('upload-formats').hidden = add.hidden;
   $('wallpaper-picks').replaceChildren(...builtinPicks, ...own, add);
   if (dialog().open) refreshThumbs();
 }
@@ -549,7 +551,6 @@ export function initSettings() {
     });
   });
 
-  $('upload-wallpaper').addEventListener('click', chooseWallpaper);
   $('remove-wallpaper').addEventListener('click', removeWallpaper);
 
   for (const [key, { preview, format }] of Object.entries(RANGES)) {

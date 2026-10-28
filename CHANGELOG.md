@@ -26,6 +26,11 @@
   from the others, and backups refer to them by name, without a copy of the image. The default wallpaper and the one
   already chosen do not change.
 
+### Changed
+
+- Settings → Wallpaper has one way to add an image, the **Add** tile, with the accepted formats under the tiles; the
+  separate "Upload image" button, which did the same, is gone.
+
 ## 3.2.0 — 2026-10-28
 
 ### Added

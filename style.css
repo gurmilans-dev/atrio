@@ -1502,37 +1502,22 @@ kbd {
   border-color: var(--accent);
   color: var(--accent);
 }
-/* Upload on its own line; "Remove this image" wraps under it, aligned right, when it does not fit. */
+/* Under the tiles: the formats "Add" takes on the left, "Remove this image" on the right. */
 .upload-row {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   gap: 4px 14px;
-  margin: 14px 0 23px;
+  min-height: 20px;
+  margin: 10px 0 23px;
 }
-.upload-row .upload-button {
-  flex: 1 1 100%;
-}
-.upload-button {
-  flex: 1;
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 12px 10px;
-  border: 1px dashed var(--line);
-  border-radius: 7px;
-  background: transparent;
-  color: var(--text);
-  font: 11px var(--mono);
-  text-align: left;
-}
-.upload-button:hover {
-  border-color: var(--accent);
-}
-.upload-button span {
+.upload-formats {
   color: var(--text-muted);
-  font-size: 10px;
+  font: 10px var(--mono);
+}
+.upload-row .subtle-action {
+  margin-left: auto;
 }
 .range-heading {
   display: flex;
