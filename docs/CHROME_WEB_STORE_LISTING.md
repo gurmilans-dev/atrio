@@ -187,6 +187,26 @@ marked **Decide** or **Check** cannot be settled from the code and are the maint
 
 ## Assets and trademarks
 
+- **Name.** Searched on 28 October 2026 in TMview (which gathers the EUIPO, WIPO, USPTO, UIBM and most national
+  offices) and, for the US record, in the USPTO's TSDR. Live ATRIO word marks exist in class 42 (software and online
+  services) and class 9:
+  - US registration 6092218, 2U, Inc., class 42, registered 30 June 2020, live: an online service for colleges and
+    universities to offer distance learning (from TSDR);
+  - international registration 1506350, 2U, LLC, class 42, until 20 November 2029, designating among others the
+    European Union, Italy, Canada, India and Brazil;
+  - Canada TMA1108258 (2U, 42), TMA1205828 (Isto Inc., 9/41/42), TMA910764 (Gary Jonas Computing, 9/42); Italy
+    ÀTRIO 2016000072394 (Atrio Studio S.r.l., 16/35/38/42); India 2380474 and Mexico 1298809, 1298811, 1298812,
+    1298813 (PAR Technology, 9 and 42); Brazil ÁTRIO 924510307 (Agende Tecnologias, 9).
+
+  Only the US record's services were read (TMview's detail pages refused automated access); those differ from a
+  browser's new tab page, but the classes overlap. No conflict is documented; **Check** with a trademark professional
+  before the worldwide launch, starting with the US and the EU. The Chrome Web Store lists one extension with "Atrio"
+  in its name (Opera Profile Monitor - Atrio), for a different purpose.
+
+- **Logo** (`assets/icons/icon.svg`, rendered to the PNG icons): an original drawing, a blue keycap with an "A",
+  readable at 16 px on light and dark backgrounds. A key with a letter is a common motif, so its distinctiveness is
+  modest; no search of figurative marks was run. The Store's image guidance suggests 96 × 96 artwork with 16 px of
+  transparent padding in the 128 px icon; the keycap fills about 116 px (6 px padding). Optional.
 - **Wallpapers** (`assets/city.webp`, `assets/workstation.webp`): the author's own images, as stated by the
   maintainer. **Check:** keep the source files, and how they were made, as a record.
 - **Wallpapers added in 3.3.0** (`assets/deep-space.webp`, `warm-sand.webp`, `sunrise-lake.webp`,
@@ -214,16 +234,17 @@ marked **Decide** or **Check** cannot be settled from the code and are the maint
 
 ## Dashboard checklist
 
-1. Before uploading, load the extracted package unpacked in a normal Chrome profile, for what the automated checks
+1. Decide on the name for a worldwide launch after the trademark check above (live ATRIO marks in classes 9 and 42).
+2. Before uploading, load the extracted package unpacked in a normal Chrome profile, for what the automated checks
    cannot do: turn online suggestions on (accept, then deny, Chrome's permission prompt) and off (the permission
    goes); let a short focus session end and see the system notification; search with a default engine other than
    Google.
-2. Open the item (or create it) and check the package history: no version 3.3.0 or higher already uploaded.
-3. Upload `atrio-3.3.0.zip`, built by `npm run package`; compare its SHA-256 with the one the script printed.
-4. Store listing: summary (from the package), detailed description in English and Italian (above), category
+3. Open the item (or create it) and check the package history: no version 3.3.0 or higher already uploaded.
+4. Upload `atrio-3.3.0.zip`, built by `npm run package`; compare its SHA-256 with the one the script printed.
+5. Store listing: summary (from the package), detailed description in English and Italian (above), category
    Developer Tools, languages, store icon, the five screenshots in order, the promo tile.
-5. Privacy practices: single purpose, the four permission justifications and the optional hosts, remote code "No",
+6. Privacy practices: single purpose, the four permission justifications and the optional hosts, remote code "No",
    data usage (**Decide**: User activity for the suggestions), the three certifications, the privacy policy URL.
-6. Distribution: visibility and regions, as you prefer.
-7. Optionally, review the launcher's use of Google's product names (its icons are generic since 3.3.0).
-8. Submit for review. When it is published, put the date next to 3.3.0 in `CHANGELOG.md`.
+7. Distribution: visibility and regions, as you prefer.
+8. Optionally, review the launcher's use of Google's product names (its icons are generic since 3.3.0).
+9. Submit for review. When it is published, put the date next to 3.3.0 in `CHANGELOG.md`.
