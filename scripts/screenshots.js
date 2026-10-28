@@ -1,10 +1,19 @@
-// Regenerates the README screenshots in docs/ with demo data: npm run screenshots
+// Regenerates the screenshots with demo data.
+//   npm run screenshots              README images in docs/, 1536 × 960 WebP
+//   npm run screenshots -- --store   Chrome Web Store set in docs/store/, 1280 × 800 JPEG (no alpha)
 import { mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { launch, sleep } from '../tests/e2e/harness.js';
 
+const STORE = process.argv.includes('--store');
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const OUT = new URL('../docs/', import.meta.url);
+const OUT = new URL(STORE ? '../docs/store/' : '../docs/', import.meta.url);
+// The Store set shows the same 1536 × 960 layout as the README, scaled to the Store's 1280 × 800.
+const [WIDTH, HEIGHT] = [1536, 960];
+const FORMAT = STORE
+  ? { format: 'jpeg', quality: 90, clip: { x: 0, y: 0, width: WIDTH, height: HEIGHT, scale: 1280 / WIDTH } }
+  : { format: 'webp', quality: 85 };
+const EXTENSION = STORE ? 'jpg' : 'webp';
 const KEY = 'workspace.newtab.v2';
 
 const dayKey = (date) =>
@@ -47,13 +56,14 @@ function demoState() {
 }
 
 // The browser language is English, so the page's automatic language is too.
-const browser = await launch(ROOT, { width: 1536, height: 960, lang: 'en-US' });
+const browser = await launch(ROOT, { width: WIDTH, height: HEIGHT, lang: 'en-US' });
 try {
   const page = await browser.openPage();
   const shot = async (name) => {
     await sleep(400);
-    await writeFile(new URL(name, OUT), await page.screenshot({ format: 'webp', quality: 85 }));
-    console.log(`docs/${name}`);
+    const file = new URL(`${name}.${EXTENSION}`, OUT);
+    await writeFile(file, await page.screenshot(FORMAT));
+    console.log(fileURLToPath(file));
   };
   await mkdir(OUT, { recursive: true });
   await page.eval(
@@ -61,11 +71,11 @@ try {
   );
   await page.goto();
 
-  await shot('home.webp');
+  await shot('home');
 
   await page.press('/');
   await page.type('= 0xff * 4 + 2^10');
-  await shot('palette.webp');
+  await shot('palette');
   await page.press('Escape');
   await page.eval(`(() => {
     const input = document.getElementById('search-input');
@@ -75,11 +85,11 @@ try {
   })()`);
 
   await page.click('#apps-button');
-  await shot('apps.webp');
+  await shot('apps');
   await page.press('Escape');
 
   await page.click('#open-settings');
-  await shot('settings.webp');
+  await shot('settings');
   await page.press('Escape');
 
   await page.eval(`(() => {
@@ -88,7 +98,7 @@ try {
     localStorage.setItem(${JSON.stringify(KEY)}, JSON.stringify(s));
   })()`);
   await page.goto();
-  await shot('mocha.webp');
+  await shot('mocha');
 } finally {
   await browser.close();
 }

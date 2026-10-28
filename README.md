@@ -159,16 +159,16 @@ it.
 
 Requires Node.js 22+. There is nothing to install: the tools run through `npx`.
 
-| Command                  | What it does                                                                   |
-| ------------------------ | ------------------------------------------------------------------------------ |
-| `npm test`               | Unit tests (`node --test`)                                                     |
-| `npm run test:e2e`       | End-to-end checks in headless Chrome (set `CHROME_PATH` if needed)             |
-| `npm run test:extension` | Smoke checks of the real extension, loaded unpacked in headless Chrome or Edge |
-| `npm run lint`           | ESLint                                                                         |
-| `npm run format`         | Prettier                                                                       |
-| `npm run check`          | Unit tests, lint and formatting check (what CI runs)                           |
-| `npm run screenshots`    | Regenerate the images in `docs/` with demo data                                |
-| `npm run icons`          | Render the PNG icons from `assets/icons/icon.svg`                              |
+| Command                  | What it does                                                                                                           |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| `npm test`               | Unit tests (`node --test`)                                                                                             |
+| `npm run test:e2e`       | End-to-end checks in headless Chrome (set `CHROME_PATH` if needed)                                                     |
+| `npm run test:extension` | Smoke checks of the real extension, loaded unpacked in headless Chrome or Edge                                         |
+| `npm run lint`           | ESLint                                                                                                                 |
+| `npm run format`         | Prettier                                                                                                               |
+| `npm run check`          | Unit tests, lint and formatting check (what CI runs)                                                                   |
+| `npm run screenshots`    | Regenerate the images in `docs/` with demo data; `-- --store` for the 1280 × 800 Chrome Web Store set in `docs/store/` |
+| `npm run icons`          | Render the PNG icons from `assets/icons/icon.svg`                                                                      |
 
 To work on the UI without reloading the extension, serve the folder (e.g. `npx serve .`) and open `index.html`: the
 page runs outside the extension too, just without notifications, site icons, online suggestions and `chrome://`
