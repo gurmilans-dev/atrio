@@ -2206,21 +2206,25 @@ kbd {
    every theme applies; the accent of the automatic and custom ones tints the edges too. Only the
    surfaces below blur what is behind them: the page itself, its text and the wallpaper are left alone. */
 :root[data-style='glass'] {
-  --glass-fill: color-mix(in srgb, var(--panel) 64%, transparent);
-  --glass-fill-hover: color-mix(in srgb, var(--panel-hover) 74%, transparent);
-  --glass-field: color-mix(in srgb, var(--field) 66%, transparent);
+  --glass-fill: color-mix(in srgb, var(--panel) 70%, transparent);
+  --glass-fill-hover: color-mix(in srgb, var(--panel-hover) 80%, transparent);
+  --glass-field: color-mix(in srgb, var(--field) 72%, transparent);
   /* Menus, popovers and the settings hold text over the page's own text: more opaque. */
   --glass-float: color-mix(in srgb, var(--drawer) 82%, transparent);
   --glass-drawer: color-mix(in srgb, var(--drawer) 90%, transparent);
   --glass-edge: color-mix(in srgb, var(--accent) 10%, rgb(255 255 255 / 0.14));
-  --glass-sheen: linear-gradient(155deg, rgb(255 255 255 / 0.08), rgb(255 255 255 / 0) 42%);
+  --glass-sheen: linear-gradient(155deg, rgb(255 255 255 / 0.05), rgb(255 255 255 / 0) 38%);
   --glass-shadow: 0 14px 34px -10px rgb(0 0 0 / 0.38), inset 0 1px 0 rgb(255 255 255 / 0.07);
   --glass-shadow-small: 0 6px 16px -6px rgb(0 0 0 / 0.4), inset 0 1px 0 rgb(255 255 255 / 0.08);
-  --glass-blur: blur(14px) saturate(1.4);
-  --glass-blur-float: blur(20px) saturate(1.5);
+  /* Smoked glass: what shows through is dimmed, so a bright wallpaper (Warm Sand, a sunny photo) keeps
+     the muted text as readable as on Classic's surfaces, and saturated, so its colors still glow. */
+  --glass-blur: blur(14px) saturate(1.8) brightness(0.62);
+  --glass-blur-float: blur(20px) saturate(1.8) brightness(0.62);
 }
-/* Light: frosted white, with a hairline so the surfaces stand out from the light veil. */
+/* Light: frosted white, brightened behind, with a hairline so the surfaces stand out from the veil. */
 :root[data-style='glass'][data-theme='light'] {
+  --glass-blur: blur(14px) saturate(1.2) brightness(1.15);
+  --glass-blur-float: blur(20px) saturate(1.2) brightness(1.15);
   --glass-edge: rgb(255 255 255 / 0.8);
   --glass-sheen: linear-gradient(155deg, rgb(255 255 255 / 0.55), rgb(255 255 255 / 0) 48%);
   --glass-shadow:
@@ -2254,6 +2258,24 @@ kbd {
 }
 :root[data-style='glass'] :is(.add-task, .notes) {
   background: var(--glass-field);
+}
+/* Softer corners, the same steps everywhere: surfaces, then fields, then the controls inside them. */
+:root[data-style='glass'] .panel {
+  border-radius: 20px;
+}
+:root[data-style='glass']:not([data-layout='minimal']) :is(.shortcut, .search),
+:root[data-style='glass'] .search-results {
+  border-radius: 18px;
+}
+:root[data-style='glass'] :is(.add-task, .notes) {
+  border-radius: 12px;
+}
+:root[data-style='glass']:not([data-layout='minimal']) .go,
+:root[data-style='glass'] :is(.main-button, .outline-button) {
+  border-radius: 11px;
+}
+:root[data-style='glass'] .add-task button {
+  border-radius: 8px;
 }
 :root[data-style='glass'] :is(.go, .main-button) {
   box-shadow:
@@ -2311,6 +2333,7 @@ kbd {
 }
 :root[data-style='glass'][data-layout='minimal'][data-sheet] .side {
   border: 1px solid var(--glass-edge);
+  border-radius: 20px;
   background: var(--glass-sheen), var(--glass-float);
   backdrop-filter: var(--glass-blur-float);
 }
@@ -2330,9 +2353,10 @@ kbd {
 }
 
 /* Without backdrop blur, or when the system asks for less transparency or more contrast, the surfaces
-   keep Classic's fills: the edges and shadows stay, the text reads as in Classic. */
+   keep Classic's fills: the edges and shadows stay, the text reads as in Classic. ([data-theme] makes
+   these rules as specific as the light theme's above.) */
 @supports not (backdrop-filter: blur(1px)) {
-  :root[data-style='glass'] {
+  :root[data-style='glass'][data-theme] {
     --glass-fill: var(--panel);
     --glass-fill-hover: var(--panel-hover);
     --glass-field: var(--field);
@@ -2341,7 +2365,7 @@ kbd {
   }
 }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  :root[data-style='glass'] {
+  :root[data-style='glass'][data-theme] {
     --glass-fill: var(--panel);
     --glass-fill-hover: var(--panel-hover);
     --glass-field: var(--field);
