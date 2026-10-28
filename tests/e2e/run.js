@@ -564,6 +564,53 @@ try {
     });
   });
 
+  await check('local tools never become web searches by accident (Esc, the → button, blur)', async () => {
+    await a.trackNavigations();
+    const token = 'eyJhbGciOiJub25lIn0.eyJzZWNyZXQiOiJub3QtYS1yZWFsLXRva2VuIn0.signature';
+    const inputs = [token, 'json {"api_key":"x"}', '{"api_key":"x"}', 'b64 segreto', '= 2+2'];
+    const reopened = [];
+    for (const text of inputs) {
+      await a.eval(clearSearch);
+      await blur();
+      await a.press('/');
+      await a.type(text);
+      await a.press('Escape'); // closes the list, keeps the text
+      await a.press('Enter');
+      reopened.push(await a.eval(`!document.getElementById('search-results').hidden`));
+      await a.press('Escape');
+      await a.click('.go'); // the box loses focus on mousedown, then the form submits
+      await a.eval(`document.getElementById('search-input').blur()`);
+      await a.eval(`document.getElementById('search-form').requestSubmit()`);
+    }
+    const accidental = a.navigations.splice(0);
+    // Shift+Enter is an explicit search: it goes out, but a token is never remembered.
+    await a.eval(clearSearch);
+    await blur();
+    await a.press('/');
+    await a.type(token);
+    await a.press('Enter', { shift: true });
+    await sleep(400);
+    const forced = a.navigations.splice(0);
+    await a.goto();
+    const recent = await a.eval(`${STATE}.recent`);
+    // A plain search still goes out with Enter (with no list open, Esc would leave the field).
+    await blur();
+    await a.press('/');
+    await a.type('react hooks');
+    await a.press('Enter');
+    await sleep(400);
+    const plain = a.navigations.splice(0);
+    await a.goto();
+    await a.eval(settings(`document.getElementById('clear-recent').click()`)); // leave no trace for later checks
+    assert.deepEqual(accidental, []);
+    assert.deepEqual(reopened, [true, true, true, true, true]);
+    assert.equal(forced.length, 1);
+    assert.ok(forced[0].includes(encodeURIComponent(token)), forced[0]);
+    assert.ok(!recent.some((item) => inputs.includes(item)), JSON.stringify(recent));
+    assert.equal(plain.length, 1);
+    assert.ok(plain[0].includes('react%20hooks'), plain[0]);
+  });
+
   await check('search engine lives in the settings', async () => {
     const inSettings = await a.eval(`Boolean(document.querySelector('#settings #search-engine'))`);
     await a.eval(

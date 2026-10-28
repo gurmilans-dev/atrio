@@ -76,6 +76,10 @@
 
 ### Fixed
 
+- **A local tool's input could be searched on the web by accident.** After `Esc` (or a click on →, or a click
+  elsewhere) closed the rows of a JWT, JSON, Base64 or a sum, `Enter` sent the text to the search engine and kept it
+  among the recent searches. Now `Enter` brings the rows back; only `Shift + Enter` searches such text, and it is
+  never remembered.
 - Typing `constructor` in the search box broke the suggestions: the prefix lookup reached `Object.prototype`.
 - A saved state without theme or wallpaper made the page request `assets/undefined.webp` before the first paint.
 - A JWT whose `exp` or `iat` no date can hold (such as `1e20`) broke the suggestions, and `Enter` could then run a

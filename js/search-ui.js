@@ -94,11 +94,21 @@ function forget(text) {
   announce(t('recent.removed'));
 }
 
+// Text a local tool answers (a token, JSON, Base64, a sum…): its rows come first. It is never sent
+// to a search engine unless asked for explicitly, nor kept among the recent searches.
+function isLocalTool(text) {
+  try {
+    return runTools(text.trim()).some((row) => row.first);
+  } catch {
+    return false;
+  }
+}
+
 function runText(text, force = false) {
   const state = getState();
   const result = resolveInput(text, state.engine, { force, prefixes: prefixTargets(state) });
   if (!result) return;
-  remember(text);
+  if (!isLocalTool(text)) remember(text);
   navigate(result);
 }
 
@@ -470,9 +480,23 @@ export function initSearch() {
   });
   $('search-form').addEventListener('submit', (event) => {
     event.preventDefault();
-    if (open && active >= 0) execute(active);
-    else if (box.value.trim().startsWith('>')) announce(t('toast.noCommand'));
-    else go(false);
+    if (open && active >= 0) {
+      execute(active);
+      return;
+    }
+    const text = box.value.trim();
+    if (text.startsWith('>')) {
+      announce(t('toast.noCommand'));
+      return;
+    }
+    // A local tool's input stays local whatever closed its rows (Esc, the → button, a click
+    // elsewhere): Enter brings them back. Only Shift+Enter, an explicit choice, searches it.
+    if (isLocalTool(text) || (text.startsWith('+') && getState().show.tasks)) {
+      box.focus();
+      refresh();
+      return;
+    }
+    go(false);
   });
 
   $('search-clear').addEventListener('mousedown', (event) => event.preventDefault()); // keep focus in the box

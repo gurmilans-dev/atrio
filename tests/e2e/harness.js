@@ -149,10 +149,26 @@ async function openPage(cdp, url, { width, height }) {
   );
   await send('Emulation.setFocusEmulationEnabled', { enabled: true }, sessionId);
   const call = (method, params) => send(method, params, sessionId);
+  // Documents leaving the test server (searches, sites) are recorded and aborted before any request.
+  const navigations = [];
+  listeners.add((message) => {
+    if (message.sessionId !== sessionId || message.method !== 'Fetch.requestPaused') return;
+    navigations.push(message.params.request.url);
+    send(
+      'Fetch.failRequest',
+      { requestId: message.params.requestId, errorReason: 'Aborted' },
+      sessionId,
+    ).catch(() => {});
+  });
 
   const page = {
     targetId,
     call,
+    navigations,
+    /** From now on, navigations to http(s) sites are recorded in `navigations` and never sent. */
+    async trackNavigations() {
+      await call('Fetch.enable', { patterns: [{ urlPattern: 'https://*', resourceType: 'Document' }] });
+    },
     async eval(expression) {
       const result = await call('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true });
       if (result.exceptionDetails) {
