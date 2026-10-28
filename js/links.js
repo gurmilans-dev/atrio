@@ -8,6 +8,8 @@ import { getState, subscribe, update } from './store.js';
 
 let renderedKey = '';
 let editingId = null;
+// Minimal shows the links as icons: this many in the row, the others behind a "+n" button.
+const MINIMAL_LINKS = 8;
 
 export const hostOf = (url) => new URL(url).hostname.replace(/^www\./, '');
 const monogram = (link) => (link.symbol || link.name.slice(0, 2)).toUpperCase();
@@ -38,11 +40,40 @@ export function linkIcon(link, showFavicons) {
   return icon;
 }
 
+// The overflow of the Minimal row: icon and name, in a popover opened by the "+n" button.
+function moreLink(link, index, showFavicons) {
+  const anchor = el('a', 'more-link');
+  anchor.href = link.url;
+  anchor.rel = 'noreferrer';
+  if (index < 9) anchor.setAttribute('aria-keyshortcuts', String(index + 1));
+  const icon = linkIcon(link, showFavicons);
+  icon.setAttribute('aria-hidden', 'true'); // the monogram would be read before the name
+  anchor.append(icon, el('span', 'more-name', link.name));
+  return anchor;
+}
+
+function moreButton(count) {
+  const node = el('button', 'shortcut link-more');
+  node.type = 'button';
+  node.setAttribute('popovertarget', 'links-more');
+  const label = t('links.more', { n: count });
+  node.setAttribute('aria-label', label);
+  node.dataset.name = label;
+  node.append(el('span', 'link-icon', `+${count}`));
+  return node;
+}
+
 function renderGrid(state) {
+  const minimal = state.layout === 'minimal';
   const anchors = state.links.map((link, index) => {
     const anchor = el('a', 'shortcut glow');
     anchor.href = link.url;
-    anchor.title = link.url;
+    // Minimal shows only the icon: the name is its label and appears in a tooltip (style.css).
+    // Developer keeps the address as the title.
+    if (minimal) {
+      anchor.dataset.name = link.name;
+      anchor.setAttribute('aria-label', link.name);
+    } else anchor.title = link.url;
     anchor.rel = 'noreferrer';
     const info = el('span', 'link-info');
     info.append(el('span', 'link-name', link.name), el('span', 'link-host', hostOf(link.url)));
@@ -57,7 +88,14 @@ function renderGrid(state) {
     anchor.append(linkIcon(link, state.showFavicons), info, hint);
     return anchor;
   });
-  $('links').replaceChildren(...anchors);
+  const shown = minimal ? anchors.slice(0, MINIMAL_LINKS) : anchors;
+  const rest = state.links.slice(shown.length);
+  $('links').replaceChildren(...shown, ...(rest.length ? [moreButton(rest.length)] : []));
+  const more = $('links-more');
+  more.replaceChildren(
+    ...rest.map((link, index) => moreLink(link, shown.length + index, state.showFavicons)),
+  );
+  if (!rest.length && more.matches(':popover-open')) more.hidePopover();
   $('link-count').textContent = String(state.links.length).padStart(2, '0');
   $('links-empty').hidden = state.links.length > 0;
 }
@@ -90,7 +128,7 @@ function renderManagement(state) {
 function render(state) {
   if (editingId && !state.links.some((link) => link.id === editingId)) resetForm();
   $('favicon-toggle').checked = state.showFavicons;
-  const key = JSON.stringify([state.links, state.showFavicons, editingId]);
+  const key = JSON.stringify([state.links, state.showFavicons, state.layout, editingId]);
   if (key === renderedKey) return;
   renderedKey = key;
   renderGrid(state);

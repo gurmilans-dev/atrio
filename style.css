@@ -1870,6 +1870,134 @@ kbd {
 :root[data-layout='minimal'] .links-grid {
   margin-top: clamp(24px, 4.5vh, 36px);
 }
+
+/* Links as icons: the favicon (or the monogram) on a small tile, in a centered row. The name is the
+   link's label and shows in a tooltip on hover and keyboard focus. Past the first eight, a "+n"
+   tile opens the others (js/links.js). */
+:root[data-layout='minimal'] .links-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+}
+:root[data-layout='minimal'] .shortcut {
+  position: relative; /* the "+n" button too: its tooltip hangs from it */
+  flex: none;
+  min-height: 0;
+  padding: 5px;
+  gap: 0;
+  border: 0;
+  border-radius: 15px;
+  background: none;
+  font: inherit;
+}
+:root[data-layout='minimal'] .shortcut:hover,
+:root[data-layout='minimal'] .shortcut:focus-visible {
+  z-index: 1; /* its tooltip above the next row */
+  background: none;
+}
+:root[data-layout='minimal'] .shortcut .link-icon {
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  font-size: 11px;
+}
+:root[data-layout='minimal'] .shortcut .link-icon img {
+  width: 20px;
+  height: 20px;
+}
+:root[data-layout='minimal'] .shortcut:hover .link-icon,
+:root[data-layout='minimal'] .shortcut:focus-visible .link-icon {
+  border-color: var(--accent-line);
+  background: var(--panel-hover);
+}
+:root[data-layout='minimal'] .link-more .link-icon {
+  color: var(--text-secondary);
+  font: 600 11px var(--mono);
+}
+:root[data-layout='minimal'] .link-info,
+:root[data-layout='minimal'] .link-key,
+:root[data-layout='minimal'] .shortcut-arrow,
+:root[data-layout='minimal'] .shortcut .glow-ring {
+  display: none;
+}
+:root[data-layout='minimal'] .shortcut::after {
+  content: attr(data-name);
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 50%;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--toast);
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.22);
+  color: var(--text);
+  font: 500 11.5px var(--sans);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  translate: -50% -3px;
+  transition:
+    opacity 0.12s,
+    translate 0.12s;
+}
+:root[data-layout='minimal'] .shortcut:hover::after,
+:root[data-layout='minimal'] .shortcut:focus-visible::after {
+  opacity: 1;
+  translate: -50% 0;
+}
+/* The other links: a native popover under the "+n" tile (above it when there is no room below). */
+.links-more {
+  width: min(300px, calc(100vw - 32px));
+  max-height: min(380px, calc(100dvh - 48px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--drawer);
+  color: var(--text);
+  box-shadow: 0 18px 50px rgb(0 0 0 / 0.45);
+}
+@supports (justify-self: anchor-center) {
+  .link-more {
+    anchor-name: --links-more;
+  }
+  .links-more {
+    position-anchor: --links-more;
+    inset: auto;
+    top: anchor(bottom);
+    justify-self: anchor-center;
+    margin: 8px 0;
+    position-try-fallbacks: flip-block;
+  }
+}
+.more-link {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+.more-link:hover,
+.more-link:focus-visible {
+  background: var(--accent-soft);
+}
+.more-link .link-icon {
+  flex: 0 0 30px;
+  height: 30px;
+  border-radius: 8px;
+  font-size: 10.5px;
+}
+.more-name {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
 /* A panel asked for by its shortcut floats over the page, where the Google apps open. */
 :root[data-layout='minimal'][data-sheet] .side {
   display: grid;
@@ -1978,6 +2106,10 @@ kbd {
     top: 16px;
     right: 16px;
   }
+  :root[data-layout='minimal'] .links-grid {
+    max-width: calc(5 * 52px + 4 * 4px); /* nine tiles as 5 + 4 rather than 6 + 3 */
+    margin-inline: auto;
+  }
   .apps-panel,
   :root[data-layout='minimal'][data-sheet] .side {
     inset: 64px 16px auto 16px;
@@ -1991,6 +2123,7 @@ kbd {
     animation: none;
   }
   .shortcut,
+  .shortcut::after,
   .glow-ring,
   .settings-fab,
   .apps-button,

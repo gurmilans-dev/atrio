@@ -58,6 +58,8 @@ const it = {
   'toast.saveFailed': 'Impossibile salvare: spazio di archiviazione pieno o bloccato.',
 
   'links.title': 'Collegamenti',
+  'links.more': { one: 'Un altro collegamento', other: 'Altri {n} collegamenti' },
+  'links.moreTitle': 'Altri collegamenti',
   'links.quick': 'Collegamenti rapidi',
   'links.edit': 'Modifica',
   'links.remove': 'Rimuovi',
@@ -439,6 +441,8 @@ const en = {
   'toast.saveFailed': 'Could not save: storage is full or blocked.',
 
   'links.title': 'Links',
+  'links.more': { one: '1 more link', other: '{n} more links' },
+  'links.moreTitle': 'More links',
   'links.quick': 'Quick links',
   'links.edit': 'Edit',
   'links.remove': 'Remove',
