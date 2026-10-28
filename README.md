@@ -196,5 +196,5 @@ scripts/             icons, screenshots, extension key
 
 ## License
 
-[MIT](LICENSE). Atrio is not affiliated with Google. Google product names belong to their owners; the launcher icons
-are simplified drawings made for this project.
+[MIT](LICENSE). The wallpapers in `assets/` are the author's own images. Atrio is not affiliated with Google. Google
+product names belong to their owners; the launcher icons are simplified drawings made for this project.
