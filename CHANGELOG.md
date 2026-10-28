@@ -4,6 +4,8 @@
 
 ### Added
 
+- **A privacy policy**, [PRIVACY.md](PRIVACY.md), in English and Italian: what Atrio stores and for how long, when
+  anything leaves the device, and how to delete it.
 - **English interface** alongside Italian. It follows the browser language, or can be set in Settings → General.
   Dates, numbers, Google app names and the end-of-session notification follow the chosen language. Palette commands
   and apps can be found by typing in either language.
@@ -59,6 +61,8 @@
   switch to Chrome's engine. Prefixes (`yt`, `npm`, your own…) are unchanged. Online suggestions need Google or
   DuckDuckGo as the engine, since Atrio does not know which provider Chrome uses.
 - Chrome 118 or later is required (was 117), for the `@scope` that keeps custom CSS away from the settings.
+- The extension description and the note in Settings → Data no longer say that everything stays local: the data
+  does, but online suggestions, when turned on, send what you type to Google or DuckDuckGo.
 - **The page cannot contact other servers.** Its content security policy now allows images only from the extension
   itself (and local `data:`/`blob:` images), no web fonts or media, and connections only to the two suggestion
   services. Custom CSS, including CSS from an imported backup, can no longer make it load something from the web.

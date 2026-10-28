@@ -224,7 +224,7 @@ const it = {
   'css.global': '{rule} varrebbe anche per le impostazioni: il CSS non è applicato.',
   'css.cleared': 'CSS personale rimosso.',
   'settings.dataNote':
-    'Il backup contiene collegamenti, attività, note, ricerche recenti, preferenze e sfondo personale. Tutto resta sul tuo computer.',
+    'Il backup contiene collegamenti, attività, note, ricerche recenti, preferenze e sfondo personale. Questi dati restano in questo browser: Atrio non ha un server e non li invia a nessuno.',
   'settings.export': 'Esporta backup',
   'settings.import': 'Importa backup',
   'settings.reset': 'Ripristina impostazioni e dati',
@@ -604,7 +604,7 @@ const en = {
   'css.global': '{rule} would reach the settings too: the CSS is not applied.',
   'css.cleared': 'Custom CSS removed.',
   'settings.dataNote':
-    'The backup contains links, tasks, notes, recent searches, preferences and your wallpaper. Everything stays on your computer.',
+    'The backup contains links, tasks, notes, recent searches, preferences and your wallpaper. This data stays in this browser: Atrio has no server and sends it nowhere.',
   'settings.export': 'Export backup',
   'settings.import': 'Import backup',
   'settings.reset': 'Reset settings and data',

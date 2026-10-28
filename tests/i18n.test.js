@@ -98,3 +98,11 @@ test('Google app names follow the language', () => {
   const gmail = GOOGLE_APPS.find((app) => app.id === 'gmail');
   assert.equal(appName(gmail, 'it'), 'Gmail');
 });
+
+test('the extension descriptions fit the Chrome Web Store limit (132 characters)', () => {
+  for (const lang of ['en', 'it']) {
+    const file = new URL(`../_locales/${lang}/messages.json`, import.meta.url);
+    const { message } = JSON.parse(readFileSync(file, 'utf8')).appDescription;
+    assert.ok(message.length <= 132, `${lang}: ${message.length} characters`);
+  }
+});

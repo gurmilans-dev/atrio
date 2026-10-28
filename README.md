@@ -103,14 +103,17 @@ again, then import the backup. From then on the ID no longer depends on where th
 
 ## Privacy and permissions
 
-Everything stays in the browser (`localStorage` and IndexedDB). Atrio makes no network requests of its own: it only
-navigates when you search or open a link. The one exception is opt-in: with **online search suggestions** turned on
+Your data stays in the browser (`localStorage` and IndexedDB): Atrio has no server, no analytics and no telemetry. It
+makes no network requests of its own: it only navigates when you search or open a link. The one exception is opt-in: with **online search suggestions** turned on
 (Settings → General, off by default), what you type in the search box is sent to Google or DuckDuckGo, whichever is
 your engine, without cookies, as Chrome's address bar does.
 
 The extension's content security policy holds the page to this: images only from the extension itself (and local
 `data:`/`blob:` images), no fonts or media from the web, and connections only to those two suggestion services. Custom
 CSS, including CSS from an imported backup, cannot make the page load anything from a server.
+
+The full [privacy policy](PRIVACY.md) (English and Italian) details what is stored, for how long, and how to delete
+it.
 
 | Permission                                              | Why                                                                    |
 | ------------------------------------------------------- | ---------------------------------------------------------------------- |
