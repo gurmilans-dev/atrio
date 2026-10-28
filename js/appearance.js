@@ -154,7 +154,14 @@ function apply(state) {
   }
   const id = shownImageId(state);
   root.dataset.customImage = id ?? '';
-  loadCustomWallpaper(id, state.wallpaperRev).then((url) => {
+  const loading = loadCustomWallpaper(id, state.wallpaperRev);
+  loading.then((url) => {
+    // Another image was asked for before this one was ready: it never shows, and its URL goes
+    // (unless it is the one on screen, which the next image replaces).
+    if (loading !== customPromise) {
+      if (url && url !== paintedURL) URL.revokeObjectURL(url);
+      return;
+    }
     const current = getState();
     if (current.wallpaper !== CUSTOM_WALLPAPER || shownImageId(current) !== id) return;
     if (url) {

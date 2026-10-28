@@ -1227,6 +1227,19 @@ try {
     const commanded = await read();
     await a.eval(clearSearch);
     await setRotation(false);
+    // Fast changes between own images: an image replaced before it was ready must let its object URL go.
+    const leaked = await a.eval(`(async () => {
+      const open = new Set();
+      const [create, revoke] = [URL.createObjectURL, URL.revokeObjectURL];
+      URL.createObjectURL = (object) => { const url = create(object); open.add(url); return url; };
+      URL.revokeObjectURL = (url) => { open.delete(url); revoke(url); };
+      const own = [...document.querySelectorAll('#wallpaper-picks [data-image]')];
+      for (let i = 0; i < 20; i++) { own[i % own.length].click(); await new Promise((r) => setTimeout(r, 10)); }
+      await new Promise((r) => setTimeout(r, 1500));
+      [URL.createObjectURL, URL.revokeObjectURL] = [create, revoke];
+      const shown = document.documentElement.style.getPropertyValue('--wallpaper');
+      return [...open].filter((url) => !shown.includes(url)).length;
+    })()`);
     await a.eval(settings(`document.querySelector('#wallpaper-picks [data-image]').click()`));
     await a.eval(settings(`document.getElementById('remove-wallpaper').click()`));
     await sleep(300);
@@ -1255,6 +1268,7 @@ try {
       [commanded.rotation, commanded.wallpaper, commanded.toast],
       ['off', 'city', '“Cambia sfondo ogni giorno” disattivato.'],
     );
+    assert.equal(leaked, 0, 'object URLs of images replaced before they were ready');
     assert.deepEqual([removed.images.length, removed.tiles], [2, 2]);
     assert.ok(!removed.images.includes(three.images[0]));
   });
