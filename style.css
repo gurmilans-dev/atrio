@@ -265,6 +265,10 @@ kbd {
   color: var(--accent);
   border-color: var(--accent-line);
 }
+/* Out of the custom CSS's reach and last in the page: above anything that CSS can place over it. */
+.settings-fab {
+  z-index: 2147483647;
+}
 .settings-fab:hover {
   transform: rotate(45deg);
 }

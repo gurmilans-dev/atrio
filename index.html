@@ -12,217 +12,276 @@
   </head>
   <body>
     <!-- Visible texts are translated by js/i18n.js: data-i18n (text), data-i18n-<attribute>. -->
-    <div class="wallpaper" aria-hidden="true"></div>
-    <div class="shade" aria-hidden="true"></div>
+    <!-- What the custom CSS can reach (js/custom-css.js). The settings button, the settings and the
+         toast stay out of it, so the settings can always be opened to fix a mistake. -->
+    <div class="customizable">
+      <div class="wallpaper" aria-hidden="true"></div>
+      <div class="shade" aria-hidden="true"></div>
 
-    <div class="page">
-      <main class="layout">
-        <section class="primary" data-i18n-aria-label="page.searchAndLinks">
-          <div class="clock-area">
-            <p class="greeting" id="greeting">&nbsp;</p>
-            <div class="clock" id="clock">--:--</div>
-            <div class="date" id="date-label">&nbsp;</div>
-          </div>
+      <div class="page">
+        <main class="layout">
+          <section class="primary" data-i18n-aria-label="page.searchAndLinks">
+            <div class="clock-area">
+              <p class="greeting" id="greeting">&nbsp;</p>
+              <div class="clock" id="clock">--:--</div>
+              <div class="date" id="date-label">&nbsp;</div>
+            </div>
 
-          <form id="search-form" class="search glow" autocomplete="off" role="search">
-            <svg class="search-symbol" viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="10.5" cy="10.5" r="6.5" />
-              <path d="m15.5 15.5 5 5" />
-            </svg>
-            <input
-              id="search-input"
-              type="text"
-              data-i18n-placeholder="search.placeholder"
-              spellcheck="false"
-              autocomplete="off"
-              enterkeyhint="go"
-              role="combobox"
-              aria-expanded="false"
-              aria-controls="search-results"
-              aria-autocomplete="list"
-              data-i18n-aria-label="search.label"
-              aria-describedby="search-tips"
-              aria-keyshortcuts="/ Control+K Control+Shift+P"
-            />
+            <form id="search-form" class="search glow" autocomplete="off" role="search">
+              <svg class="search-symbol" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="10.5" cy="10.5" r="6.5" />
+                <path d="m15.5 15.5 5 5" />
+              </svg>
+              <input
+                id="search-input"
+                type="text"
+                data-i18n-placeholder="search.placeholder"
+                spellcheck="false"
+                autocomplete="off"
+                enterkeyhint="go"
+                role="combobox"
+                aria-expanded="false"
+                aria-controls="search-results"
+                aria-autocomplete="list"
+                data-i18n-aria-label="search.label"
+                aria-describedby="search-tips"
+                aria-keyshortcuts="/ Control+K Control+Shift+P"
+              />
+              <button
+                type="button"
+                class="search-clear"
+                id="search-clear"
+                data-i18n-aria-label="search.clear"
+                data-i18n-title="search.clear"
+                hidden
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17" /></svg>
+              </button>
+              <span class="search-hint" id="search-hint" hidden></span>
+              <kbd class="search-key" id="search-key" aria-hidden="true">/</kbd>
+              <button
+                class="go"
+                type="submit"
+                data-i18n-aria-label="search.go"
+                data-i18n-title="search.goTitle"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6" /></svg>
+              </button>
+              <ul
+                class="search-results"
+                id="search-results"
+                role="listbox"
+                data-i18n-aria-label="search.suggestions"
+                hidden
+              ></ul>
+            </form>
+            <p class="search-tips" id="search-tips"></p>
+
+            <div class="block-header links-header">
+              <h1>
+                <span data-i18n="links.title">Collegamenti</span>
+                <span class="small-index" id="link-count">00</span>
+              </h1>
+              <button class="subtle-action" id="edit-links" type="button">
+                <span data-i18n="links.edit">Modifica</span> <span aria-hidden="true">↗</span>
+              </button>
+            </div>
+            <nav id="links" class="links-grid" data-i18n-aria-label="links.quick"></nav>
+            <p class="empty-note" id="links-empty" data-i18n="links.empty" hidden></p>
+          </section>
+
+          <aside class="side" data-i18n-aria-label="page.tools">
+            <section class="panel focus-panel" id="focus-panel" aria-labelledby="focus-title">
+              <div class="panel-head">
+                <h2 id="focus-title" data-i18n="focus.title">Focus</h2>
+                <span class="panel-muted" id="focus-count"></span>
+              </div>
+              <div class="focus-switch" role="group" data-i18n-aria-label="focus.kind">
+                <button
+                  id="focus-mode"
+                  type="button"
+                  class="switch active"
+                  aria-pressed="true"
+                  data-i18n="focus.work"
+                >
+                  Lavoro
+                </button>
+                <button
+                  id="break-mode"
+                  type="button"
+                  class="switch"
+                  aria-pressed="false"
+                  data-i18n="focus.break"
+                >
+                  Pausa
+                </button>
+                <span id="preset-caption" class="preset-caption">25 / 5</span>
+              </div>
+              <div class="timer-row">
+                <div class="timer" id="timer">25:00</div>
+                <div class="timer-state" id="timer-state"></div>
+              </div>
+              <div
+                class="progress"
+                id="progress"
+                role="progressbar"
+                data-i18n-aria-label="focus.progress"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="0"
+              >
+                <span id="progress-fill"></span>
+              </div>
+              <div class="timer-buttons">
+                <button type="button" class="main-button" id="timer-toggle" aria-keyshortcuts="P"></button>
+                <button type="button" class="outline-button" id="timer-reset" data-i18n="timer.reset">
+                  Azzera
+                </button>
+              </div>
+              <div class="activity">
+                <div class="activity-head">
+                  <span class="panel-muted" data-i18n="heatmap.range">Ultime 20 settimane</span>
+                  <span class="panel-muted streak" id="streak"></span>
+                </div>
+                <div class="heatmap" id="heatmap" role="img"></div>
+              </div>
+            </section>
+
+            <section class="panel tasks-panel" data-i18n-aria-label="tasks.panel">
+              <div class="panel-head">
+                <div class="panel-tabs" id="panel-tabs" role="tablist" data-i18n-aria-label="tasks.panel">
+                  <button
+                    type="button"
+                    role="tab"
+                    class="tab active"
+                    id="tab-tasks"
+                    data-tab="tasks"
+                    aria-selected="true"
+                    aria-controls="tasks-pane"
+                    data-i18n="tasks.tab"
+                  >
+                    Attività
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    class="tab"
+                    id="tab-notes"
+                    data-tab="notes"
+                    aria-selected="false"
+                    aria-controls="notes-pane"
+                    tabindex="-1"
+                    aria-keyshortcuts="N"
+                    data-i18n="notes.tab"
+                  >
+                    Note
+                  </button>
+                </div>
+                <span class="panel-muted" id="tasks-count"><span id="task-counter">0 / 0</span></span>
+                <span class="panel-muted" id="notes-count" hidden
+                  ><span id="notes-size"><span id="notes-length"></span> · </span
+                  ><span id="notes-status" class="notes-status" data-i18n="notes.saved"></span
+                  ><button
+                    type="button"
+                    id="notes-retry"
+                    class="notes-retry"
+                    data-i18n="notes.retry"
+                    hidden
+                  ></button
+                ></span>
+              </div>
+              <div id="tasks-pane" role="tabpanel" aria-labelledby="tab-tasks">
+                <form id="task-form" class="add-task" autocomplete="off">
+                  <input
+                    id="task-input"
+                    type="text"
+                    maxlength="120"
+                    data-i18n-placeholder="tasks.placeholder"
+                    data-i18n-aria-label="tasks.new"
+                    aria-keyshortcuts="T"
+                    required
+                  />
+                  <button type="submit" data-i18n-aria-label="tasks.add" data-i18n-title="tasks.add">
+                    +
+                  </button>
+                </form>
+                <ul id="task-list" class="task-list"></ul>
+                <p class="empty-note" id="empty-tasks" data-i18n="tasks.empty"></p>
+                <div class="task-bottom">
+                  <button
+                    type="button"
+                    id="clear-done"
+                    class="subtle-action"
+                    data-i18n="tasks.clearDone"
+                  ></button>
+                </div>
+              </div>
+              <div id="notes-pane" role="tabpanel" aria-labelledby="tab-notes" hidden>
+                <textarea
+                  id="notes-input"
+                  class="notes"
+                  spellcheck="false"
+                  data-i18n-placeholder="notes.placeholder"
+                  data-i18n-aria-label="notes.tab"
+                ></textarea>
+              </div>
+            </section>
+          </aside>
+        </main>
+      </div>
+
+      <button
+        type="button"
+        class="apps-button"
+        id="apps-button"
+        popovertarget="apps-panel"
+        data-i18n-aria-label="apps.title"
+        data-i18n-title="apps.buttonTitle"
+        aria-keyshortcuts="G"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="5" cy="5" r="2" />
+          <circle cx="12" cy="5" r="2" />
+          <circle cx="19" cy="5" r="2" />
+          <circle cx="5" cy="12" r="2" />
+          <circle cx="12" cy="12" r="2" />
+          <circle cx="19" cy="12" r="2" />
+          <circle cx="5" cy="19" r="2" />
+          <circle cx="12" cy="19" r="2" />
+          <circle cx="19" cy="19" r="2" />
+        </svg>
+      </button>
+      <div id="apps-panel" class="apps-panel" popover role="dialog" data-i18n-aria-label="apps.title">
+        <div class="apps-favorites-box">
+          <div class="apps-head">
+            <h2 data-i18n="apps.favorites">Preferiti</h2>
             <button
               type="button"
-              class="search-clear"
-              id="search-clear"
-              data-i18n-aria-label="search.clear"
-              data-i18n-title="search.clear"
-              hidden
+              class="apps-edit"
+              id="apps-edit"
+              aria-pressed="false"
+              data-i18n-aria-label="apps.editFavorites"
             >
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17" /></svg>
-            </button>
-            <span class="search-hint" id="search-hint" hidden></span>
-            <kbd class="search-key" id="search-key" aria-hidden="true">/</kbd>
-            <button
-              class="go"
-              type="submit"
-              data-i18n-aria-label="search.go"
-              data-i18n-title="search.goTitle"
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6" /></svg>
-            </button>
-            <ul
-              class="search-results"
-              id="search-results"
-              role="listbox"
-              data-i18n-aria-label="search.suggestions"
-              hidden
-            ></ul>
-          </form>
-          <p class="search-tips" id="search-tips"></p>
-
-          <div class="block-header links-header">
-            <h1>
-              <span data-i18n="links.title">Collegamenti</span>
-              <span class="small-index" id="link-count">00</span>
-            </h1>
-            <button class="subtle-action" id="edit-links" type="button">
-              <span data-i18n="links.edit">Modifica</span> <span aria-hidden="true">↗</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z" />
+                <path d="m13.5 6.5 4 4" />
+              </svg>
+              <span class="done" data-i18n="apps.done">Fine</span>
             </button>
           </div>
-          <nav id="links" class="links-grid" data-i18n-aria-label="links.quick"></nav>
-          <p class="empty-note" id="links-empty" data-i18n="links.empty" hidden></p>
-        </section>
-
-        <aside class="side" data-i18n-aria-label="page.tools">
-          <section class="panel focus-panel" id="focus-panel" aria-labelledby="focus-title">
-            <div class="panel-head">
-              <h2 id="focus-title" data-i18n="focus.title">Focus</h2>
-              <span class="panel-muted" id="focus-count"></span>
-            </div>
-            <div class="focus-switch" role="group" data-i18n-aria-label="focus.kind">
-              <button
-                id="focus-mode"
-                type="button"
-                class="switch active"
-                aria-pressed="true"
-                data-i18n="focus.work"
-              >
-                Lavoro
-              </button>
-              <button
-                id="break-mode"
-                type="button"
-                class="switch"
-                aria-pressed="false"
-                data-i18n="focus.break"
-              >
-                Pausa
-              </button>
-              <span id="preset-caption" class="preset-caption">25 / 5</span>
-            </div>
-            <div class="timer-row">
-              <div class="timer" id="timer">25:00</div>
-              <div class="timer-state" id="timer-state"></div>
-            </div>
-            <div
-              class="progress"
-              id="progress"
-              role="progressbar"
-              data-i18n-aria-label="focus.progress"
-              aria-valuemin="0"
-              aria-valuemax="100"
-              aria-valuenow="0"
-            >
-              <span id="progress-fill"></span>
-            </div>
-            <div class="timer-buttons">
-              <button type="button" class="main-button" id="timer-toggle" aria-keyshortcuts="P"></button>
-              <button type="button" class="outline-button" id="timer-reset" data-i18n="timer.reset">
-                Azzera
-              </button>
-            </div>
-            <div class="activity">
-              <div class="activity-head">
-                <span class="panel-muted" data-i18n="heatmap.range">Ultime 20 settimane</span>
-                <span class="panel-muted streak" id="streak"></span>
-              </div>
-              <div class="heatmap" id="heatmap" role="img"></div>
-            </div>
-          </section>
-
-          <section class="panel tasks-panel" data-i18n-aria-label="tasks.panel">
-            <div class="panel-head">
-              <div class="panel-tabs" id="panel-tabs" role="tablist" data-i18n-aria-label="tasks.panel">
-                <button
-                  type="button"
-                  role="tab"
-                  class="tab active"
-                  id="tab-tasks"
-                  data-tab="tasks"
-                  aria-selected="true"
-                  aria-controls="tasks-pane"
-                  data-i18n="tasks.tab"
-                >
-                  Attività
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  class="tab"
-                  id="tab-notes"
-                  data-tab="notes"
-                  aria-selected="false"
-                  aria-controls="notes-pane"
-                  tabindex="-1"
-                  aria-keyshortcuts="N"
-                  data-i18n="notes.tab"
-                >
-                  Note
-                </button>
-              </div>
-              <span class="panel-muted" id="tasks-count"><span id="task-counter">0 / 0</span></span>
-              <span class="panel-muted" id="notes-count" hidden
-                ><span id="notes-size"><span id="notes-length"></span> · </span
-                ><span id="notes-status" class="notes-status" data-i18n="notes.saved"></span
-                ><button
-                  type="button"
-                  id="notes-retry"
-                  class="notes-retry"
-                  data-i18n="notes.retry"
-                  hidden
-                ></button
-              ></span>
-            </div>
-            <div id="tasks-pane" role="tabpanel" aria-labelledby="tab-tasks">
-              <form id="task-form" class="add-task" autocomplete="off">
-                <input
-                  id="task-input"
-                  type="text"
-                  maxlength="120"
-                  data-i18n-placeholder="tasks.placeholder"
-                  data-i18n-aria-label="tasks.new"
-                  aria-keyshortcuts="T"
-                  required
-                />
-                <button type="submit" data-i18n-aria-label="tasks.add" data-i18n-title="tasks.add">+</button>
-              </form>
-              <ul id="task-list" class="task-list"></ul>
-              <p class="empty-note" id="empty-tasks" data-i18n="tasks.empty"></p>
-              <div class="task-bottom">
-                <button
-                  type="button"
-                  id="clear-done"
-                  class="subtle-action"
-                  data-i18n="tasks.clearDone"
-                ></button>
-              </div>
-            </div>
-            <div id="notes-pane" role="tabpanel" aria-labelledby="tab-notes" hidden>
-              <textarea
-                id="notes-input"
-                class="notes"
-                spellcheck="false"
-                data-i18n-placeholder="notes.placeholder"
-                data-i18n-aria-label="notes.tab"
-              ></textarea>
-            </div>
-          </section>
-        </aside>
-      </main>
+          <div class="apps-grid" id="apps-favorites"></div>
+          <p class="apps-hint" id="apps-favorites-empty" data-i18n="apps.emptyFavorites" hidden></p>
+          <p class="apps-hint edit-only" data-i18n="apps.editHint"></p>
+        </div>
+        <div class="apps-grid" id="apps-others"></div>
+        <div class="apps-foot">
+          <div class="apps-foot-row">
+            <span id="account-label" data-i18n="apps.openWith"></span>
+            <div class="account-picks" id="account-picks" role="group" aria-labelledby="account-label"></div>
+          </div>
+          <p class="apps-foot-help" data-i18n="apps.accountHelp"></p>
+        </div>
+      </div>
     </div>
 
     <button
@@ -240,59 +299,6 @@
         <circle cx="12" cy="12" r="3" />
       </svg>
     </button>
-
-    <button
-      type="button"
-      class="apps-button"
-      id="apps-button"
-      popovertarget="apps-panel"
-      data-i18n-aria-label="apps.title"
-      data-i18n-title="apps.buttonTitle"
-      aria-keyshortcuts="G"
-    >
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="5" cy="5" r="2" />
-        <circle cx="12" cy="5" r="2" />
-        <circle cx="19" cy="5" r="2" />
-        <circle cx="5" cy="12" r="2" />
-        <circle cx="12" cy="12" r="2" />
-        <circle cx="19" cy="12" r="2" />
-        <circle cx="5" cy="19" r="2" />
-        <circle cx="12" cy="19" r="2" />
-        <circle cx="19" cy="19" r="2" />
-      </svg>
-    </button>
-    <div id="apps-panel" class="apps-panel" popover role="dialog" data-i18n-aria-label="apps.title">
-      <div class="apps-favorites-box">
-        <div class="apps-head">
-          <h2 data-i18n="apps.favorites">Preferiti</h2>
-          <button
-            type="button"
-            class="apps-edit"
-            id="apps-edit"
-            aria-pressed="false"
-            data-i18n-aria-label="apps.editFavorites"
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z" />
-              <path d="m13.5 6.5 4 4" />
-            </svg>
-            <span class="done" data-i18n="apps.done">Fine</span>
-          </button>
-        </div>
-        <div class="apps-grid" id="apps-favorites"></div>
-        <p class="apps-hint" id="apps-favorites-empty" data-i18n="apps.emptyFavorites" hidden></p>
-        <p class="apps-hint edit-only" data-i18n="apps.editHint"></p>
-      </div>
-      <div class="apps-grid" id="apps-others"></div>
-      <div class="apps-foot">
-        <div class="apps-foot-row">
-          <span id="account-label" data-i18n="apps.openWith"></span>
-          <div class="account-picks" id="account-picks" role="group" aria-labelledby="account-label"></div>
-        </div>
-        <p class="apps-foot-help" data-i18n="apps.accountHelp"></p>
-      </div>
-    </div>
 
     <dialog id="settings" class="drawer" aria-labelledby="settings-title">
       <div class="drawer-inner">

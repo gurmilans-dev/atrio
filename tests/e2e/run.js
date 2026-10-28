@@ -1241,6 +1241,107 @@ try {
     assert.deepEqual([cleared.saved, cleared.status], ['', 'Nessuna regola attiva.']);
   });
 
+  await check(
+    'custom CSS never hides the settings or their button (:scope, overlays, global at-rules, boot)',
+    async () => {
+      const applyCSS = (css) =>
+        a.eval(
+          settings(`
+          document.getElementById('css-input').value = ${JSON.stringify(css)};
+          document.getElementById('css-apply').click();`),
+        );
+      const read = () =>
+        a.eval(`(() => {
+        const fab = document.getElementById('open-settings');
+        const box = fab.getBoundingClientRect();
+        const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+        const dialog = document.getElementById('settings');
+        dialog.showModal();
+        const drawer = dialog.getBoundingClientRect();
+        const result = {
+          area: getComputedStyle(document.querySelector('.customizable')).display,
+          body: getComputedStyle(document.body).display,
+          fabOnTop: hit === fab || fab.contains(hit),
+          drawer: drawer.width > 300 && drawer.height > 300,
+          title: getComputedStyle(document.getElementById('settings-title')).color !== 'rgba(0, 0, 0, 0)',
+          saved: ${STATE}.customCSS,
+          status: document.getElementById('css-status').textContent,
+          toast: document.getElementById('toast').textContent,
+        };
+        dialog.close();
+        return result;
+      })()`);
+      const opensByClick = async () => {
+        await a.click('#open-settings');
+        const open = await a.eval(`document.getElementById('settings').open`);
+        await a.eval(`document.getElementById('settings').close()`);
+        return open;
+      };
+
+      // The audit's case: the scope root itself.
+      await applyCSS(':scope { display: none !important }');
+      const hidden = { ...(await read()), click: await opensByClick() };
+      // The whole page pulled over the button.
+      const overlay =
+        ':scope { position: fixed !important; inset: 0 !important; z-index: 2147483647 !important; background: red !important }' +
+        ' .page::after { content: ""; position: fixed; inset: 0; z-index: 2147483647 }';
+      await applyCSS(overlay);
+      const covered = { ...(await read()), click: await opensByClick() };
+      // A global at-rule, even nested: refused, the previous CSS stays.
+      await applyCSS(
+        '@media all { @property --text { syntax: "<color>"; inherits: false; initial-value: transparent } } .clock { color: red }',
+      );
+      const property = await read();
+
+      // Before the first paint (boot.js), with what a backup can bring: the style it adds, if any.
+      const { identifier } = await a.call('Page.addScriptToEvaluateOnNewDocument', {
+        source: `window.bootCSS = [];
+        new MutationObserver((records) => {
+          for (const record of records) {
+            for (const node of record.addedNodes) if (node.id === 'custom-css') window.bootCSS.push(node.textContent);
+          }
+        }).observe(document, { childList: true, subtree: true });`,
+      });
+      const bootWith = async (css) => {
+        await a.eval(`(() => {
+        const saved = ${STATE};
+        saved.customCSS = ${JSON.stringify(css)};
+        localStorage.setItem('workspace.newtab.v2', JSON.stringify(saved));
+      })()`);
+        await a.goto();
+        return a.eval('({ boot: window.bootCSS })');
+      };
+      const bootValid = await bootWith('.clock { color: rgb(1, 2, 3) }');
+      const bootFont = await bootWith(
+        '@font-face { font-family: Inter; src: url(data:font/woff2;base64,AAAA) } .clock { color: red }',
+      );
+      const bootFontState = await read();
+      await a.call('Page.removeScriptToEvaluateOnNewDocument', { identifier });
+      await a.goto();
+      await a.eval(settings(`document.getElementById('css-clear').click()`));
+
+      const reachable = { body: 'block', fabOnTop: true, drawer: true, title: true, click: true };
+      assert.deepEqual(
+        { ...hidden, saved: undefined, toast: undefined },
+        { ...reachable, area: 'none', saved: undefined, status: '1 regola attiva.', toast: undefined },
+      );
+      assert.deepEqual(
+        { ...covered, saved: undefined, toast: undefined, area: undefined },
+        { ...reachable, area: undefined, saved: undefined, status: '2 regole attive.', toast: undefined },
+      );
+      assert.deepEqual(
+        [property.saved, property.title, property.toast],
+        [overlay, true, '@property varrebbe anche per le impostazioni: il CSS non è applicato.'],
+      );
+      assert.deepEqual(bootValid.boot, ['@scope (.customizable) {\n.clock { color: rgb(1, 2, 3) }\n}']);
+      assert.deepEqual(bootFont.boot, []); // nor added later by js/appearance.js
+      assert.deepEqual(
+        [bootFontState.status, bootFontState.title, bootFontState.fabOnTop],
+        ['@font-face varrebbe anche per le impostazioni: il CSS non è applicato.', true, true],
+      );
+    },
+  );
+
   await check('clock options: 12-hour with AM/PM, seconds ticking, date hidden', async () => {
     const read = () =>
       a.eval(`({

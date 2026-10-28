@@ -137,10 +137,12 @@ your engine, without cookies, as Chrome's address bar does.
 - **Suggestions that do not get in the way.** They are requested after a 150 ms pause in typing, every keystroke
   cancels the previous request, answers are cached, and rows are never inserted while you are moving through the
   list. Offline, the box works as if they were off.
-- **Custom CSS that cannot lock you out.** Your rules are wrapped in `@scope (body) to (#settings)`: they reach the
-  whole page but never `html`, `body` or the settings drawer, so the settings always stay usable to fix a mistake. A
-  stray `}` that would let rules escape the scope is caught (the CSS is parsed in a constructable stylesheet first)
-  and the CSS is not applied.
+- **Custom CSS that cannot lock you out.** Your rules are wrapped in `@scope (.customizable)`, the container of the
+  wallpaper, the page and the Google apps. The settings button and the settings drawer sit outside it, and the button
+  stays above anything the CSS can place over it, so even `:scope { display: none }` leaves the settings usable to fix
+  a mistake. The CSS is parsed in a constructable stylesheet first, in the settings and before the first paint: a stray
+  `}` that would let rules escape the scope, or an at-rule that is global even inside it (`@property`,
+  `@font-face`…), is caught and the CSS is not applied.
 - **A calculator without `eval`.** The palette's math goes through a small recursive-descent parser: `eval` would be
   unsafe and is blocked by the extension's content security policy anyway.
 - **Pure logic, tested.** Search resolution, state validation, timer, stats, color extraction and ranking are pure

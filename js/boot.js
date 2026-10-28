@@ -44,13 +44,35 @@
         root.style.setProperty('--wallpaper', `url("assets/${saved.wallpaper}.webp")`);
       }
     }
-    // Custom CSS, with the @scope of js/custom-css.js: before the first paint, so what it hides never
-    // flashes. js/appearance.js removes it if a stray "}" let rules escape the scope.
+    // Custom CSS, with the @scope and the check of js/custom-css.js: before the first paint, so what
+    // it hides never flashes. Left out if a stray "}" or a global at-rule would reach the settings.
     if (typeof saved.customCSS === 'string' && saved.customCSS.trim()) {
-      const style = document.createElement('style');
-      style.id = 'custom-css';
-      style.textContent = `@scope (body) to (#settings) {\n${saved.customCSS}\n}`;
-      document.head.append(style);
+      const text = `@scope (.customizable) {\n${saved.customCSS}\n}`;
+      const scoped = [
+        'CSSStyleRule',
+        'CSSNestedDeclarations',
+        'CSSMediaRule',
+        'CSSSupportsRule',
+        'CSSContainerRule',
+        'CSSLayerBlockRule',
+        'CSSLayerStatementRule',
+        'CSSScopeRule',
+        'CSSStartingStyleRule',
+        'CSSKeyframesRule',
+        'CSSKeyframeRule',
+      ];
+      const inScope = (rules) =>
+        Array.from(rules).every(
+          (rule) => scoped.includes(rule.constructor.name) && inScope(rule.cssRules || []),
+        );
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(text);
+      if (sheet.cssRules.length === 1 && inScope(sheet.cssRules[0].cssRules)) {
+        const style = document.createElement('style');
+        style.id = 'custom-css';
+        style.textContent = text;
+        document.head.append(style);
+      }
     }
     const shade = Number(saved.shade);
     if (Number.isFinite(shade)) {

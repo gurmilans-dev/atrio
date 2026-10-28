@@ -15,9 +15,10 @@
 - **Clock options** (Settings → Page): 24- or 12-hour with AM/PM, seconds, and the date can be hidden. Seconds and
   AM/PM sit beside the big digits, smaller, so the layout keeps its shape; with seconds shown the clock updates once
   a second while the tab is visible (about 0.15% of a CPU core).
-- **Custom CSS** (Settings → Custom CSS), applied before the first paint. The rules reach the whole page but never
-  `html`, `body` or the settings, which always stay usable to fix them; a stray `}` that would let rules escape is
-  caught and the CSS is not applied.
+- **Custom CSS** (Settings → Custom CSS), applied before the first paint. The rules reach the wallpaper, the page and
+  the Google apps, never the settings or the button that opens them, which always stay usable to fix them: even
+  `:scope { display: none }` hides only the page. A stray `}` that would let rules escape, or an at-rule that is
+  global anyway (`@property`, `@font-face`…), is caught and the CSS is not applied.
 - **Several wallpapers of your own** (up to eight), each with its tile in Settings → Wallpaper, and an optional
   **rotation** through them: every day (the same image in every tab) or with every new tab (tabs already open keep
   theirs). The automatic theme keeps one extracted accent per image, so tabs showing different images never

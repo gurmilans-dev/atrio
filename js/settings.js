@@ -235,13 +235,16 @@ function render(state) {
   if (document.activeElement !== $('accent-input')) $('accent-input').value = state.customAccent.picked;
 }
 
+const cssError = (result) =>
+  result.error === 'global' ? t('css.global', { rule: result.rule }) : t('css.escape');
+
 function renderCSSStatus(css) {
   const result = css.trim() ? checkCSS(css) : null;
   const status = $('css-status');
   status.textContent = !result
     ? t('css.none')
     : result.error
-      ? t('css.escape')
+      ? cssError(result)
       : t('css.active', { n: result.rules });
   status.classList.toggle('error', Boolean(result?.error));
 }
@@ -252,7 +255,7 @@ function applyCSS() {
   const result = css.trim() ? checkCSS(css) : { rules: 0 };
   if (result.error) {
     renderCSSStatus(css);
-    announce(t('css.escape'));
+    announce(cssError(result));
     return;
   }
   update((state) => {

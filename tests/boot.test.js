@@ -4,13 +4,24 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import vm from 'node:vm';
-import { scopeCSS } from '../js/custom-css.js';
+import { checkCSS, scopeCSS } from '../js/custom-css.js';
 import { localDay, shownImage } from '../js/rotation.js';
 
 const source = readFileSync(new URL('../js/boot.js', import.meta.url), 'utf8');
 const KEY = 'workspace.newtab.v2';
 
-function boot(saved, storage = {}) {
+// Stands in for Chrome's CSS parser: the text parses to the rules a test gives.
+const rule = (name, cssRules = [], cssText = '') => ({ constructor: { name }, cssRules, cssText });
+const scoped = (...rules) => [rule('CSSScopeRule', rules)];
+const parsesTo = (cssRules) =>
+  class {
+    replaceSync(text) {
+      this.text = text;
+      this.cssRules = cssRules;
+    }
+  };
+
+function boot(saved, storage = {}, parsed = scoped(rule('CSSStyleRule'))) {
   const store = new Map(Object.entries({ [KEY]: JSON.stringify(saved), ...storage }));
   const properties = {};
   const head = [];
@@ -32,6 +43,7 @@ function boot(saved, storage = {}) {
       getItem: (key) => store.get(key) ?? null,
       setItem: (key, value) => store.set(key, value),
     },
+    CSSStyleSheet: parsesTo(parsed),
   });
   return { root, properties, store, head };
 }
@@ -80,6 +92,43 @@ test('custom CSS is applied with the same @scope as js/custom-css.js', () => {
   const { head } = boot({ customCSS: css });
   assert.deepEqual(head, [{ id: 'custom-css', textContent: scopeCSS(css) }]);
   assert.deepEqual(boot({ customCSS: '   ' }).head, []);
+});
+
+test('custom CSS that would reach the settings is left out before the first paint, as the settings refuse it', () => {
+  const css = '.clock { color: red }';
+  const cases = {
+    'nested rules, @media, @layer, @keyframes': [
+      scoped(
+        rule('CSSStyleRule', [rule('CSSNestedDeclarations')]),
+        rule('CSSMediaRule', [rule('CSSStyleRule')]),
+        rule('CSSLayerStatementRule'),
+        rule('CSSKeyframesRule', [rule('CSSKeyframeRule')]),
+      ),
+      { rules: 4 },
+    ],
+    'a stray brace': [[...scoped(rule('CSSStyleRule')), rule('CSSStyleRule')], { error: 'braces' }],
+    '@property inside @media': [
+      scoped(rule('CSSMediaRule', [rule('CSSPropertyRule', [], '@property --text { }')])),
+      { error: 'global', rule: '@property' },
+    ],
+    '@font-face': [
+      scoped(rule('CSSFontFaceRule', [], '@font-face { }')),
+      { error: 'global', rule: '@font-face' },
+    ],
+    'an at-rule not known here': [
+      scoped(rule('CSSFunctionRule', [], '@function --x() { }')),
+      { error: 'global', rule: '@function' },
+    ],
+  };
+  for (const [name, [parsed, expected]] of Object.entries(cases)) {
+    globalThis.CSSStyleSheet = parsesTo(parsed);
+    try {
+      assert.deepEqual(checkCSS(css), expected, name);
+    } finally {
+      delete globalThis.CSSStyleSheet;
+    }
+    assert.equal(boot({ customCSS: css }, {}, parsed).head.length, expected.error ? 0 : 1, name);
+  }
 });
 
 test('custom theme accent; an empty save changes nothing', () => {
