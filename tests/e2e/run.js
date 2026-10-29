@@ -245,11 +245,11 @@ try {
     assert.deepEqual(boot, { wallpaper: 'custom', ready: true, blob: true });
   });
 
-  await check('backup: export, reset, import (wallpaper included)', async () => {
+  await check('backup: export (azlune-backup-*.json), reset, import (wallpaper included)', async () => {
     const r = await a.eval(`(async () => {
-      let href;
+      let href, file;
       const click = HTMLAnchorElement.prototype.click;
-      HTMLAnchorElement.prototype.click = function () { if (this.download) href = this.href; else click.call(this); };
+      HTMLAnchorElement.prototype.click = function () { if (this.download) [href, file] = [this.href, this.download]; else click.call(this); };
       document.getElementById('export-data').click();
       for (let i = 0; i < 50 && !href; i++) await new Promise((resolve) => setTimeout(resolve, 100));
       HTMLAnchorElement.prototype.click = click;
@@ -269,10 +269,12 @@ try {
       await new Promise((resolve) => setTimeout(resolve, 600));
       document.getElementById('settings').close();
       const s = ${STATE};
-      return { app: payload.app, images: payload.wallpaperImages?.length, timer: 'timer' in payload.state, afterReset, tasks: s.tasks.length, wallpaper: s.wallpaper, own: s.customImages.length };
+      return { file, app: payload.app, images: payload.wallpaperImages?.length, timer: 'timer' in payload.state, afterReset, tasks: s.tasks.length, wallpaper: s.wallpaper, own: s.customImages.length };
     })()`);
+    assert.match(r.file, /^azlune-backup-\d{4}-\d{2}-\d{2}\.json$/);
+    delete r.file;
     assert.deepEqual(r, {
-      app: 'atrio',
+      app: 'atrio', // the format id, from the former name: Atrio reads Azlune's backups and the other way round
       images: 1,
       timer: false,
       afterReset: 0,
@@ -2192,6 +2194,90 @@ try {
 
   await a.eval(`localStorage.setItem('workspace.newtab.v2', ${JSON.stringify(beforeStyles)})`);
   await a.goto();
+
+  // A backup exported by Atrio 3.2.0, as the file was named and shaped then: no mode, style or rotation start yet,
+  // the "every new tab" rotation, one image of the user's.
+  await check('a backup from Atrio 3.2.0 (atrio-backup-*.json) restores everything in Azlune', async () => {
+    const r = await a.eval(`(async () => {
+      const canvas = new OffscreenCanvas(320, 200);
+      const context = canvas.getContext('2d');
+      context.fillStyle = '#336699';
+      context.fillRect(0, 0, 320, 200);
+      const image = await new Promise(async (resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.readAsDataURL(await canvas.convertToBlob({ type: 'image/png' }));
+      });
+      const backup = {
+        app: 'atrio',
+        version: '3.2.0',
+        exportedAt: '2026-10-28T09:00:00.000Z',
+        state: {
+          schema: 6, lang: 'auto', name: 'Ada', theme: 'mocha', wallpaper: 'custom', shade: 40, blur: 4, engine: 'ddg',
+          links: [{ id: 'l1', name: 'MDN', url: 'https://developer.mozilla.org/' }],
+          tasks: [{ id: 't1', text: 'Written in Atrio', done: false }, { id: 't2', text: 'Done in Atrio', done: true }],
+          notes: 'notes from 3.2.0',
+          prefixes: [{ key: 'jira', name: 'Jira', url: 'https://example.atlassian.net/browse/%s' }],
+          preset: 50, customPreset: { focus: 30, break: 6 }, rotation: 'tab',
+          customImages: ['w1'], customImage: 'w1',
+          stats: { total: 4, today: 1, day: '2026-10-28', history: { '2026-10-27': 3, '2026-10-28': 1 } },
+          clock: { hour12: true, seconds: false }, show: { heatmap: false },
+          apps: { visible: true, favorites: ['gmail', 'drive'], account: 1 },
+          rememberSearches: true, recent: ['atrio release notes'], suggest: false, mouseEffects: false,
+        },
+        wallpaperImages: [{ id: 'w1', image }],
+      };
+      window.confirm = () => true;
+      const transfer = new DataTransfer();
+      transfer.items.add(new File([JSON.stringify(backup)], 'atrio-backup-2026-10-28.json', { type: 'application/json' }));
+      const input = document.getElementById('import-file');
+      input.files = transfer.files;
+      input.dispatchEvent(new Event('change'));
+      for (let i = 0; i < 50 && JSON.parse(localStorage.getItem('workspace.newtab.v2')).notes !== 'notes from 3.2.0'; i++) await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      const s = ${STATE};
+      return {
+        name: s.name, theme: s.theme, wallpaper: s.wallpaper, shade: s.shade, blur: s.blur, engine: s.engine,
+        layout: s.layout, visualStyle: s.visualStyle, rotation: s.rotation,
+        links: s.links.map((l) => l.url), tasks: s.tasks.map((t) => [t.text, t.done]), notes: s.notes,
+        prefixes: s.prefixes.map((p) => p.key), preset: s.preset, customPreset: s.customPreset,
+        images: s.customImages.length, imageShown: document.documentElement.style.getPropertyValue('--wallpaper').includes('blob:'),
+        history: s.stats.history, total: s.stats.total, hour12: s.clock.hour12, heatmap: s.show.heatmap,
+        favorites: s.apps.favorites, account: s.apps.account, recent: s.recent,
+        page: { tasks: document.querySelectorAll('#task-list li').length, links: document.querySelectorAll('#links a').length },
+      };
+    })()`);
+    assert.deepEqual(r, {
+      name: 'Ada',
+      theme: 'mocha',
+      wallpaper: 'custom',
+      shade: 40,
+      blur: 4,
+      engine: 'ddg',
+      layout: 'developer',
+      visualStyle: 'classic',
+      rotation: 'daily',
+      links: ['https://developer.mozilla.org/'],
+      tasks: [
+        ['Written in Atrio', false],
+        ['Done in Atrio', true],
+      ],
+      notes: 'notes from 3.2.0',
+      prefixes: ['jira'],
+      preset: 50,
+      customPreset: { focus: 30, break: 6 },
+      images: 1,
+      imageShown: true,
+      history: { '2026-10-27': 3, '2026-10-28': 1 },
+      total: 4,
+      hour12: true,
+      heatmap: false,
+      favorites: ['gmail', 'drive'],
+      account: 1,
+      recent: ['atrio release notes'],
+      page: { tasks: 2, links: 1 },
+    });
+  });
 
   await check('narrow window (420 px): no horizontal scroll', async () => {
     await a.resize(420, 860);
