@@ -69,7 +69,7 @@ function demoToken() {
 
 // The Chrome Web Store set: Developer and Minimal, Classic and Glass, the developer tools, the
 // appearance settings. The Google apps launcher is turned off (Settings → Page), so the pictures show
-// Atrio's own features.
+// Azlune's own features.
 async function storeSet(page, shot) {
   const set = (patch) =>
     page.eval(`(() => {

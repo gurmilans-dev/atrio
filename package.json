@@ -1,8 +1,8 @@
 {
-  "name": "atrio",
+  "name": "azlune",
   "version": "3.3.0",
   "private": true,
-  "description": "Keyboard-first new tab for developers: command palette, focus timer with a GitHub-style heatmap, Google apps launcher. Vanilla JS, Manifest V3, zero dependencies.",
+  "description": "Azlune, a keyboard-first new tab for developers: command palette, focus timer with a GitHub-style heatmap, Google apps launcher. Vanilla JS, Manifest V3, zero dependencies.",
   "type": "module",
   "scripts": {
     "test": "node --test",

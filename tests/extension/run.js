@@ -105,16 +105,16 @@ try {
       const query = chrome.search.query.bind(chrome.search);
       chrome.search.query = (options) => (window.searchCalls.push(options), query(options));
     })()`);
-      await search('atrio extension smoke');
+      await search('azlune extension smoke');
       await page.press('Enter');
       await sleep(1500);
       const calls = await evaluate('window.searchCalls');
       const sent = page.navigations.splice(0);
       await page.goto();
       assert.equal(engine, 'chrome');
-      assert.deepEqual(calls, [{ text: 'atrio extension smoke', disposition: 'CURRENT_TAB' }]);
+      assert.deepEqual(calls, [{ text: 'azlune extension smoke', disposition: 'CURRENT_TAB' }]);
       assert.equal(sent.length, 1, JSON.stringify(sent));
-      assert.match(sent[0], /atrio(\+|%20)extension(\+|%20)smoke/);
+      assert.match(sent[0], /azlune(\+|%20)extension(\+|%20)smoke/);
       return new URL(sent[0]).hostname;
     },
   );
@@ -126,7 +126,7 @@ try {
       await page.eval(`(() => {
       chrome.search.query = () => Promise.reject(new Error('Search API failure (test)'));
     })()`);
-      await search('atrio failed search');
+      await search('azlune failed search');
       await page.press('Enter');
       await sleep(1500);
       const sent = page.navigations.splice(0);
@@ -138,7 +138,7 @@ try {
       await page.goto();
       assert.deepEqual(sent, []);
       assert.deepEqual(after, {
-        text: 'atrio failed search',
+        text: 'azlune failed search',
         toast:
           'La ricerca con il motore predefinito di Chrome non è riuscita: riprova, o scegli un motore in Impostazioni → Generale.',
         url,

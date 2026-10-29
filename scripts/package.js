@@ -1,4 +1,4 @@
-// Builds the Chrome Web Store package, atrio-<version>.zip at the root of the repository (ignored by
+// Builds the Chrome Web Store package, azlune-<version>.zip at the root of the repository (ignored by
 // git), then checks it.
 //   npm run package
 // Only what the extension loads goes in (RUNTIME below), with manifest.json at the root of the ZIP.
@@ -172,12 +172,12 @@ function check(files, version) {
 }
 
 const { version } = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'));
-const target = join(ROOT, `atrio-${version}.zip`);
+const target = join(ROOT, `azlune-${version}.zip`);
 const buffer = zip(runtimeFiles().map((name) => ({ name, data: contentOf(name) })));
 writeFileSync(target, buffer);
 
 const files = unzip(readFileSync(target));
-const folder = mkdtempSync(join(tmpdir(), `atrio-${version}-`));
+const folder = mkdtempSync(join(tmpdir(), `azlune-${version}-`));
 for (const [name, data] of files) {
   mkdirSync(dirname(join(folder, name)), { recursive: true });
   writeFileSync(join(folder, name), data);

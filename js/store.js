@@ -14,7 +14,7 @@
 import { STORAGE_KEY } from './config.js';
 import { loadState, serialize } from './state.js';
 
-const LOCK = 'atrio-state';
+const LOCK = 'atrio-state'; // from the former name: every open tab, of any version, must ask for the same lock
 const listeners = new Set();
 let committed; // the state as last read from, or written to, storage
 let state; // committed plus the queued changes: what this tab shows

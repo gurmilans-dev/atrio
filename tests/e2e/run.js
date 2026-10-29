@@ -947,7 +947,7 @@ try {
       { added, reserved, badUrl, saved, search, alone, after },
       {
         added: 'Prefisso “jira” aggiunto.',
-        reserved: '“gh” è già usato da Atrio: scegli un altro prefisso.',
+        reserved: '“gh” è già usato da Azlune: scegli un altro prefisso.',
         badUrl: 'Indirizzo non valido: serve un URL http o https con %s dove va il testo, fuori dal dominio.',
         saved: [{ key: 'jira', name: 'Jira', url: 'https://acme.atlassian.net/browse/%s' }],
         search: '→ Jira',
@@ -991,7 +991,7 @@ try {
           `const s = document.getElementById('search-engine'); s.value = '${engine}'; s.dispatchEvent(new Event('change'))`,
         ),
       );
-    // With Chrome's own engine (the default) the switch is off limits: Atrio does not know its provider.
+    // With Chrome's own engine (the default) the switch is off limits: Azlune does not know its provider.
     const disabledForChrome = await a.eval(`document.getElementById('suggest-toggle').disabled`);
     await chooseEngine('google');
     // The engine is faked: the test must not depend on the network.
@@ -1554,7 +1554,7 @@ try {
 
   await check('two documents adding a task in the same JavaScript task both keep it', async () => {
     const r = await a.eval(`(async () => {
-      // Two more Atrio documents on the same origin: same storage, same locks, separate copies.
+      // Two more Azlune documents on the same origin: same storage, same locks, separate copies.
       const frames = await Promise.all(['A', 'B'].map(() => new Promise((resolve) => {
         const frame = document.createElement('iframe');
         frame.style.cssText = 'position: fixed; left: -2000px; width: 900px; height: 700px';

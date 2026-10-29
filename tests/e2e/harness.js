@@ -265,7 +265,7 @@ async function openPage(cdp, url, { width, height }) {
 /** `lang` is the browser language, which the page's "auto" language follows. */
 export async function launch(root, { width = 1440, height = 900, lang = 'it-IT' } = {}) {
   const server = await serve(root);
-  const profile = await mkdtemp(path.join(tmpdir(), 'atrio-e2e-'));
+  const profile = await mkdtemp(path.join(tmpdir(), 'azlune-e2e-'));
   const chrome = spawn(
     findChrome(),
     [
@@ -301,7 +301,7 @@ export async function launch(root, { width = 1440, height = 900, lang = 'it-IT' 
  * Extensions.loadUnpacked on a DevTools pipe with --enable-unsafe-extension-debugging.
  */
 export async function launchExtension(root, { width = 1440, height = 900, lang = 'it-IT' } = {}) {
-  const profile = await mkdtemp(path.join(tmpdir(), 'atrio-extension-'));
+  const profile = await mkdtemp(path.join(tmpdir(), 'azlune-extension-'));
   const chrome = spawn(
     findChrome(),
     [

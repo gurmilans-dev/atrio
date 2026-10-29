@@ -227,7 +227,7 @@ function render(state) {
   $('recent-toggle').checked = state.rememberSearches;
   $('suggest-toggle').checked = state.suggest;
   // Suggestions come from Google or DuckDuckGo: not offered for Chrome's own engine, whose provider
-  // Atrio does not know.
+  // Azlune does not know.
   $('suggest-toggle').disabled = !hasSuggestions(state.engine);
   $('clear-recent').hidden = state.recent.length === 0;
   $('language-select').value = state.lang;
@@ -352,6 +352,8 @@ async function removeWallpaper() {
 async function exportData() {
   const state = { ...getState() };
   delete state.timer; // a running session is not worth restoring
+  // "atrio" names the backup format, from the extension's former name: kept so that every version reads
+  // the backups of every other.
   const payload = { app: 'atrio', version: appVersion(), exportedAt: new Date().toISOString(), state };
   const images = [];
   for (const id of state.customImages) {
@@ -363,7 +365,7 @@ async function exportData() {
   const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
   const link = el('a');
   link.href = url;
-  link.download = `atrio-backup-${dayKey(new Date())}.json`;
+  link.download = `azlune-backup-${dayKey(new Date())}.json`;
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
   announce(t('backup.exported'));
@@ -385,8 +387,8 @@ async function importData(file) {
     announce(t('backup.invalidJson'));
     return;
   }
-  // Accepts Atrio backups, those made when the project was called Workspace (old files may still
-  // be around), and raw state.
+  // Accepts Azlune backups (format "atrio", from the former name), those made when the project was called
+  // Workspace (old files may still be around), and raw state.
   const raw = ['atrio', 'workspace'].includes(payload?.app) ? payload.state : payload;
   if (typeof raw !== 'object' || raw === null || !('links' in raw || 'tasks' in raw)) {
     announce(t('backup.notAtrio'));
@@ -709,7 +711,7 @@ export function initSettings() {
   $('export-data').addEventListener('click', exportBackup);
   $('import-data').addEventListener('click', chooseBackup);
   $('reset-data').addEventListener('click', resetAll);
-  $('app-version').textContent = `Atrio ${appVersion()}`;
+  $('app-version').textContent = `Azlune ${appVersion()}`;
 
   render(getState());
   subscribe(render);

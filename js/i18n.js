@@ -101,7 +101,7 @@ const it = {
   'prefixes.updated': 'Prefisso “{key}” aggiornato.',
   'prefixes.removed': 'Prefisso “{key}” rimosso.',
   'prefixes.invalidKey': 'Prefisso non valido: lettere e numeri senza spazi, iniziando con una lettera.',
-  'prefixes.reserved': '“{key}” è già usato da Atrio: scegli un altro prefisso.',
+  'prefixes.reserved': '“{key}” è già usato da Azlune: scegli un altro prefisso.',
   'prefixes.taken': 'Il prefisso “{key}” esiste già: usa Modifica per cambiarlo.',
   'prefixes.invalidUrl':
     'Indirizzo non valido: serve un URL http o https con %s dove va il testo, fuori dal dominio.',
@@ -214,7 +214,7 @@ const it = {
   'layout.minimalNote': 'Orologio, ricerca e collegamenti in un’interfaccia essenziale.',
   'settings.style': 'Stile visivo',
   'style.classic': 'Classic',
-  'style.classicNote': 'L’aspetto originale di Atrio.',
+  'style.classicNote': 'L’aspetto originale di Azlune.',
   'style.glass': 'Glass',
   'style.glassNote': 'Superfici traslucide e profondità.',
   'settings.pageMinimalNote':
@@ -239,7 +239,7 @@ const it = {
   'css.global': '{rule} varrebbe anche per le impostazioni: il CSS non è applicato.',
   'css.cleared': 'CSS personale rimosso.',
   'settings.dataNote':
-    'Il backup contiene collegamenti, attività, note, ricerche recenti, preferenze e sfondo personale. Questi dati restano in questo browser: Atrio non ha un server e non li invia a nessuno.',
+    'Il backup contiene collegamenti, attività, note, ricerche recenti, preferenze e sfondo personale. Questi dati restano in questo browser: Azlune non ha un server e non li invia a nessuno.',
   'settings.export': 'Esporta backup',
   'settings.import': 'Importa backup',
   'settings.reset': 'Ripristina impostazioni e dati',
@@ -281,7 +281,7 @@ const it = {
   'backup.exportFailed': 'Esportazione non riuscita.',
   'backup.tooBig': 'File troppo grande per essere un backup.',
   'backup.invalidJson': 'Il file non è un JSON valido.',
-  'backup.notAtrio': 'Questo file non sembra un backup di Atrio.',
+  'backup.notAtrio': 'Questo file non sembra un backup di Azlune.',
   'backup.confirmImport': 'Importare il backup? Sostituirà impostazioni, collegamenti e attività attuali.',
   'backup.imported': 'Backup importato.',
   'backup.importedNoImage': 'Backup importato, ma non lo sfondo personale.',
@@ -501,7 +501,7 @@ const en = {
   'prefixes.updated': 'Prefix “{key}” updated.',
   'prefixes.removed': 'Prefix “{key}” removed.',
   'prefixes.invalidKey': 'Invalid prefix: letters and digits without spaces, starting with a letter.',
-  'prefixes.reserved': '“{key}” is already used by Atrio: pick another prefix.',
+  'prefixes.reserved': '“{key}” is already used by Azlune: pick another prefix.',
   'prefixes.taken': 'The prefix “{key}” already exists: use Edit to change it.',
   'prefixes.invalidUrl':
     'Invalid address: use an http or https URL with %s where the text goes, outside the domain.',
@@ -613,7 +613,7 @@ const en = {
   'layout.minimalNote': 'Clock, search and links in an essential interface.',
   'settings.style': 'Visual style',
   'style.classic': 'Classic',
-  'style.classicNote': 'Atrio’s original appearance.',
+  'style.classicNote': 'Azlune’s original appearance.',
   'style.glass': 'Glass',
   'style.glassNote': 'Translucent surfaces and depth.',
   'settings.pageMinimalNote':
@@ -638,7 +638,7 @@ const en = {
   'css.global': '{rule} would reach the settings too: the CSS is not applied.',
   'css.cleared': 'Custom CSS removed.',
   'settings.dataNote':
-    'The backup contains links, tasks, notes, recent searches, preferences and your wallpaper. This data stays in this browser: Atrio has no server and sends it nowhere.',
+    'The backup contains links, tasks, notes, recent searches, preferences and your wallpaper. This data stays in this browser: Azlune has no server and sends it nowhere.',
   'settings.export': 'Export backup',
   'settings.import': 'Import backup',
   'settings.reset': 'Reset settings and data',
@@ -680,7 +680,7 @@ const en = {
   'backup.exportFailed': 'Export failed.',
   'backup.tooBig': 'This file is too large to be a backup.',
   'backup.invalidJson': 'This file is not valid JSON.',
-  'backup.notAtrio': 'This does not look like an Atrio backup.',
+  'backup.notAtrio': 'This does not look like an Azlune backup.',
   'backup.confirmImport': 'Import this backup? It replaces your current settings, links and tasks.',
   'backup.imported': 'Backup imported.',
   'backup.importedNoImage': 'Backup imported, except the wallpaper.',

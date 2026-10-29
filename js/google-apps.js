@@ -1,6 +1,6 @@
 // Catalog for the Google apps launcher (js/apps.js). The services keep their names and addresses, not
 // their icons: each one is a generic symbol of what the service does (an envelope, a folder, a grid…) on a
-// rounded tile, drawn in Atrio's accent color by style.css (.app-tile, .app-glyph), never in a product's own
+// rounded tile, drawn in Azlune's accent color by style.css (.app-tile, .app-glyph), never in a product's own
 // shapes or colors. Nodes are [tag, attributes, children]; "{day}" in a text node becomes today's date.
 
 const tile = ['rect', { class: 'app-tile', x: 2, y: 2, width: 20, height: 20, rx: 6 }];

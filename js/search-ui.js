@@ -171,7 +171,7 @@ const commandItem = (command) => ({
   run: command.run,
 });
 
-// "Search the web" for Chrome's own provider (Atrio does not know its name), "Search Google" otherwise.
+// "Search the web" for Chrome's own provider (Azlune does not know its name), "Search Google" otherwise.
 const searchDetail = (label) => (label ? t('result.searchOn', { target: label }) : t('result.searchWeb'));
 
 function primaryItem(result, text) {
