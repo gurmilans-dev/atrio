@@ -2,7 +2,8 @@
 
 ## 3.3.0
 
-Not released yet: the date is added when this version is published on the Chrome Web Store.
+Not released yet: the date is added when this version is published on the Chrome Web Store. First release under the
+new name **Azlune** (previously "Atrio").
 
 ### Added
 
@@ -14,7 +15,7 @@ Not released yet: the date is added when this version is published on the Chrome
   their commands) open the tasks, notes or timer panel over the page, closed with `Esc` or a click elsewhere. The mode
   is applied before the first paint, saved with the settings, followed by the other open tabs and kept in backups;
   saves from earlier versions open in Developer. The palette can switch it too.
-- **Visual styles** (Settings → Appearance → Visual style). **Classic** is Atrio's look as before; **Glass** makes the
+- **Visual styles** (Settings → Appearance → Visual style). **Classic** is the look of earlier versions; **Glass** makes the
   panels, link cards, search box, menus, popovers and the settings translucent over the blurred wallpaper, with thin
   bright edges, a soft sheen, diffuse shadows and softer corners. It works in both interface modes and with every
   theme, and the edges take the accent of the automatic and custom themes. The glass is smoked, so text stays readable
@@ -30,6 +31,9 @@ Not released yet: the date is added when this version is published on the Chrome
 
 ### Changed
 
+- **New name: Azlune**, formerly Atrio. Only the name changes: the logo, the features, the stored data and the
+  backups stay as they were. Backups exported by Atrio import as before; new ones are named
+  `azlune-backup-<date>.json`.
 - Settings → Wallpaper has one way to add an image, the **Add** tile, with the accepted formats under the tiles; the
   separate "Upload image" button, which did the same, is gone.
 - The wallpaper rotation is a switch, **Change wallpaper every day**: one of your images a day, the same in every tab.

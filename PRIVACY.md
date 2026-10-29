@@ -1,30 +1,31 @@
-# Atrio privacy policy
+# Azlune privacy policy
 
-Effective 28 October 2026. This policy covers the Atrio browser extension, as published on the Chrome Web Store and
-in this repository. [Italiano più sotto](#informativa-sulla-privacy-di-atrio).
+Effective 28 October 2026, updated 29 October 2026 for the new name only. This policy covers the Azlune browser
+extension (called Atrio until version 3.3.0), as published on the Chrome Web Store and in this repository.
+[Italiano più sotto](#informativa-sulla-privacy-di-azlune).
 
 ## In short
 
-- Atrio has no server. Its developer receives none of your data: there is no account, no analytics, no telemetry and
+- Azlune has no server. Its developer receives none of your data: there is no account, no analytics, no telemetry and
   no advertising.
-- What you enter in Atrio is stored by your browser, on your device, and stays there until you delete it.
+- What you enter in Azlune is stored by your browser, on your device, and stays there until you delete it.
 - Data leaves your device only when you act: when you search or open a link, the site you go to receives that
   request, as with any navigation; and, only if you turn them on, online search suggestions send what you type to
   Google or DuckDuckGo.
 
-## What Atrio stores, and where
+## What Azlune stores, and where
 
 Everything below is kept in the extension's own storage in your browser (`localStorage` and IndexedDB). Websites
 cannot read it.
 
-| Data                                                                                                                                                                                                         | Kept until                                                                     |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| Your name, preferences, quick links, search prefixes, tasks, notes, custom CSS, the focus timer and its statistics (daily counts for up to 140 days), the Google account number chosen for the apps launcher | You change it, reset Atrio or uninstall it                                     |
-| Recent searches: up to 30, of up to 200 characters each                                                                                                                                                      | You clear them, turn them off (which clears them), reset Atrio or uninstall it |
-| Your own wallpapers: up to eight images                                                                                                                                                                      | You remove them, reset Atrio or uninstall it                                   |
-| A copy of a save that could not be read, kept so that nothing is silently lost                                                                                                                               | You reset Atrio or uninstall it                                                |
+| Data                                                                                                                                                                                                         | Kept until                                                                      |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
+| Your name, preferences, quick links, search prefixes, tasks, notes, custom CSS, the focus timer and its statistics (daily counts for up to 140 days), the Google account number chosen for the apps launcher | You change it, reset Azlune or uninstall it                                     |
+| Recent searches: up to 30, of up to 200 characters each                                                                                                                                                      | You clear them, turn them off (which clears them), reset Azlune or uninstall it |
+| Your own wallpapers: up to eight images                                                                                                                                                                      | You remove them, reset Azlune or uninstall it                                   |
+| A copy of a save that could not be read, kept so that nothing is silently lost                                                                                                                               | You reset Azlune or uninstall it                                                |
 
-Atrio does not read your browsing history, your cookies or the content of the sites you visit.
+Azlune does not read your browsing history, your cookies or the content of the sites you visit.
 
 ## When data leaves your device
 
@@ -32,7 +33,7 @@ Atrio does not read your browsing history, your cookies or the content of the si
   Google, DuckDuckGo or GitHub in Settings, or used a search prefix (such as `gh` or `npm`), it goes to that site
   instead. That site receives your query as with any search, and its privacy policy applies.
 - **Links and the Google apps launcher.** Opening a link or an app takes you to that site. The launcher adds the
-  account number you picked (`authuser`) to the address: Atrio never signs in and has no access to your Google
+  account number you picked (`authuser`) to the address: Azlune never signs in and has no access to your Google
   accounts.
 - **Online search suggestions, off by default.** If you turn them on, what you type in the search box is sent, as you
   type, to the suggestion service of your search engine: Google (`suggestqueries.google.com`) or DuckDuckGo
@@ -53,7 +54,7 @@ data, after asking you.
 
 ## Deleting your data
 
-- **Settings → Data → Reset settings and data** deletes everything Atrio stores, wallpapers included.
+- **Settings → Data → Reset settings and data** deletes everything Azlune stores, wallpapers included.
 - **Settings → General → Clear recent searches** deletes the recent searches alone.
 - Uninstalling the extension makes the browser delete all of its storage.
 
@@ -79,33 +80,34 @@ Questions about this policy: open an issue at <https://github.com/gurmilans-dev/
 
 ---
 
-# Informativa sulla privacy di Atrio
+# Informativa sulla privacy di Azlune
 
-In vigore dal 28 ottobre 2026. Questa informativa riguarda l'estensione Atrio, come pubblicata sul Chrome Web Store e
-in questo repository.
+In vigore dal 28 ottobre 2026, aggiornata il 29 ottobre 2026 solo per il nuovo nome. Questa informativa riguarda
+l'estensione Azlune (chiamata Atrio fino alla versione 3.3.0), come pubblicata sul Chrome Web Store e in questo
+repository.
 
 ## In breve
 
-- Atrio non ha un server. Lo sviluppatore non riceve nessun tuo dato: niente account, statistiche d'uso, telemetria o
+- Azlune non ha un server. Lo sviluppatore non riceve nessun tuo dato: niente account, statistiche d'uso, telemetria o
   pubblicità.
-- Quello che inserisci in Atrio è salvato dal browser, sul tuo dispositivo, e ci resta finché non lo cancelli.
+- Quello che inserisci in Azlune è salvato dal browser, sul tuo dispositivo, e ci resta finché non lo cancelli.
 - I dati escono dal dispositivo solo per una tua azione: quando cerchi o apri un collegamento, il sito di destinazione
   riceve quella richiesta, come in ogni navigazione; e, solo se li attivi, i suggerimenti di ricerca online inviano
   quello che scrivi a Google o DuckDuckGo.
 
-## Cosa salva Atrio, e dove
+## Cosa salva Azlune, e dove
 
 Tutto ciò che segue resta nello spazio dell'estensione nel tuo browser (`localStorage` e IndexedDB). I siti web non
 possono leggerlo.
 
-| Dati                                                                                                                                                                                                                     | Conservati finché                                                                     |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
-| Nome, preferenze, collegamenti rapidi, prefissi di ricerca, attività, note, CSS personale, il timer focus e le sue statistiche (conteggi giornalieri fino a 140 giorni), il numero dell'account Google scelto per le app | Non li modifichi, ripristini Atrio o lo disinstalli                                   |
-| Ricerche recenti: fino a 30, di 200 caratteri al massimo                                                                                                                                                                 | Non le cancelli, le disattivi (il che le cancella), ripristini Atrio o lo disinstalli |
-| Sfondi personali: fino a otto immagini                                                                                                                                                                                   | Non li rimuovi, ripristini Atrio o lo disinstalli                                     |
-| Una copia di un salvataggio illeggibile, tenuta perché niente vada perso in silenzio                                                                                                                                     | Non ripristini Atrio o lo disinstalli                                                 |
+| Dati                                                                                                                                                                                                                     | Conservati finché                                                                      |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| Nome, preferenze, collegamenti rapidi, prefissi di ricerca, attività, note, CSS personale, il timer focus e le sue statistiche (conteggi giornalieri fino a 140 giorni), il numero dell'account Google scelto per le app | Non li modifichi, ripristini Azlune o lo disinstalli                                   |
+| Ricerche recenti: fino a 30, di 200 caratteri al massimo                                                                                                                                                                 | Non le cancelli, le disattivi (il che le cancella), ripristini Azlune o lo disinstalli |
+| Sfondi personali: fino a otto immagini                                                                                                                                                                                   | Non li rimuovi, ripristini Azlune o lo disinstalli                                     |
+| Una copia di un salvataggio illeggibile, tenuta perché niente vada perso in silenzio                                                                                                                                     | Non ripristini Azlune o lo disinstalli                                                 |
 
-Atrio non legge la cronologia, i cookie o il contenuto dei siti che visiti.
+Azlune non legge la cronologia, i cookie o il contenuto dei siti che visiti.
 
 ## Quando i dati escono dal dispositivo
 
@@ -113,7 +115,7 @@ Atrio non legge la cronologia, i cookie o il contenuto dei siti che visiti.
   Impostazioni hai scelto Google, DuckDuckGo o GitHub, o hai usato un prefisso (come `gh` o `npm`), va invece a quel
   sito. Il sito riceve la ricerca come in ogni altra ricerca, e vale la sua informativa.
 - **Collegamenti e app Google.** Aprire un collegamento o un'app porta a quel sito. Il launcher aggiunge all'indirizzo
-  il numero dell'account scelto (`authuser`): Atrio non accede mai ai tuoi account Google.
+  il numero dell'account scelto (`authuser`): Azlune non accede mai ai tuoi account Google.
 - **Suggerimenti di ricerca online, disattivati in partenza.** Se li attivi, quello che scrivi nella casella di ricerca
   viene inviato, mentre scrivi, al servizio di suggerimenti del motore scelto: Google (`suggestqueries.google.com`) o
   DuckDuckGo (`duckduckgo.com`). Le richieste viaggiano in HTTPS, senza cookie e senza referrer, ma il servizio vede il
@@ -134,7 +136,7 @@ dopo averti chiesto conferma.
 
 ## Cancellare i dati
 
-- **Impostazioni → Dati → Ripristina impostazioni e dati** cancella tutto ciò che Atrio salva, sfondi compresi.
+- **Impostazioni → Dati → Ripristina impostazioni e dati** cancella tutto ciò che Azlune salva, sfondi compresi.
 - **Impostazioni → Generale → Cancella le ricerche recenti** cancella solo le ricerche recenti.
 - Disinstallando l'estensione, il browser cancella tutto il suo spazio di archiviazione.
 

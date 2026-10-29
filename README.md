@@ -2,9 +2,10 @@
   <img src="assets/icons/icon-128.png" width="88" height="88" alt="" />
 </p>
 
-<h1 align="center">Atrio</h1>
+<h1 align="center">Azlune</h1>
 
 <p align="center">
+  <strong>Your new tab. Your space.</strong><br />
   A keyboard-first new tab for developers. Fast, local, zero dependencies.
 </p>
 
@@ -15,15 +16,18 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license" /></a>
 </p>
 
-![Atrio: clock, smart search, quick links, focus timer with heatmap, tasks](docs/home.webp)
+![Azlune: clock, smart search, quick links, focus timer with heatmap, tasks](docs/home.webp)
 
-Atrio replaces Chrome's new tab page with a calm place to start from: a search box that understands code and
+Azlune replaces Chrome's new tab page with a calm place to start from: a search box that understands code and
 dev URLs, a command palette, quick links, a focus timer with a GitHub-style activity heatmap, tasks and notes, and a
 Google apps launcher. It is plain HTML, CSS and JavaScript modules: no framework, no build step, no tracking, and no
 network requests unless you turn on online search suggestions.
 
 > The interface is in English and Italian. It follows the browser language; you can also pick one in
 > **Settings → General**.
+
+> Azlune was called **Atrio** until version 3.3.0. Only the name changed: settings, data and backups made with Atrio
+> carry over as they are.
 
 ## Features
 
@@ -80,7 +84,7 @@ network requests unless you turn on online search suggestions.
 - **Minimal**, a quiet new tab: a large clock and the date, the search box, and your links as a row of icons (their
   favicons, or their initials), each name shown on hover. Past eight links, a `+n` icon lists the others.
 
-![Atrio in Minimal mode: clock, date, search box and links as icons](docs/minimal.webp)
+![Azlune in Minimal mode: clock, date, search box and links as icons](docs/minimal.webp)
 
 A mode is a layout, not a profile. Themes, wallpapers and the parts chosen in Settings → Page apply to both, and
 switching loses nothing: the links, tasks, notes, timer and settings are the same in both. Minimal keeps every feature:
@@ -92,11 +96,11 @@ follows in the tabs already open, and comes back with a backup.
 
 **Settings → Appearance → Visual style** changes how the surfaces are drawn, in either mode and with any theme:
 
-- **Classic**, Atrio's original look, as in the screenshots above.
+- **Classic**, Azlune's original look, as in the screenshots above.
 - **Glass**: the panels, link cards, search box, menus and popovers turn translucent over the blurred wallpaper, with
   thin bright edges, a soft sheen, diffuse shadows and softer corners.
 
-![Atrio in the Glass style, in Developer mode on the Liquid Glass wallpaper](docs/glass.webp)
+![Azlune in the Glass style, in Developer mode on the Liquid Glass wallpaper](docs/glass.webp)
 
 The glass is smoked: what shows through is dimmed and its colors saturated, so the wallpaper glows behind the surfaces
 while their text stays readable, even on bright wallpapers (measured on every theme and built-in wallpaper, the muted
@@ -141,7 +145,7 @@ again, then import the backup. From then on the ID no longer depends on where th
 
 ## Privacy and permissions
 
-Your data stays in the browser (`localStorage` and IndexedDB): Atrio has no server, no analytics and no telemetry. It
+Your data stays in the browser (`localStorage` and IndexedDB): Azlune has no server, no analytics and no telemetry. It
 makes no network requests of its own: it only navigates when you search or open a link. The one exception is opt-in: with **online search suggestions** turned on
 (Settings → General, off by default), what you type in the search box is sent to Google or DuckDuckGo, whichever is
 your engine, without cookies, as Chrome's address bar does.
@@ -216,7 +220,7 @@ Requires Node.js 22+. There is nothing to install: the tools run through `npx`.
 | `npm run check`          | Unit tests, lint and formatting check (what CI runs)                                                                                                                            |
 | `npm run screenshots`    | Regenerate the images in `docs/` with demo data; `-- --store` for the Chrome Web Store set in `docs/store/<version>/`: five 1280 × 800 screenshots and the 440 × 280 promo tile |
 | `npm run icons`          | Render the PNG icons from `assets/icons/icon.svg`                                                                                                                               |
-| `npm run package`        | Build `atrio-<version>.zip` for the Chrome Web Store (runtime files only, no `key`), extract it to a temporary folder and check it                                              |
+| `npm run package`        | Build `azlune-<version>.zip` for the Chrome Web Store (runtime files only, no `key`), extract it to a temporary folder and check it                                             |
 
 To work on the UI without reloading the extension, serve the folder (e.g. `npx serve .`) and open `index.html`: the
 page runs outside the extension too, just without notifications, site icons, online suggestions and `chrome://`
@@ -245,8 +249,8 @@ scripts/             icons, screenshots, extension key, Store package
 ## License
 
 [MIT](LICENSE). The Workstation and City wallpapers are the author's own images. Deep Space, Warm Sand, Sunrise Lake and
-Liquid Glass were generated with AI for Atrio, not taken from a stock library; see
+Liquid Glass were generated with AI for this project (then called Atrio), not taken from a stock library; see
 [their provenance note](docs/IMAGE_PROVENANCE.txt) and
-[the Chrome Web Store notes](docs/CHROME_WEB_STORE_LISTING.md#assets-and-trademarks). Atrio is not affiliated with
+[the Chrome Web Store notes](docs/CHROME_WEB_STORE_LISTING.md#assets-and-trademarks). Azlune is not affiliated with
 Google. Google product names belong to their owners; the launcher shows them with generic symbols made for this project,
 not with Google's product icons.
