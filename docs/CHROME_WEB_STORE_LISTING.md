@@ -1,14 +1,14 @@
 # Chrome Web Store submission
 
-What to upload and what to fill in the Developer Dashboard for Atrio 3.3.0. Texts in quotes are ready to paste. Items
-marked **Decide** or **Check** cannot be settled from the code and are the maintainer's call; the
-[checklist](#dashboard-checklist) at the end lists them in order.
+What to upload and what to fill in the Developer Dashboard for Azlune 3.3.0, the first version under that name (it was
+called Atrio before). Texts in quotes are ready to paste. Items marked **Decide** or **Check** cannot be settled from
+the code and are the maintainer's call; the [checklist](#dashboard-checklist) at the end lists them in order.
 
 ## Package
 
 - Version `3.3.0` (`manifest.json`, `package.json`). It must be higher than any version already uploaded to the item:
   **Check** the Dashboard's package history (3.2.0 may or may not have been uploaded; this repository cannot tell).
-- Build it with `npm run package`. It writes `atrio-3.3.0.zip` at the root of the repository (`*.zip` is ignored by
+- Build it with `npm run package`. It writes `azlune-3.3.0.zip` at the root of the repository (`*.zip` is ignored by
   git), then reads it back, extracts it to a new temporary folder and checks it:
   - only the runtime files: `manifest.json`, `index.html`, `style.css`, `background.js`, `LICENSE`, `js/`, `assets/`
     (the six wallpapers and the icons) and `_locales/`, with `manifest.json` at the root of the ZIP;
@@ -26,12 +26,13 @@ marked **Decide** or **Check** cannot be settled from the code and are the maint
 
 ## Store listing
 
-- **Name:** Atrio (from the manifest).
+- **Name:** "Azlune — Developer New Tab", from the manifest (26 characters; `short_name` "Azlune" where space is
+  short).
 - **Summary:** the localized `appDescription` in `_locales/` (limit 132 characters):
-  - English (129): "A keyboard-first new tab for developers: smart search, quick links, focus timer and tasks. Local data, opt-in
-    online suggestions."
-  - Italian (131): "Nuova scheda per developer: ricerca intelligente, collegamenti, timer focus e attività. Dati locali,
-    suggerimenti online opzionali."
+  - English (126): "A keyboard-first new tab for developers: smart search, links, local dev tools, focus timer,
+    themes. Opt-in online suggestions."
+  - Italian (126): "Nuova scheda per developer: ricerca intelligente, collegamenti, strumenti locali, timer e temi.
+    Suggerimenti online opzionali."
 - **Category:** Developer Tools.
 - **Languages:** English (default) and Italian.
 - **Store icon:** `assets/icons/icon-128.png` (also in the package).
@@ -44,14 +45,17 @@ marked **Decide** or **Check** cannot be settled from the code and are the maint
 
   They come from the page itself with demo data (`npm run screenshots -- --store`): a made-up token, sample tasks,
   the default links, shown as initials because site icons need the installed extension. The Google apps launcher is
-  turned off in them, through its own setting, so they show Atrio's own features.
+  turned off in them, through its own setting, so they show Azlune's own features. No screenshot shows the product's
+  name, so the set made before the rename stays accurate.
 
 - **Small promo tile** (440 × 280, optional): `docs/store/3.3.0/promo-440x280.png`, a 24-bit PNG without alpha, made
-  from Atrio's own icon, name and colors (`scripts/promo-tile.html`). Without one, the Store shows the item without its
-  tile; there is no marquee image (1400 × 560, also optional).
+  from Azlune's own icon, name, tagline ("Your new tab. Your space.") and colors (`scripts/promo-tile.html`).
+  Without one, the Store shows the item without its tile; there is no marquee image (1400 × 560, also optional).
 - **Detailed description** (English):
 
-  > Atrio replaces the new tab page with a calm, keyboard-first workspace for developers.
+  > Your new tab. Your space.
+  >
+  > Azlune replaces the new tab page with a calm, keyboard-first workspace for developers.
   >
   > TWO MODES, TWO STYLES
   >
@@ -86,16 +90,18 @@ marked **Decide** or **Check** cannot be settled from the code and are the maint
   >
   > PRIVACY
   >
-  > Your data stays in your browser: Atrio has no server, no account, no analytics and no ads. Online search
+  > Your data stays in your browser: Azlune has no server, no account, no analytics and no ads. Online search
   > suggestions are off by default; if you turn them on, what you type in the search box is sent to Google or
   > DuckDuckGo, whichever is your search engine, as your browser's address bar does. The searches you run and the links
   > you open go to the sites you chose.
   >
-  > Atrio is not affiliated with Google.
+  > Azlune is not affiliated with Google.
 
 - **Detailed description** (Italian):
 
-  > Atrio sostituisce la nuova scheda con uno spazio di lavoro tranquillo per sviluppatori, pensato per la tastiera.
+  > La tua nuova scheda. Il tuo spazio.
+  >
+  > Azlune sostituisce la nuova scheda con uno spazio di lavoro tranquillo per sviluppatori, pensato per la tastiera.
   >
   > DUE MODALITÀ, DUE STILI
   >
@@ -133,21 +139,21 @@ marked **Decide** or **Check** cannot be settled from the code and are the maint
   >
   > PRIVACY
   >
-  > I tuoi dati restano nel browser: Atrio non ha server, account, statistiche d'uso o pubblicità. I suggerimenti di
+  > I tuoi dati restano nel browser: Azlune non ha server, account, statistiche d'uso o pubblicità. I suggerimenti di
   > ricerca online sono spenti in partenza; se li attivi, quello che scrivi nella casella di ricerca viene inviato a
   > Google o DuckDuckGo, a seconda del motore scelto, come fa la barra degli indirizzi. Le ricerche che fai e i
   > collegamenti che apri vanno ai siti che hai scelto.
   >
-  > Atrio non è affiliato a Google.
+  > Azlune non è affiliato a Google.
 
   Plain text, as the Store shows it: the capitalized lines are headings. The Google apps launcher is left out of both
-  texts, which describe Atrio's own features.
+  texts, which describe Azlune's own features.
 
 ## Privacy practices
 
 - **Single purpose:**
 
-  > "Atrio replaces the new tab page with a workspace for developers: web search through the browser's default search
+  > "Azlune replaces the new tab page with a workspace for developers: web search through the browser's default search
   > provider, quick links, developer tools in the search box, a focus timer, tasks and notes."
 
 - **Permission justifications** (the four permissions of the manifest, and the two optional hosts):
@@ -168,7 +174,7 @@ marked **Decide** or **Check** cannot be settled from the code and are the maint
   | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
   | Settings, the optional name for the greeting, links, prefixes, tasks, notes, custom CSS, timer statistics, recent searches, own wallpapers | Stored in the browser (`localStorage`, IndexedDB) on the device, as `PRIVACY.md` details. Never sent anywhere; the developer receives nothing.                                                            |
   | Text typed in the search box, with online suggestions on                                                                                   | Off by default, behind an optional host permission. When on, sent as it is typed to `suggestqueries.google.com` or `duckduckgo.com` (the engine chosen), without cookies or referrer, to get suggestions. |
-  | A search run with Enter, a link opened                                                                                                     | A navigation the user starts: to Chrome's default provider (through `chrome.search.query`), or to the engine, prefix or link chosen. Atrio receives nothing.                                              |
+  | A search run with Enter, a link opened                                                                                                     | A navigation the user starts: to Chrome's default provider (through `chrome.search.query`), or to the engine, prefix or link chosen. Azlune receives nothing.                                             |
   | Site icons of the links                                                                                                                    | Read from Chrome's local favicon cache (`favicon` permission); no request.                                                                                                                                |
   | Text given to the local tools (JWT, JSON, Base64…)                                                                                         | Processed in the page; not sent, and not kept among the recent searches.                                                                                                                                  |
 
@@ -177,31 +183,26 @@ marked **Decide** or **Check** cannot be settled from the code and are the maint
     closest category is **User activity** (it covers keystrokes); declaring it is the conservative choice;
   - the other categories (personally identifiable information, health, financial, authentication, personal
     communications, location, web history, website content) match nothing observed: the name stays on the device,
-    and Atrio reads no history, cookies or page content.
+    and Azlune reads no history, cookies or page content.
 
   The three certifications hold either way: no selling or transfer outside the approved uses, no use unrelated to the
   single purpose, no use for creditworthiness or lending.
 
 - **Privacy policy URL:** `https://github.com/gurmilans-dev/atrio/blob/main/PRIVACY.md` (answered 200 to a request
-  without login on 28 October 2026). It describes 3.3.0 as it is: no change was needed for this version.
+  without login on 28 October 2026). It describes 3.3.0 as it is, under the new name. Once the repository is renamed
+  to `gurmilans-dev/azlune` (see the last section), put the new address in the Dashboard after checking that it opens.
 
 ## Assets and trademarks
 
-- **Name.** Searched on 28 October 2026 in TMview (which gathers the EUIPO, WIPO, USPTO, UIBM and most national
-  offices) and, for the US record, in the USPTO's TSDR. Live ATRIO word marks exist in class 42 (software and online
-  services) and class 9:
-  - US registration 6092218, 2U, Inc., class 42, registered 30 June 2020, live: an online service for colleges and
-    universities to offer distance learning (from TSDR);
-  - international registration 1506350, 2U, LLC, class 42, until 20 November 2029, designating among others the
-    European Union, Italy, Canada, India and Brazil;
-  - Canada TMA1108258 (2U, 42), TMA1205828 (Isto Inc., 9/41/42), TMA910764 (Gary Jonas Computing, 9/42); Italy
-    ÀTRIO 2016000072394 (Atrio Studio S.r.l., 16/35/38/42); India 2380474 and Mexico 1298809, 1298811, 1298812,
-    1298813 (PAR Technology, 9 and 42); Brazil ÁTRIO 924510307 (Agende Tecnologias, 9).
+- **Name.** Azlune, adopted on 29 October 2026 in place of Atrio. Searched that day in TMview (which gathers the
+  EUIPO, WIPO, USPTO, UIBM and most national offices): no AZLUNE mark, and none beginning with its roots AZLUN or AZLU,
+  in any class; no extension of that name in the Chrome Web Store and no use found on the web; azlune.com, .dev and .app
+  had no DNS records (a hint, not a registrar's answer). None of this guarantees availability: **Check** with a
+  trademark professional in the markets of the launch, and register the domain and accounts you want.
 
-  Only the US record's services were read (TMview's detail pages refused automated access); those differ from a
-  browser's new tab page, but the classes overlap. No conflict is documented; **Check** with a trademark professional
-  before the worldwide launch, starting with the US and the EU. The Chrome Web Store lists one extension with "Atrio"
-  in its name (Opera Profile Monitor - Atrio), for a different purpose.
+  The former name was dropped because live ATRIO word marks exist in classes 42 and 9: US registration 6092218 (2U,
+  Inc., an online distance-learning service, from the USPTO's TSDR); international registration 1506350 (2U, LLC,
+  designating among others the European Union and Italy); others in Canada, Italy, India, Mexico and Brazil.
 
 - **Logo** (`assets/icons/icon.svg`, rendered to the PNG icons): an original drawing, a blue keycap with an "A",
   readable at 16 px on light and dark backgrounds. A key with a letter is a common motif, so its distinctiveness is
@@ -210,23 +211,23 @@ marked **Decide** or **Check** cannot be settled from the code and are the maint
 - **Wallpapers** (`assets/city.webp`, `assets/workstation.webp`): the author's own images, as stated by the
   maintainer. **Check:** keep the source files, and how they were made, as a record.
 - **Wallpapers added in 3.3.0** (`assets/deep-space.webp`, `warm-sand.webp`, `sunrise-lake.webp`,
-  `liquid-glass.webp`): generated with AI in ChatGPT for Atrio on 28 October 2026, and shipped as delivered, 1600 × 900
-  WebP files. Their provenance note is kept as delivered in [IMAGE_PROVENANCE.txt](IMAGE_PROVENANCE.txt): generated
-  for this request, not copied from a stock-photo source; no brands, logos or third-party characters intentionally
-  included; use and rights governed by the applicable OpenAI terms and laws; provenance information, not a legal
-  guarantee. The PNG exports of the same images carry signed C2PA Content Credentials (created with ChatGPT,
-  `gpt-image`, digital source type `trainedAlgorithmicMedia`, claim signed by OpenAI); the WebP files carry no
-  metadata. No license or clearance beyond that is claimed for them. **Check:** keep the PNG files, with their
-  credentials, outside the repository as a record (they are not part of the package), and that the OpenAI terms allow
-  this use.
+  `liquid-glass.webp`): generated with AI in ChatGPT for this project (then called Atrio) on 28 October 2026, and
+  shipped as delivered, 1600 × 900 WebP files. Their provenance note is kept as delivered in
+  [IMAGE_PROVENANCE.txt](IMAGE_PROVENANCE.txt): generated for this request, not copied from a stock-photo source; no
+  brands, logos or third-party characters intentionally included; use and rights governed by the applicable OpenAI
+  terms and laws; provenance information, not a legal guarantee. The PNG exports of the same images carry signed C2PA
+  Content Credentials (created with ChatGPT, `gpt-image`, digital source type `trainedAlgorithmicMedia`, claim signed
+  by OpenAI); the WebP files carry no metadata. No license or clearance beyond that is claimed for them. **Check:**
+  keep the PNG files, with their credentials, outside the repository as a record (they are not part of the package),
+  and that the OpenAI terms allow this use.
 - **Google apps launcher** (`js/google-apps.js`): since 3.3.0 each service is shown with a generic symbol of what it
-  does (an envelope for Gmail, a folder for Drive, a grid for Sheets…), drawn in Atrio's accent color like the links'
+  does (an envelope for Gmail, a folder for Drive, a grid for Sheets…), drawn in Azlune's accent color like the links'
   initials: none of Google's product icons, shapes or colors. The services keep their names, in text, and their
-  addresses, to say where each tile leads. The README and the description say that Atrio is not affiliated with
+  addresses, to say where each tile leads. The README and the description say that Azlune is not affiliated with
   Google; the screenshots and the promo tile do not show the launcher. **Check**, if in doubt, against
   [Google's brand guidance](https://about.google/brand-resource-center/guidance/) and the Store's
   [impersonation and intellectual property policy](https://developer.chrome.com/docs/webstore/program-policies/impersonation-and-intellectual-property).
-  Atrio's own name and logo do not resemble Google's.
+  Azlune's own name and logo do not resemble Google's.
 
 ## Account
 
@@ -234,13 +235,13 @@ marked **Decide** or **Check** cannot be settled from the code and are the maint
 
 ## Dashboard checklist
 
-1. Decide on the name for a worldwide launch after the trademark check above (live ATRIO marks in classes 9 and 42).
+1. Confirm the name Azlune with a trademark professional for the markets of the launch (see Name above).
 2. Before uploading, load the extracted package unpacked in a normal Chrome profile, for what the automated checks
    cannot do: turn online suggestions on (accept, then deny, Chrome's permission prompt) and off (the permission
    goes); let a short focus session end and see the system notification; search with a default engine other than
    Google.
 3. Open the item (or create it) and check the package history: no version 3.3.0 or higher already uploaded.
-4. Upload `atrio-3.3.0.zip`, built by `npm run package`; compare its SHA-256 with the one the script printed.
+4. Upload `azlune-3.3.0.zip`, built by `npm run package`; compare its SHA-256 with the one the script printed.
 5. Store listing: summary (from the package), detailed description in English and Italian (above), category
    Developer Tools, languages, store icon, the five screenshots in order, the promo tile.
 6. Privacy practices: single purpose, the four permission justifications and the optional hosts, remote code "No",
@@ -248,3 +249,16 @@ marked **Decide** or **Check** cannot be settled from the code and are the maint
 7. Distribution: visibility and regions, as you prefer.
 8. Optionally, review the launcher's use of Google's product names (its icons are generic since 3.3.0).
 9. Submit for review. When it is published, put the date next to 3.3.0 in `CHANGELOG.md`.
+
+## After renaming the GitHub repository
+
+The repository is still `gurmilans-dev/atrio`, and every link points there. GitHub redirects the old address after a
+rename, but these should then name `gurmilans-dev/azlune`:
+
+1. On GitHub: Settings → General → Repository name → `azlune`.
+2. Locally: `git remote set-url origin https://github.com/gurmilans-dev/azlune.git`, then `git fetch` to check it.
+3. Open `https://github.com/gurmilans-dev/atrio` and check that it lands on the new address.
+4. Update, in one commit: `homepage_url` in `manifest.json`; `repository.url` in `package.json`; the CI badge (two
+   URLs) in `README.md`; the two issue links in `PRIVACY.md`; the privacy policy URL in this guide. Rebuild the package.
+5. Open `https://github.com/gurmilans-dev/azlune/blob/main/PRIVACY.md` signed out, and put it in the Dashboard's privacy
+   policy field.
