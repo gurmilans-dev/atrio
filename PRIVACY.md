@@ -76,7 +76,7 @@ noted in the changelog.
 
 ## Contact
 
-Questions about this policy: open an issue at <https://github.com/gurmilans-dev/atrio/issues>.
+Questions about this policy: open an issue at <https://github.com/gurmilans-dev/azlune/issues>.
 
 ---
 
@@ -158,4 +158,4 @@ data di entrata in vigore, e indicata nel changelog.
 
 ## Contatti
 
-Domande su questa informativa: apri una issue su <https://github.com/gurmilans-dev/atrio/issues>.
+Domande su questa informativa: apri una issue su <https://github.com/gurmilans-dev/azlune/issues>.

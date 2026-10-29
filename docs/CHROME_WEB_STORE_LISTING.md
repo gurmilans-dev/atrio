@@ -188,9 +188,9 @@ the code and are the maintainer's call; the [checklist](#dashboard-checklist) at
   The three certifications hold either way: no selling or transfer outside the approved uses, no use unrelated to the
   single purpose, no use for creditworthiness or lending.
 
-- **Privacy policy URL:** `https://github.com/gurmilans-dev/atrio/blob/main/PRIVACY.md` (answered 200 to a request
-  without login on 28 October 2026). It describes 3.3.0 as it is, under the new name. Once the repository is renamed
-  to `gurmilans-dev/azlune` (see the last section), put the new address in the Dashboard after checking that it opens.
+- **Privacy policy URL:** `https://github.com/gurmilans-dev/azlune/blob/main/PRIVACY.md` (answered 200 to a request
+  without login on 29 October 2026). It describes 3.3.0 as it is, under the new name once the local commits are
+  pushed: until then GitHub serves the version titled "Atrio privacy policy". **Check** the title after the push.
 
 ## Assets and trademarks
 
@@ -250,15 +250,10 @@ the code and are the maintainer's call; the [checklist](#dashboard-checklist) at
 8. Optionally, review the launcher's use of Google's product names (its icons are generic since 3.3.0).
 9. Submit for review. When it is published, put the date next to 3.3.0 in `CHANGELOG.md`.
 
-## After renaming the GitHub repository
+## GitHub repository
 
-The repository is still `gurmilans-dev/atrio`, and every link points there. GitHub redirects the old address after a
-rename, but these should then name `gurmilans-dev/azlune`:
-
-1. On GitHub: Settings → General → Repository name → `azlune`.
-2. Locally: `git remote set-url origin https://github.com/gurmilans-dev/azlune.git`, then `git fetch` to check it.
-3. Open `https://github.com/gurmilans-dev/atrio` and check that it lands on the new address.
-4. Update, in one commit: `homepage_url` in `manifest.json`; `repository.url` in `package.json`; the CI badge (two
-   URLs) in `README.md`; the two issue links in `PRIVACY.md`; the privacy policy URL in this guide. Rebuild the package.
-5. Open `https://github.com/gurmilans-dev/azlune/blob/main/PRIVACY.md` signed out, and put it in the Dashboard's privacy
-   policy field.
+Renamed on 29 October 2026 from `gurmilans-dev/atrio` to `gurmilans-dev/azlune`; the old address redirects to the new
+one (HTTP 301). The links point to the new address: `homepage_url` in `manifest.json`, `repository.url` in
+`package.json`, the CI badge in `README.md`, the issue links in `PRIVACY.md` and the privacy policy URL above. Locally,
+`git remote set-url origin https://github.com/gurmilans-dev/azlune.git` makes the remote name it too (the old one keeps
+working through the redirect).

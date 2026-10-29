@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/gurmilans-dev/atrio/actions/workflows/ci.yml"><img src="https://github.com/gurmilans-dev/atrio/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <a href="https://github.com/gurmilans-dev/azlune/actions/workflows/ci.yml"><img src="https://github.com/gurmilans-dev/azlune/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <img src="https://img.shields.io/badge/manifest-v3-4285f4" alt="Manifest V3" />
   <img src="https://img.shields.io/badge/dependencies-0-success" alt="Zero dependencies" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license" /></a>
